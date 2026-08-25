@@ -47,41 +47,30 @@ Port the 3-layer token system from `landing-tabur-rev5.html` directly into `@the
 1. **Favicon Set**: Copy all files from `~/Dokumen/tabur-handoff-22agt/tabur-handoff/favicon/` into `src/app/` (`favicon.ico`, `favicon.svg`, `favicon-32.png`, `favicon-192.png`, `apple-touch-icon.png`).
 2. **OpenGraph Image**: Copy `~/Dokumen/tabur-handoff-22agt/tabur-handoff/og/og-image.png` to `public/og-image.png`.
 
-### 3.2 Vector Components (`src/components/brand/`)
-- `tabur-mark.tsx`: Official leaf + seed mark from `~/Downloads/tabur-design/main logo tabur.svg` (retaining SVG paths, `currentColor` / CSS variable styling support).
-- `tabur-wordmark.tsx`: Optical offset (+50) wordmark and standard geometric wordmark from `~/Dokumen/tabur-handoff-22agt/tabur-handoff/logo/tabur-wordmark-FINAL-optik.svg` & `tabur-wordmark-biasa.svg`.
-- `tabur-lockup.tsx`: Footer brand lockup combining icon and Roca typography.
-- `hero-tree-scene.tsx`: The bottom tree and rolling hill SVG illustration with fixed minimum width behavior.
+### 3.2 Vector Components (`src/components/brand/tabur-brand.tsx`)
+- `TaburMark`: Official leaf + seed mark from `~/Downloads/tabur-design/main logo tabur.svg`.
+- `TaburWordmark`: Optical offset (+50) and standard geometric wordmark from `~/Dokumen/tabur-handoff-22agt/tabur-handoff/logo/`.
+- `TaburLockup`: Footer brand lockup combining icon and Roca typography.
+- `HeroTreeScene`: The bottom tree and rolling hill SVG illustration.
 
 ---
 
-## 4. Component Structure & Hierarchy
+## 4. Component Structure & Hierarchy (Consolidated & Minimal)
+
+To prevent over-fragmentation of single-use components, the landing page layout and sections are co-located directly in `src/app/page.tsx`, extracting only reusable brand vectors and necessary client components:
 
 ```
 src/
 ├── app/
 │   ├── layout.tsx                # Inject font variables & metadata
-│   ├── page.tsx                  # Static Landing Page container
+│   ├── page.tsx                  # Static Landing Page (co-located section blocks)
 │   ├── favicon.ico / favicon.svg # App icons
 │   └── globals.css               # Design tokens, Tailwind v4 theme, landing classes
 └── components/
-    ├── brand/                    # Pure SVG Vector brand components
-    │   ├── tabur-mark.tsx
-    │   ├── tabur-wordmark.tsx
-    │   ├── tabur-lockup.tsx
-    │   └── hero-tree-scene.tsx
-    ├── landing/                  # Landing sections (composable blocks)
-    │   ├── landing-nav.tsx       # Pill nav with glassmorphism
+    ├── brand/
+    │   └── tabur-brand.tsx       # Consolidated SVG brand vectors
+    ├── landing/
     │   ├── nav-auth-button.tsx   # Client island: session swap (Masuk vs Buka App)
-    │   ├── hero-section.tsx      # Clouds, wordmark, actions, tree scene
-    │   ├── video-section.tsx     # "Apa Itu Tabur" band & play frame
-    │   ├── manifesto-section.tsx # Typography-heavy narrative grid
-    │   ├── kenapa-tabur-section.tsx # Split layout with inline wordmark
-    │   ├── sang-guru-section.tsx # Split layout for Ustadz Budi Ashari
-    │   ├── program-section.tsx   # 4-step horizontal/vertical timeline rail
-    │   ├── kajian-section.tsx    # Single offline kajian feature card
-    │   ├── stats-section.tsx     # 3-stat metric ribbon
-    │   ├── footer-section.tsx    # Dark footer, lockup, social links
     │   └── reveal.tsx            # Progressive intersection observer wrapper
     └── ui/                       # shadcn composable primitives
         ├── button.tsx
