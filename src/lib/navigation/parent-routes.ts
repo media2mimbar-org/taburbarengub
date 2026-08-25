@@ -9,6 +9,7 @@
 // mau disebut 'dashboard', ganti sekali di sini.
 const PARENT_LABELS = {
   '/': 'landing page',
+  '/app': 'beranda',
   '/login': 'login',
   '/admin': 'admin',
   '/admin/sesi': 'daftar sesi',
@@ -25,13 +26,12 @@ const PARENT_ROUTES: Record<string, ParentHref> = {
   '/register': '/',
   // Pengecualian yang disengaja: parent URL-nya '/', tapi parent alur kerjanya
   // '/login' — user nyampe sini dari form login, bukan dari landing.
-  '/forgot-password': '/login',
-  '/tiket-saya': '/',
+  '/tiket-saya': '/app',
   '/tiket-saya/[id]': '/tiket-saya',
-  '/sesi/[id]': '/',
+  '/sesi/[id]': '/app',
   // '/logout' sengaja nggak didaftarin: link "Kembali ke landing page" di situ
   // adalah CTA pemulihan kalau logout gagal, bukan back-chrome.
-  '/admin': '/',
+  '/admin': '/app',
   '/admin/hero': '/admin',
   '/admin/sesi': '/admin',
   '/admin/sesi/new': '/admin/sesi',

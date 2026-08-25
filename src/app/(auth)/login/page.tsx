@@ -38,7 +38,7 @@ export default function LoginPage() {
     // replace, bukan push: form login yang sudah dilewati jangan sampai bisa
     // dicapai lagi lewat tombol back.
     notifyRouteReplaced()
-    router.replace('/')
+    router.replace('/app')
     router.refresh()
   }
 

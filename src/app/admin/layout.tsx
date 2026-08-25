@@ -22,7 +22,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     .single()
 
   if (profile?.role !== 'admin') {
-    redirect('/')
+    redirect('/app')
   }
 
   return <>{children}</>

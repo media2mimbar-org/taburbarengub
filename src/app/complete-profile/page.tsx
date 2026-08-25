@@ -17,7 +17,7 @@ export default async function CompleteProfilePage() {
   const gate = await getProfileGate(supabase, user.id)
 
   if (gate.tag === 'complete') {
-    redirect('/')
+    redirect('/app')
   }
 
   // Formnya tidak akan berhasil kalau profil tak bisa dipastikan:

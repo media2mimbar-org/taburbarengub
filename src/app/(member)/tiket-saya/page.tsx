@@ -133,7 +133,7 @@ export default async function TiketSayaPage() {
               Kamu belum booking sesi apa pun. Pilih sesi offline yang tersedia dari landing page.
             </p>
             <Link
-              href="/#sesi"
+              href="/app#sesi"
               style={{
                 display: 'inline-block',
                 background: '#111827',

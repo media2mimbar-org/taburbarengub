@@ -15,7 +15,7 @@ import {
 export function CompleteProfileForm({
   profile,
   submitLabel = 'Simpan & Lihat Sesi',
-  redirectTo = '/#sesi',
+  redirectTo = '/app#sesi',
   onSuccess,
 }: {
   profile: UserProfile | null

@@ -51,7 +51,7 @@ export default function RegisterPage() {
     // replace, bukan push: form register yang sudah dilewati jangan sampai bisa
     // dicapai lagi lewat tombol back.
     notifyRouteReplaced()
-    router.replace('/')
+    router.replace('/app')
     router.refresh()
   }
 
