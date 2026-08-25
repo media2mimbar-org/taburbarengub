@@ -62,3 +62,8 @@ supabase/.temp/
 *.tsbuildinfo
 graphify-out/cache/
 graphify-out/.graphify_*
+
+# AI tooling artifacts
+.agents/
+.claude/
+skills-lock.json
