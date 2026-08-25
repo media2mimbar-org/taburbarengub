@@ -60,7 +60,7 @@ export interface TaburWordmarkProps extends React.SVGProps<SVGSVGElement> {
  * Letters render with `fill="currentColor"`.
  */
 export function TaburWordmark({
-  variant = "optik",
+  variant = "biasa",
   leafColor,
   seedColor,
   className,

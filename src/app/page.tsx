@@ -138,6 +138,7 @@ export default function LandingPage() {
                 <span>Kenapa</span>
                 <span className="kenapa-q" aria-hidden="true">?</span>
                 <TaburWordmark
+                  variant="biasa"
                   className="wm-inline"
                   role="img"
                   aria-label="tabur"
