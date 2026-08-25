@@ -135,15 +135,13 @@ export default function LandingPage() {
             <div className="media">Foto: menabur benih</div>
             <div>
               <h2 className="kenapa-heading">
-                Kenapa
-                <span className="kenapa-logo-line">
-                  <TaburWordmark
-                    className="wm-inline"
-                    role="img"
-                    aria-label="tabur"
-                  />
-                  <span className="kenapa-q">?</span>
-                </span>
+                <span>Kenapa</span>
+                <span className="kenapa-q" aria-hidden="true">?</span>
+                <TaburWordmark
+                  className="wm-inline"
+                  role="img"
+                  aria-label="tabur"
+                />
               </h2>
               <p>
                 Tabur adalah sebuah gerakan yang meniru sebuah aktivitas penting
