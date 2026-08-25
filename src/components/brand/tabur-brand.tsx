@@ -222,7 +222,7 @@ export function TaburIcon({
   )
 }
 
-export interface TaburLockupTextProps extends React.SVGProps<SVGSVGElement> {}
+export type TaburLockupTextProps = React.SVGProps<SVGSVGElement>
 
 /**
  * Tabur Lockup Text: 3-line stacked brand typography "tabur / bareng / UB" in Roca One.
