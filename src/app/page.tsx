@@ -103,14 +103,14 @@ export default function LandingPage() {
         <section className="band">
           <Reveal className="wrap manifesto">
             <h2>
-              Kenapa <span className="script">Tadabbur</span>
+              Kenapa <span className="script dark">Tadabbur</span>
               <br />
               adalah satu-satunya
               <br />
               pilihan untuk
               <br />
-              <span className="script">Memakmurkan</span>{' '}
-              <span className="dark">bumi?</span>
+              <span className="script dark">Memakmurkan</span>{' '}
+              bumi?
             </h2>
             <div>
               <p>
@@ -134,15 +134,16 @@ export default function LandingPage() {
           <Reveal className="wrap split">
             <div className="media">Foto: menabur benih</div>
             <div>
-              <h2>
+              <h2 className="kenapa-heading">
                 Kenapa
-                <br />
-                <TaburWordmark
-                  className="wm-inline"
-                  role="img"
-                  aria-label="tabur"
-                />
-                ?
+                <span className="kenapa-logo-line">
+                  <TaburWordmark
+                    className="wm-inline"
+                    role="img"
+                    aria-label="tabur"
+                  />
+                  <span className="kenapa-q">?</span>
+                </span>
               </h2>
               <p>
                 Tabur adalah sebuah gerakan yang meniru sebuah aktivitas penting
