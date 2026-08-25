@@ -38,30 +38,12 @@ export const metadata: Metadata = {
     description:
       "Belajar memahami Qur'an dengan kaidah tadabbur — bareng Ustadz Budi Ashari. Kajian offline gratis & kelas online per season.",
     siteName: 'TaburBarengUB',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'TaburBarengUB — Belajar Tadabbur, Selangkah demi Selangkah',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'TaburBarengUB — Belajar Tadabbur, Selangkah demi Selangkah',
     description:
       "Belajar memahami Qur'an dengan kaidah tadabbur — bareng Ustadz Budi Ashari. Kajian offline gratis & kelas online per season.",
-    images: ['/og-image.png'],
-  },
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon-32.png', type: 'image/png', sizes: '32x32' },
-      { url: '/favicon-192.png', type: 'image/png', sizes: '192x192' },
-    ],
-    apple: [{ url: '/apple-touch-icon.png' }],
   },
 }
 
