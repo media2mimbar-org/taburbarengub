@@ -84,12 +84,52 @@ export type Database = {
           },
         ]
       }
+      certificates: {
+        Row: {
+          id: string
+          issued_at: string
+          jenis: "lulus" | "ikut_serta"
+          user_id: string
+          user_season_id: string
+        }
+        Insert: {
+          id?: string
+          issued_at?: string
+          jenis: "lulus" | "ikut_serta"
+          user_id: string
+          user_season_id: string
+        }
+        Update: {
+          id?: string
+          issued_at?: string
+          jenis?: "lulus" | "ikut_serta"
+          user_id?: string
+          user_season_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certificates_user_season_id_fkey"
+            columns: ["user_season_id"]
+            isOneToOne: false
+            referencedRelation: "user_seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_sessions: {
         Row: {
           created_at: string
           deskripsi: string | null
           id: string
           kapasitas: number
+          kloter_id: string | null
           kuota_terisi: number
           lokasi_atau_link: string | null
           nama_sesi: string
@@ -102,6 +142,7 @@ export type Database = {
           deskripsi?: string | null
           id?: string
           kapasitas: number
+          kloter_id?: string | null
           kuota_terisi?: number
           lokasi_atau_link?: string | null
           nama_sesi: string
@@ -114,6 +155,7 @@ export type Database = {
           deskripsi?: string | null
           id?: string
           kapasitas?: number
+          kloter_id?: string | null
           kuota_terisi?: number
           lokasi_atau_link?: string | null
           nama_sesi?: string
@@ -121,7 +163,15 @@ export type Database = {
           tanggal_waktu?: string
           tipe?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "event_sessions_kloter_id_fkey"
+            columns: ["kloter_id"]
+            isOneToOne: false
+            referencedRelation: "kloters"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       hero_content: {
         Row: {
@@ -155,6 +205,197 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      kelas: {
+        Row: {
+          id: string
+          judul: string
+          nomor: number
+          season_id: string
+          video_url: string | null
+        }
+        Insert: {
+          id?: string
+          judul: string
+          nomor: number
+          season_id: string
+          video_url?: string | null
+        }
+        Update: {
+          id?: string
+          judul?: string
+          nomor?: number
+          season_id?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kelas_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kloter_phases: {
+        Row: {
+          closes_at: string
+          id: string
+          kloter_id: string
+          opens_at: string
+          override_active: boolean
+          override_at: string | null
+          override_by: string | null
+          phase: Database["public"]["Enums"]["phase_type"]
+        }
+        Insert: {
+          closes_at: string
+          id?: string
+          kloter_id: string
+          opens_at: string
+          override_active?: boolean
+          override_at?: string | null
+          override_by?: string | null
+          phase: Database["public"]["Enums"]["phase_type"]
+        }
+        Update: {
+          closes_at?: string
+          id?: string
+          kloter_id?: string
+          opens_at?: string
+          override_active?: boolean
+          override_at?: string | null
+          override_by?: string | null
+          phase?: Database["public"]["Enums"]["phase_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kloter_phases_kloter_id_fkey"
+            columns: ["kloter_id"]
+            isOneToOne: false
+            referencedRelation: "kloters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kloter_phases_override_by_fkey"
+            columns: ["override_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kloters: {
+        Row: {
+          id: string
+          kapasitas: number
+          nomor: number
+          season_id: string
+          tanggal_mulai: string
+          tanggal_selesai: string | null
+        }
+        Insert: {
+          id?: string
+          kapasitas: number
+          nomor: number
+          season_id: string
+          tanggal_mulai: string
+          tanggal_selesai?: string | null
+        }
+        Update: {
+          id?: string
+          kapasitas?: number
+          nomor?: number
+          season_id?: string
+          tanggal_mulai?: string
+          tanggal_selesai?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kloters_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seasons: {
+        Row: {
+          id: string
+          nama: string
+          nomor_kaidah: number
+          status: "draft" | "berjalan" | "selesai"
+          tanggal_mulai: string
+          tanggal_selesai: string | null
+        }
+        Insert: {
+          id?: string
+          nama: string
+          nomor_kaidah: number
+          status?: "draft" | "berjalan" | "selesai"
+          tanggal_mulai: string
+          tanggal_selesai?: string | null
+        }
+        Update: {
+          id?: string
+          nama?: string
+          nomor_kaidah?: number
+          status?: "draft" | "berjalan" | "selesai"
+          tanggal_mulai?: string
+          tanggal_selesai?: string | null
+        }
+        Relationships: []
+      }
+      user_seasons: {
+        Row: {
+          id: string
+          kloter_daftar_id: string
+          season_id: string
+          sumber: "beli" | "gratis"
+          tanggal_diperoleh: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          kloter_daftar_id: string
+          season_id: string
+          sumber: "beli" | "gratis"
+          tanggal_diperoleh?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          kloter_daftar_id?: string
+          season_id?: string
+          sumber?: "beli" | "gratis"
+          tanggal_diperoleh?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_seasons_kloter_daftar_id_fkey"
+            columns: ["kloter_daftar_id"]
+            isOneToOne: false
+            referencedRelation: "kloters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_seasons_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_seasons_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       users: {
         Row: {
@@ -198,9 +439,118 @@ export type Database = {
         }
         Relationships: []
       }
+      video_progress: {
+        Row: {
+          ditonton: boolean
+          id: string
+          jawaban_soal: Json | null
+          kelas_id: string
+          skor: number | null
+          user_id: string
+        }
+        Insert: {
+          ditonton?: boolean
+          id?: string
+          jawaban_soal?: Json | null
+          kelas_id: string
+          skor?: number | null
+          user_id: string
+        }
+        Update: {
+          ditonton?: boolean
+          id?: string
+          jawaban_soal?: Json | null
+          kelas_id?: string
+          skor?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_progress_kelas_id_fkey"
+            columns: ["kelas_id"]
+            isOneToOne: false
+            referencedRelation: "kelas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      writing_submissions: {
+        Row: {
+          created_at: string
+          file_url: string
+          id: string
+          kloter_id: string
+          nilai: Json | null
+          status: "menunggu" | "dinilai"
+          user_id: string
+          versi: number
+        }
+        Insert: {
+          created_at?: string
+          file_url: string
+          id?: string
+          kloter_id: string
+          nilai?: Json | null
+          status?: "menunggu" | "dinilai"
+          user_id: string
+          versi?: number
+        }
+        Update: {
+          created_at?: string
+          file_url?: string
+          id?: string
+          kloter_id?: string
+          nilai?: Json | null
+          status?: "menunggu" | "dinilai"
+          user_id?: string
+          versi?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "writing_submissions_kloter_id_fkey"
+            columns: ["kloter_id"]
+            isOneToOne: false
+            referencedRelation: "kloters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "writing_submissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      kloter_aktif: {
+        Row: {
+          fase: Database["public"]["Enums"]["phase_type"] | null
+          id: string | null
+          kapasitas: number | null
+          nomor: number | null
+          season_id: string | null
+          tanggal_mulai: string | null
+          tanggal_selesai: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kloters_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       check_in_booking: {
@@ -264,9 +614,28 @@ export type Database = {
         }
       }
       is_admin: { Args: never; Returns: boolean }
+      setor_karya: {
+        Args: {
+          p_file_url: string
+        }
+        Returns: Database["public"]["Tables"]["writing_submissions"]["Row"]
+        SetofOptions: {
+          from: "*"
+          to: "writing_submissions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
-      [_ in never]: never
+      phase_type:
+        | "offline"
+        | "pendaftaran"
+        | "orientasi"
+        | "menyimak"
+        | "menulis_setor"
+        | "wrapped"
+        | "antara_kloter"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -396,6 +765,16 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      phase_type: [
+        "offline",
+        "pendaftaran",
+        "orientasi",
+        "menyimak",
+        "menulis_setor",
+        "wrapped",
+        "antara_kloter",
+      ],
+    },
   },
 } as const
