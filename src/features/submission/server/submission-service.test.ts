@@ -1,0 +1,529 @@
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database, Json } from '../../../lib/types/database.types.ts'
+import {
+  submitWriting,
+  getUserSubmissions,
+  gradeSubmission,
+} from './submission-service.ts'
+import {
+  gradeSubmissionSchema,
+  submitWritingSchema,
+} from '../shared/submission.schema.ts'
+import type { GradePayload } from '../shared/submission.types.ts'
+
+interface MockQueryState {
+  table: string
+  action: 'select' | 'update'
+  selectClause?: string
+  updateData?: unknown
+  filters: Record<string, unknown>
+  orderColumn?: string
+  orderOptions?: { ascending?: boolean }
+}
+
+interface MockSupabaseOptions {
+  rpcHandler?: (
+    fnName: string,
+    args: Record<string, unknown>
+  ) => { data: unknown; error: { message: string; details?: string; code?: string } | null }
+  queryHandler?: (state: MockQueryState) => {
+    data: unknown
+    error: { message: string; details?: string; code?: string } | null
+  }
+}
+
+function createMockSupabaseClient(
+  options: MockSupabaseOptions
+): SupabaseClient<Database> {
+  return {
+    rpc: async (fnName: string, args: Record<string, unknown>) => {
+      if (options.rpcHandler) {
+        return options.rpcHandler(fnName, args)
+      }
+      return { data: null, error: null }
+    },
+    from: (table: string) => {
+      const state: MockQueryState = {
+        table,
+        action: 'select',
+        filters: {},
+      }
+
+      const builder: Record<string, unknown> = {
+        select: (clause?: string) => {
+          state.selectClause = clause
+          return builder
+        },
+        eq: (col: string, val: unknown) => {
+          state.filters[col] = val
+          return builder
+        },
+        order: (col: string, opts?: { ascending?: boolean }) => {
+          state.orderColumn = col
+          state.orderOptions = opts
+          return builder
+        },
+        update: (values: unknown) => {
+          state.action = 'update'
+          state.updateData = values
+          return builder
+        },
+        single: async () => {
+          if (options.queryHandler) {
+            return options.queryHandler(state)
+          }
+          return { data: null, error: null }
+        },
+        then: (
+          onfulfilled?: (res: unknown) => unknown,
+          onrejected?: (err: unknown) => unknown
+        ) => {
+          const res = options.queryHandler
+            ? options.queryHandler(state)
+            : { data: null, error: null }
+          return Promise.resolve(res).then(onfulfilled, onrejected)
+        },
+      }
+
+      return builder as unknown
+    },
+  } as unknown as SupabaseClient<Database>
+}
+
+describe('submitWritingSchema', () => {
+  it('accepts valid .docx and .pdf URLs', () => {
+    const validInputs = [
+      { file_url: 'https://storage.supabase.co/karya/naskah-1.docx' },
+      { file_url: 'https://storage.supabase.co/karya/naskah-1.pdf' },
+      { file_url: 'https://example.com/files/karya.DOCX' },
+      { file_url: 'https://example.com/files/karya.PDF' },
+      { file_url: 'https://storage.supabase.co/karya/naskah.pdf?token=abc123xyz' },
+      { file_url: 'https://storage.supabase.co/karya/naskah.docx?download=1&alt=media' },
+    ]
+
+    for (const input of validInputs) {
+      const parsed = submitWritingSchema.safeParse(input)
+      assert.strictEqual(parsed.success, true, `Expected valid: ${input.file_url}`)
+    }
+  })
+
+  it('rejects invalid URLs and non-docx/pdf formats', () => {
+    const invalidInputs = [
+      { file_url: 'not-a-valid-url' },
+      { file_url: 'ftp://invalid-url' },
+      { file_url: 'https://storage.supabase.co/karya/naskah.txt' },
+      { file_url: 'https://storage.supabase.co/karya/naskah.png' },
+      { file_url: 'https://storage.supabase.co/karya/naskah.docx.exe' },
+      { file_url: 'https://storage.supabase.co/karya/naskah' },
+    ]
+
+    for (const input of invalidInputs) {
+      const parsed = submitWritingSchema.safeParse(input)
+      assert.strictEqual(parsed.success, false, `Expected invalid: ${input.file_url}`)
+    }
+  })
+})
+
+describe('gradeSubmissionSchema', () => {
+  it('accepts valid grading input with all fields', () => {
+    const valid = gradeSubmissionSchema.safeParse({
+      submission_id: '123e4567-e89b-12d3-a456-426614174000',
+      rubrik: {
+        konten: 'A',
+        bahasa: 'B',
+      },
+      feedback: 'Tulisan sangat menarik dan terstruktur rapi.',
+      rekomendasi: 'lulus',
+    })
+
+    assert.strictEqual(valid.success, true)
+  })
+
+  it('accepts valid grading input without feedback', () => {
+    const valid = gradeSubmissionSchema.safeParse({
+      submission_id: '123e4567-e89b-12d3-a456-426614174000',
+      rubrik: {
+        konten: 'C',
+        bahasa: 'C',
+      },
+      rekomendasi: 'revisi',
+    })
+
+    assert.strictEqual(valid.success, true)
+  })
+
+  it('rejects invalid uuid, invalid rubric grades, and invalid rekomendasi', () => {
+    assert.strictEqual(
+      gradeSubmissionSchema.safeParse({
+        submission_id: 'invalid-id',
+        rubrik: { konten: 'A', bahasa: 'A' },
+        rekomendasi: 'lulus',
+      }).success,
+      false
+    )
+
+    assert.strictEqual(
+      gradeSubmissionSchema.safeParse({
+        submission_id: '123e4567-e89b-12d3-a456-426614174000',
+        rubrik: { konten: 'D', bahasa: 'A' },
+        rekomendasi: 'lulus',
+      }).success,
+      false
+    )
+
+    assert.strictEqual(
+      gradeSubmissionSchema.safeParse({
+        submission_id: '123e4567-e89b-12d3-a456-426614174000',
+        rubrik: { konten: 'A', bahasa: 'A' },
+        rekomendasi: 'tidak_lulus',
+      }).success,
+      false
+    )
+  })
+})
+
+describe('submitWriting', () => {
+  it('returns VALIDATION_ERROR when input schema fails', async () => {
+    const supabase = createMockSupabaseClient({})
+    const result = await submitWriting(supabase, {
+      file_url: 'https://example.com/naskah.zip',
+    })
+
+    assert.strictEqual(result.ok, false)
+    if (!result.ok) {
+      assert.strictEqual(result.code, 'VALIDATION_ERROR')
+      assert.match(result.error, /Word \(\.docx\) atau PDF \(\.pdf\)/)
+    }
+  })
+
+  it('maps "Belum masuk" error to UNAUTHORIZED', async () => {
+    const supabase = createMockSupabaseClient({
+      rpcHandler: () => ({
+        data: null,
+        error: { message: 'Belum masuk', code: '42501' },
+      }),
+    })
+
+    const result = await submitWriting(supabase, {
+      file_url: 'https://example.com/karya.pdf',
+    })
+
+    assert.strictEqual(result.ok, false)
+    if (!result.ok) {
+      assert.strictEqual(result.code, 'UNAUTHORIZED')
+      assert.strictEqual(result.error, 'Silakan masuk terlebih dahulu')
+    }
+  })
+
+  it('maps "Tidak ada kloter berjalan" error to NO_ACTIVE_KLOTER', async () => {
+    const supabase = createMockSupabaseClient({
+      rpcHandler: () => ({
+        data: null,
+        error: { message: 'Tidak ada kloter berjalan', code: 'P0002' },
+      }),
+    })
+
+    const result = await submitWriting(supabase, {
+      file_url: 'https://example.com/karya.pdf',
+    })
+
+    assert.strictEqual(result.ok, false)
+    if (!result.ok) {
+      assert.strictEqual(result.code, 'NO_ACTIVE_KLOTER')
+      assert.strictEqual(result.error, 'Tidak ada kloter yang sedang berjalan')
+    }
+  })
+
+  it('maps "jendela setor" error to WINDOW_CLOSED', async () => {
+    const supabase = createMockSupabaseClient({
+      rpcHandler: () => ({
+        data: null,
+        error: {
+          message: 'Belum/sudah lewat jendela setor (fase: menyimak)',
+          code: '22000',
+        },
+      }),
+    })
+
+    const result = await submitWriting(supabase, {
+      file_url: 'https://example.com/karya.docx',
+    })
+
+    assert.strictEqual(result.ok, false)
+    if (!result.ok) {
+      assert.strictEqual(result.code, 'WINDOW_CLOSED')
+      assert.strictEqual(result.error, 'Jendela setor karya sedang ditutup')
+    }
+  })
+
+  it('maps "Bukan season milikmu" error to NOT_OWNED', async () => {
+    const supabase = createMockSupabaseClient({
+      rpcHandler: () => ({
+        data: null,
+        error: {
+          message: 'Bukan season milikmu yang sedang berjalan',
+          code: '42501',
+        },
+      }),
+    })
+
+    const result = await submitWriting(supabase, {
+      file_url: 'https://example.com/karya.pdf',
+    })
+
+    assert.strictEqual(result.ok, false)
+    if (!result.ok) {
+      assert.strictEqual(result.code, 'NOT_OWNED')
+      assert.strictEqual(
+        result.error,
+        'Anda belum terdaftar pada season yang sedang berjalan'
+      )
+    }
+  })
+
+  it('maps other database errors to DB_ERROR', async () => {
+    const supabase = createMockSupabaseClient({
+      rpcHandler: () => ({
+        data: null,
+        error: {
+          message: 'connection to database failed',
+          code: '08006',
+        },
+      }),
+    })
+
+    const result = await submitWriting(supabase, {
+      file_url: 'https://example.com/karya.pdf',
+    })
+
+    assert.strictEqual(result.ok, false)
+    if (!result.ok) {
+      assert.strictEqual(result.code, 'DB_ERROR')
+      assert.strictEqual(result.error, 'connection to database failed')
+    }
+  })
+
+  it('returns mapped submission on success', async () => {
+    const mockRow = {
+      id: 'sub-123',
+      user_id: 'user-456',
+      kloter_id: 'kloter-789',
+      versi: 1,
+      file_url: 'https://storage.supabase.co/karya/naskah.docx',
+      status: 'menunggu',
+      nilai: null,
+      created_at: '2026-08-29T10:00:00.000Z',
+    }
+
+    let calledRpc: { fnName: string; args: Record<string, unknown> } | null = null
+
+    const supabase = createMockSupabaseClient({
+      rpcHandler: (fnName, args) => {
+        calledRpc = { fnName, args }
+        return { data: mockRow, error: null }
+      },
+    })
+
+    const result = await submitWriting(supabase, {
+      file_url: 'https://storage.supabase.co/karya/naskah.docx',
+    })
+
+    assert.strictEqual(result.ok, true)
+    assert.deepStrictEqual(calledRpc, {
+      fnName: 'setor_karya',
+      args: { p_file_url: 'https://storage.supabase.co/karya/naskah.docx' },
+    })
+
+    if (result.ok) {
+      assert.strictEqual(result.submission.id, 'sub-123')
+      assert.strictEqual(result.submission.user_id, 'user-456')
+      assert.strictEqual(result.submission.kloter_id, 'kloter-789')
+      assert.strictEqual(result.submission.versi, 1)
+      assert.strictEqual(result.submission.status, 'menunggu')
+      assert.strictEqual(result.submission.nilai, null)
+      assert.strictEqual(result.submission.created_at, '2026-08-29T10:00:00.000Z')
+    }
+  })
+})
+
+describe('getUserSubmissions', () => {
+  it('queries writing_submissions ordered by versi descending', async () => {
+    const mockRows = [
+      {
+        id: 'sub-2',
+        user_id: 'user-1',
+        kloter_id: 'kloter-1',
+        versi: 2,
+        file_url: 'https://example.com/v2.pdf',
+        status: 'menunggu',
+        nilai: null,
+        created_at: '2026-08-29T12:00:00.000Z',
+      },
+      {
+        id: 'sub-1',
+        user_id: 'user-1',
+        kloter_id: 'kloter-1',
+        versi: 1,
+        file_url: 'https://example.com/v1.pdf',
+        status: 'dinilai',
+        nilai: {
+          graded_by: 'mentor-1',
+          graded_at: '2026-08-29T11:00:00.000Z',
+          rubrik: { konten: 'B', bahasa: 'A' },
+          feedback: 'Perbaiki bab 2',
+          rekomendasi: 'revisi',
+        } as unknown as Json,
+        created_at: '2026-08-29T10:00:00.000Z',
+      },
+    ]
+
+    const recordedStates: MockQueryState[] = []
+
+    const supabase = createMockSupabaseClient({
+      queryHandler: (state) => {
+        recordedStates.push(state)
+        return { data: mockRows, error: null }
+      },
+    })
+
+    const submissions = await getUserSubmissions(supabase, 'user-1', 'kloter-1')
+    const recordedState = recordedStates[0]
+
+    assert.strictEqual(submissions.length, 2)
+    assert.strictEqual(recordedState?.table, 'writing_submissions')
+    assert.strictEqual(recordedState?.filters['user_id'], 'user-1')
+    assert.strictEqual(recordedState?.filters['kloter_id'], 'kloter-1')
+    assert.strictEqual(recordedState?.orderColumn, 'versi')
+    assert.strictEqual(recordedState?.orderOptions?.ascending, false)
+
+    assert.strictEqual(submissions[0]?.id, 'sub-2')
+    assert.strictEqual(submissions[0]?.versi, 2)
+    assert.strictEqual(submissions[0]?.status, 'menunggu')
+    assert.strictEqual(submissions[0]?.nilai, null)
+
+    assert.strictEqual(submissions[1]?.id, 'sub-1')
+    assert.strictEqual(submissions[1]?.versi, 1)
+    assert.strictEqual(submissions[1]?.status, 'dinilai')
+    assert.strictEqual(submissions[1]?.nilai?.rubrik.konten, 'B')
+    assert.strictEqual(submissions[1]?.nilai?.rekomendasi, 'revisi')
+  })
+
+  it('returns empty array when error occurs or data is empty', async () => {
+    const supabase = createMockSupabaseClient({
+      queryHandler: () => ({
+        data: null,
+        error: { message: 'Database error' },
+      }),
+    })
+
+    const submissions = await getUserSubmissions(supabase, 'user-1', 'kloter-1')
+    assert.deepStrictEqual(submissions, [])
+  })
+})
+
+describe('gradeSubmission', () => {
+  const mentorId = 'mentor-999'
+  const submissionId = '123e4567-e89b-12d3-a456-426614174000'
+
+  it('returns error when validation fails', async () => {
+    const supabase = createMockSupabaseClient({})
+    const result = await gradeSubmission(supabase, mentorId, {
+      submission_id: 'not-a-uuid',
+      rubrik: { konten: 'A', bahasa: 'A' },
+      rekomendasi: 'lulus',
+    })
+
+    assert.strictEqual(result.ok, false)
+    if (!result.ok) {
+      assert.match(result.error, /ID naskah tidak valid/)
+    }
+  })
+
+  it('updates submission with status dinilai and GradePayload', async () => {
+    const capturedStates: MockQueryState[] = []
+    const fixedTime = '2026-08-29T14:30:00.000Z'
+
+    const updatedRow = {
+      id: submissionId,
+      user_id: 'user-123',
+      kloter_id: 'kloter-456',
+      versi: 1,
+      file_url: 'https://example.com/karya.pdf',
+      status: 'dinilai',
+      nilai: {
+        graded_by: mentorId,
+        graded_at: fixedTime,
+        rubrik: { konten: 'A', bahasa: 'A' },
+        feedback: 'Karya luar biasa!',
+        rekomendasi: 'lulus',
+      },
+      created_at: '2026-08-29T10:00:00.000Z',
+    }
+
+    const supabase = createMockSupabaseClient({
+      queryHandler: (state) => {
+        capturedStates.push(state)
+        return { data: updatedRow, error: null }
+      },
+    })
+
+    const result = await gradeSubmission(
+      supabase,
+      mentorId,
+      {
+        submission_id: submissionId,
+        rubrik: { konten: 'A', bahasa: 'A' },
+        feedback: 'Karya luar biasa!',
+        rekomendasi: 'lulus',
+      },
+      fixedTime
+    )
+
+    const capturedState = capturedStates[0]
+
+    assert.strictEqual(result.ok, true)
+    assert.strictEqual(capturedState?.table, 'writing_submissions')
+    assert.strictEqual(capturedState?.action, 'update')
+    assert.strictEqual(capturedState?.filters['id'], submissionId)
+
+    const updatePayload = capturedState?.updateData as {
+      status: string
+      nilai: GradePayload
+    }
+    assert.strictEqual(updatePayload.status, 'dinilai')
+    assert.strictEqual(updatePayload.nilai.graded_by, mentorId)
+    assert.strictEqual(updatePayload.nilai.graded_at, fixedTime)
+    assert.strictEqual(updatePayload.nilai.rubrik.konten, 'A')
+    assert.strictEqual(updatePayload.nilai.feedback, 'Karya luar biasa!')
+    assert.strictEqual(updatePayload.nilai.rekomendasi, 'lulus')
+
+    if (result.ok) {
+      assert.strictEqual(result.submission.id, submissionId)
+      assert.strictEqual(result.submission.status, 'dinilai')
+      assert.strictEqual(result.submission.nilai?.rekomendasi, 'lulus')
+      assert.strictEqual(result.submission.nilai?.rubrik.konten, 'A')
+    }
+  })
+
+  it('returns error when database update fails', async () => {
+    const supabase = createMockSupabaseClient({
+      queryHandler: () => ({
+        data: null,
+        error: { message: 'Row level security violation' },
+      }),
+    })
+
+    const result = await gradeSubmission(supabase, mentorId, {
+      submission_id: submissionId,
+      rubrik: { konten: 'B', bahasa: 'B' },
+      rekomendasi: 'revisi',
+    })
+
+    assert.strictEqual(result.ok, false)
+    if (!result.ok) {
+      assert.strictEqual(result.error, 'Row level security violation')
+    }
+  })
+})
