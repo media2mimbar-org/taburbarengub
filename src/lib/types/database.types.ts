@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
-  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -88,21 +83,21 @@ export type Database = {
         Row: {
           id: string
           issued_at: string
-          jenis: "lulus" | "ikut_serta"
+          jenis: string
           user_id: string
           user_season_id: string
         }
         Insert: {
           id?: string
           issued_at?: string
-          jenis: "lulus" | "ikut_serta"
+          jenis: string
           user_id: string
           user_season_id: string
         }
         Update: {
           id?: string
           issued_at?: string
-          jenis?: "lulus" | "ikut_serta"
+          jenis?: string
           user_id?: string
           user_season_id?: string
         }
@@ -164,6 +159,13 @@ export type Database = {
           tipe?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "event_sessions_kloter_id_fkey"
+            columns: ["kloter_id"]
+            isOneToOne: false
+            referencedRelation: "kloter_aktif"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "event_sessions_kloter_id_fkey"
             columns: ["kloter_id"]
@@ -274,6 +276,13 @@ export type Database = {
             foreignKeyName: "kloter_phases_kloter_id_fkey"
             columns: ["kloter_id"]
             isOneToOne: false
+            referencedRelation: "kloter_aktif"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kloter_phases_kloter_id_fkey"
+            columns: ["kloter_id"]
+            isOneToOne: false
             referencedRelation: "kloters"
             referencedColumns: ["id"]
           },
@@ -326,7 +335,7 @@ export type Database = {
           id: string
           nama: string
           nomor_kaidah: number
-          status: "draft" | "berjalan" | "selesai"
+          status: string
           tanggal_mulai: string
           tanggal_selesai: string | null
         }
@@ -334,7 +343,7 @@ export type Database = {
           id?: string
           nama: string
           nomor_kaidah: number
-          status?: "draft" | "berjalan" | "selesai"
+          status?: string
           tanggal_mulai: string
           tanggal_selesai?: string | null
         }
@@ -342,7 +351,7 @@ export type Database = {
           id?: string
           nama?: string
           nomor_kaidah?: number
-          status?: "draft" | "berjalan" | "selesai"
+          status?: string
           tanggal_mulai?: string
           tanggal_selesai?: string | null
         }
@@ -353,7 +362,7 @@ export type Database = {
           id: string
           kloter_daftar_id: string
           season_id: string
-          sumber: "beli" | "gratis"
+          sumber: string
           tanggal_diperoleh: string
           user_id: string
         }
@@ -361,7 +370,7 @@ export type Database = {
           id?: string
           kloter_daftar_id: string
           season_id: string
-          sumber: "beli" | "gratis"
+          sumber: string
           tanggal_diperoleh?: string
           user_id: string
         }
@@ -369,11 +378,18 @@ export type Database = {
           id?: string
           kloter_daftar_id?: string
           season_id?: string
-          sumber?: "beli" | "gratis"
+          sumber?: string
           tanggal_diperoleh?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_seasons_kloter_daftar_id_fkey"
+            columns: ["kloter_daftar_id"]
+            isOneToOne: false
+            referencedRelation: "kloter_aktif"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_seasons_kloter_daftar_id_fkey"
             columns: ["kloter_daftar_id"]
@@ -488,7 +504,7 @@ export type Database = {
           id: string
           kloter_id: string
           nilai: Json | null
-          status: "menunggu" | "dinilai"
+          status: string
           user_id: string
           versi: number
         }
@@ -498,7 +514,7 @@ export type Database = {
           id?: string
           kloter_id: string
           nilai?: Json | null
-          status?: "menunggu" | "dinilai"
+          status?: string
           user_id: string
           versi?: number
         }
@@ -508,11 +524,18 @@ export type Database = {
           id?: string
           kloter_id?: string
           nilai?: Json | null
-          status?: "menunggu" | "dinilai"
+          status?: string
           user_id?: string
           versi?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "writing_submissions_kloter_id_fkey"
+            columns: ["kloter_id"]
+            isOneToOne: false
+            referencedRelation: "kloter_aktif"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "writing_submissions_kloter_id_fkey"
             columns: ["kloter_id"]
@@ -615,10 +638,17 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       setor_karya: {
-        Args: {
-          p_file_url: string
+        Args: { p_file_url: string }
+        Returns: {
+          created_at: string
+          file_url: string
+          id: string
+          kloter_id: string
+          nilai: Json | null
+          status: string
+          user_id: string
+          versi: number
         }
-        Returns: Database["public"]["Tables"]["writing_submissions"]["Row"]
         SetofOptions: {
           from: "*"
           to: "writing_submissions"
@@ -778,3 +808,4 @@ export const Constants = {
     },
   },
 } as const
+
