@@ -6,9 +6,7 @@ import { createBooking, BookingError } from '@/features/booking/server/booking-s
 export async function POST(request: Request) {
   const supabase = await createClient()
 
-  // 1. Auth check — cuma user yang login yang boleh booking.
-  //    Ini juga otomatis ngeblok akses dari luar tanpa session valid,
-  //    baik dari web maupun native app nanti.
+  // 1. Auth check
   const {
     data: { user },
     error: authError,
@@ -18,7 +16,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Kamu harus login dulu' }, { status: 401 })
   }
 
-  // 2. Validasi body JSON + input pakai Zod
+  // 2. Parse & validate body JSON
   let body: unknown
 
   try {
@@ -39,9 +37,13 @@ export async function POST(request: Request) {
     )
   }
 
-  // 3. Jalanin business logic (lewat RPC, aman dari race condition kuota)
+  // 3. Delegate to service layer
   try {
-    const booking = await createBooking(supabase, parsed.data.session_id)
+    const booking = await createBooking(
+      supabase,
+      parsed.data.session_id,
+      parsed.data.jumlah_anak
+    )
     return NextResponse.json({ data: booking }, { status: 201 })
   } catch (err) {
     if (err instanceof BookingError) {

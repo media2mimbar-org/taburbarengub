@@ -4,24 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { getProfileGate } from '@/features/profile/server/profile-service'
 import { formatDateTime } from '@/lib/format'
 
-function sessionTypeLabel(type: string) {
-  return type === 'offline' ? 'Offline' : 'Online'
-}
-
-function sessionTypeStyle(type: string) {
-  return {
-    display: 'inline-flex',
-    alignItems: 'center',
-    borderRadius: 999,
-    padding: '4px 10px',
-    fontSize: 12,
-    fontWeight: 700,
-    background: type === 'offline' ? '#ecfdf5' : '#eff6ff',
-    color: type === 'offline' ? '#047857' : '#1d4ed8',
-    border: `1px solid ${type === 'offline' ? '#a7f3d0' : '#bfdbfe'}`,
-  } as const
-}
-
 function bookingStatusLabel(status: string) {
   if (status === 'checked_in') return 'Sudah check-in'
   if (status === 'cancelled') return 'Tiket dibatalkan'
@@ -300,7 +282,6 @@ export default async function Home() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 18 }}>
           {upcomingSessions.map((session) => {
             const sisaKuota = Math.max(session.kapasitas - session.kuota_terisi, 0)
-            const isOffline = session.tipe === 'offline'
             const isFull = sisaKuota <= 0
             const existingBooking = bookingBySessionId.get(session.id)
 
@@ -325,7 +306,6 @@ export default async function Home() {
                         {bookingStatusLabel(existingBooking.status)}
                       </span>
                     )}
-                    <span style={sessionTypeStyle(session.tipe)}>{sessionTypeLabel(session.tipe)}</span>
                   </div>
                 </div>
 
@@ -339,13 +319,9 @@ export default async function Home() {
                 </p>
 
                 <div style={{ fontSize: 14, color: '#374151' }}>
-                  {isOffline ? (
-                    <strong>
-                      Sisa kuota: {sisaKuota} / {session.kapasitas}
-                    </strong>
-                  ) : (
-                    <strong>Sesi online terkunci untuk Fase 1</strong>
-                  )}
+                  <strong>
+                    Sisa kuota: {sisaKuota} / {session.kapasitas}
+                  </strong>
                 </div>
 
                 {existingBooking && existingBooking.status !== 'cancelled' ? (
@@ -365,18 +341,18 @@ export default async function Home() {
                 ) : (
                   <Link
                     href={`/sesi/${session.id}`}
-                    aria-disabled={!isOffline || isFull}
+                    aria-disabled={isFull}
                     style={{
                       textAlign: 'center',
                       padding: '10px 14px',
                       borderRadius: 10,
                       fontWeight: 700,
-                      background: !isOffline || isFull ? '#f3f4f6' : '#111827',
-                      color: !isOffline || isFull ? '#9ca3af' : '#ffffff',
-                      pointerEvents: !isOffline || isFull ? 'none' : 'auto',
+                      background: isFull ? '#f3f4f6' : '#111827',
+                      color: isFull ? '#9ca3af' : '#ffffff',
+                      pointerEvents: isFull ? 'none' : 'auto',
                     }}
                   >
-                    {!isOffline ? 'Terkunci' : isFull ? 'Kuota Penuh' : 'Lihat Detail'}
+                    {isFull ? 'Kuota Penuh' : 'Lihat Detail'}
                   </Link>
                 )}
               </article>
@@ -426,7 +402,6 @@ export default async function Home() {
                           {bookingStatusLabel(existingBooking.status)}
                         </span>
                       )}
-                      <span style={sessionTypeStyle(session.tipe)}>{sessionTypeLabel(session.tipe)}</span>
                     </div>
                   </div>
 

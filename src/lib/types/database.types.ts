@@ -39,6 +39,7 @@ export type Database = {
           checked_in_at: string | null
           created_at: string
           id: string
+          jumlah_anak: number
           qr_token: string
           session_id: string
           status: string
@@ -48,6 +49,7 @@ export type Database = {
           checked_in_at?: string | null
           created_at?: string
           id?: string
+          jumlah_anak?: number
           qr_token: string
           session_id: string
           status?: string
@@ -57,6 +59,7 @@ export type Database = {
           checked_in_at?: string | null
           created_at?: string
           id?: string
+          jumlah_anak?: number
           qr_token?: string
           session_id?: string
           status?: string
@@ -124,39 +127,42 @@ export type Database = {
           deskripsi: string | null
           id: string
           kapasitas: number
+          kapasitas_kids: number
           kloter_id: string | null
+          kuota_kids_terisi: number
           kuota_terisi: number
           lokasi_atau_link: string | null
           nama_sesi: string
           status: string
           tanggal_waktu: string
-          tipe: string
         }
         Insert: {
           created_at?: string
           deskripsi?: string | null
           id?: string
           kapasitas: number
+          kapasitas_kids?: number
           kloter_id?: string | null
+          kuota_kids_terisi?: number
           kuota_terisi?: number
           lokasi_atau_link?: string | null
           nama_sesi: string
           status?: string
           tanggal_waktu: string
-          tipe: string
         }
         Update: {
           created_at?: string
           deskripsi?: string | null
           id?: string
           kapasitas?: number
+          kapasitas_kids?: number
           kloter_id?: string | null
+          kuota_kids_terisi?: number
           kuota_terisi?: number
           lokasi_atau_link?: string | null
           nama_sesi?: string
           status?: string
           tanggal_waktu?: string
-          tipe?: string
         }
         Relationships: [
           {
@@ -236,6 +242,49 @@ export type Database = {
             columns: ["season_id"]
             isOneToOne: false
             referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kloter_mentors: {
+        Row: {
+          created_at: string
+          id: string
+          kloter_id: string
+          mentor_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kloter_id: string
+          mentor_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kloter_id?: string
+          mentor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kloter_mentors_kloter_id_fkey"
+            columns: ["kloter_id"]
+            isOneToOne: false
+            referencedRelation: "kloter_aktif"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kloter_mentors_kloter_id_fkey"
+            columns: ["kloter_id"]
+            isOneToOne: false
+            referencedRelation: "kloters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kloter_mentors_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -619,11 +668,12 @@ export type Database = {
         }
       }
       create_booking: {
-        Args: { p_session_id: string }
+        Args: { p_jumlah_anak?: number; p_session_id: string }
         Returns: {
           checked_in_at: string | null
           created_at: string
           id: string
+          jumlah_anak: number
           qr_token: string
           session_id: string
           status: string

@@ -38,7 +38,7 @@ export default async function AdminPesertaPage({
 
   const { data: sessions, error: sessionsError } = await supabase
     .from('event_sessions')
-    .select('id, nama_sesi, tanggal_waktu, tipe, status, kapasitas, kuota_terisi')
+    .select('id, nama_sesi, tanggal_waktu, status, kapasitas, kuota_terisi, kapasitas_kids, kuota_kids_terisi')
     .order('tanggal_waktu', { ascending: true })
 
   const safeSessions = sessions ?? []

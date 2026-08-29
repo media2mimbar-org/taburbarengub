@@ -8,12 +8,13 @@ type EventSession = Database['public']['Tables']['event_sessions']['Row']
 
 type SessionFormState = {
   nama_sesi: string
-  tipe: 'offline' | 'online'
   tanggal_waktu: string
   lokasi_atau_link: string
   deskripsi: string
   kapasitas: string
+  kapasitas_kids: string
   status: 'draft' | 'published' | 'cancelled'
+  kloter_id: string
 }
 
 function toDateTimeLocal(value: string) {
@@ -30,15 +31,16 @@ function emptyToNull(value: string) {
 function createInitialState(session?: EventSession): SessionFormState {
   return {
     nama_sesi: session?.nama_sesi ?? '',
-    tipe: session?.tipe === 'online' ? 'online' : 'offline',
     tanggal_waktu: session ? toDateTimeLocal(session.tanggal_waktu) : '',
     lokasi_atau_link: session?.lokasi_atau_link ?? '',
     deskripsi: session?.deskripsi ?? '',
     kapasitas: String(session?.kapasitas ?? 60),
+    kapasitas_kids: String(session?.kapasitas_kids ?? 0),
     status:
       session?.status === 'published' || session?.status === 'cancelled'
         ? session.status
         : 'draft',
+    kloter_id: session?.kloter_id ?? '',
   }
 }
 
@@ -50,6 +52,7 @@ export function SessionForm({ session }: { session?: EventSession }) {
 
   const isEditing = Boolean(session)
   const kuotaTerisi = session?.kuota_terisi ?? 0
+  const kuotaKidsTerisi = session?.kuota_kids_terisi ?? 0
 
   function updateField<K extends keyof SessionFormState>(field: K, value: SessionFormState[K]) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -60,6 +63,7 @@ export function SessionForm({ session }: { session?: EventSession }) {
     setError(null)
 
     const kapasitas = Number(form.kapasitas)
+    const kapasitasKids = Number(form.kapasitas_kids)
 
     if (!form.nama_sesi.trim()) {
       setError('Nama sesi wajib diisi')
@@ -76,8 +80,18 @@ export function SessionForm({ session }: { session?: EventSession }) {
       return
     }
 
+    if (!Number.isInteger(kapasitasKids) || kapasitasKids < 0) {
+      setError('Kapasitas Kids Corner harus berupa angka 0 atau lebih')
+      return
+    }
+
     if (isEditing && kapasitas < kuotaTerisi) {
       setError(`Kapasitas tidak boleh lebih kecil dari kuota terisi saat ini (${kuotaTerisi})`)
+      return
+    }
+
+    if (isEditing && kapasitasKids < kuotaKidsTerisi) {
+      setError(`Kapasitas Kids Corner tidak boleh lebih kecil dari kuota terisi saat ini (${kuotaKidsTerisi})`)
       return
     }
 
@@ -85,12 +99,13 @@ export function SessionForm({ session }: { session?: EventSession }) {
 
     const payload = {
       nama_sesi: form.nama_sesi.trim(),
-      tipe: form.tipe,
       tanggal_waktu: new Date(form.tanggal_waktu).toISOString(),
       lokasi_atau_link: emptyToNull(form.lokasi_atau_link),
       deskripsi: emptyToNull(form.deskripsi),
       kapasitas,
+      kapasitas_kids: kapasitasKids,
       status: form.status,
+      kloter_id: emptyToNull(form.kloter_id),
     }
 
     try {
@@ -130,7 +145,7 @@ export function SessionForm({ session }: { session?: EventSession }) {
   return (
     <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 18 }}>
       <label style={{ display: 'grid', gap: 6 }}>
-        <span style={{ fontWeight: 700 }}>Nama Sesi</span>
+        <span style={{ fontWeight: 700 }}>Nama Sesi Kajian</span>
         <input
           value={form.nama_sesi}
           onChange={(event) => updateField('nama_sesi', event.target.value)}
@@ -140,18 +155,6 @@ export function SessionForm({ session }: { session?: EventSession }) {
       </label>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
-        <label style={{ display: 'grid', gap: 6 }}>
-          <span style={{ fontWeight: 700 }}>Tipe</span>
-          <select
-            value={form.tipe}
-            onChange={(event) => updateField('tipe', event.target.value as SessionFormState['tipe'])}
-            style={{ padding: 11, borderRadius: 10, border: '1px solid #d1d5db' }}
-          >
-            <option value="offline">Offline</option>
-            <option value="online">Online</option>
-          </select>
-        </label>
-
         <label style={{ display: 'grid', gap: 6 }}>
           <span style={{ fontWeight: 700 }}>Status</span>
           <select
@@ -164,26 +167,25 @@ export function SessionForm({ session }: { session?: EventSession }) {
             <option value="cancelled">Cancelled</option>
           </select>
         </label>
+
+        <label style={{ display: 'grid', gap: 6 }}>
+          <span style={{ fontWeight: 700 }}>Tanggal & Waktu</span>
+          <input
+            type="datetime-local"
+            value={form.tanggal_waktu}
+            onChange={(event) => updateField('tanggal_waktu', event.target.value)}
+            required
+            style={{ padding: 11, borderRadius: 10, border: '1px solid #d1d5db' }}
+          />
+        </label>
       </div>
 
       <label style={{ display: 'grid', gap: 6 }}>
-        <span style={{ fontWeight: 700 }}>Tanggal & Waktu</span>
-        <input
-          type="datetime-local"
-          value={form.tanggal_waktu}
-          onChange={(event) => updateField('tanggal_waktu', event.target.value)}
-          required
-          style={{ padding: 11, borderRadius: 10, border: '1px solid #d1d5db' }}
-        />
-        <span style={{ color: '#6b7280', fontSize: 13 }}>Disimpan sebagai timestamptz di database.</span>
-      </label>
-
-      <label style={{ display: 'grid', gap: 6 }}>
-        <span style={{ fontWeight: 700 }}>Lokasi atau Link/Catatan</span>
+        <span style={{ fontWeight: 700 }}>Lokasi / Alamat Venue</span>
         <input
           value={form.lokasi_atau_link}
           onChange={(event) => updateField('lokasi_atau_link', event.target.value)}
-          placeholder="Contoh: Aula Masjid / catatan online"
+          placeholder="Contoh: Masjid Raden Patah UB / Gedung Widyaloka"
           style={{ padding: 11, borderRadius: 10, border: '1px solid #d1d5db' }}
         />
       </label>
@@ -198,20 +200,37 @@ export function SessionForm({ session }: { session?: EventSession }) {
         />
       </label>
 
-      <label style={{ display: 'grid', gap: 6 }}>
-        <span style={{ fontWeight: 700 }}>Kapasitas</span>
-        <input
-          type="number"
-          min={Math.max(1, kuotaTerisi)}
-          value={form.kapasitas}
-          onChange={(event) => updateField('kapasitas', event.target.value)}
-          required
-          style={{ padding: 11, borderRadius: 10, border: '1px solid #d1d5db' }}
-        />
-        <span style={{ color: '#6b7280', fontSize: 13 }}>
-          Kuota terisi saat ini: {kuotaTerisi}. Field ini read-only dan dikelola sistem booking.
-        </span>
-      </label>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
+        <label style={{ display: 'grid', gap: 6 }}>
+          <span style={{ fontWeight: 700 }}>Kapasitas Kursi Dewasa</span>
+          <input
+            type="number"
+            min={Math.max(1, kuotaTerisi)}
+            value={form.kapasitas}
+            onChange={(event) => updateField('kapasitas', event.target.value)}
+            required
+            style={{ padding: 11, borderRadius: 10, border: '1px solid #d1d5db' }}
+          />
+          <span style={{ color: '#6b7280', fontSize: 13 }}>
+            Terisi: {kuotaTerisi} kursi
+          </span>
+        </label>
+
+        <label style={{ display: 'grid', gap: 6 }}>
+          <span style={{ fontWeight: 700 }}>Kapasitas Kids Corner</span>
+          <input
+            type="number"
+            min={Math.max(0, kuotaKidsTerisi)}
+            value={form.kapasitas_kids}
+            onChange={(event) => updateField('kapasitas_kids', event.target.value)}
+            required
+            style={{ padding: 11, borderRadius: 10, border: '1px solid #d1d5db' }}
+          />
+          <span style={{ color: '#6b7280', fontSize: 13 }}>
+            Terisi: {kuotaKidsTerisi} anak
+          </span>
+        </label>
+      </div>
 
       {error && (
         <div role="alert" style={{ padding: 14, border: '1px solid #fecaca', background: '#fef2f2', color: '#991b1b', borderRadius: 12 }}>

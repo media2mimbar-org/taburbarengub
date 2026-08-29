@@ -10,7 +10,6 @@ import { ProfileCompletionPrompt } from '@/features/profile/client/profile-compl
 type SessionSummary = {
   id: string
   nama_sesi: string
-  tipe: string
   tanggal_waktu: string
   lokasi_atau_link: string | null
 }
@@ -30,7 +29,7 @@ export default async function TiketSayaPage() {
 
   const { data: bookings, error: bookingsError } = await supabase
     .from('bookings')
-    .select('id, session_id, status, created_at, checked_in_at')
+    .select('id, session_id, status, created_at, checked_in_at, jumlah_anak')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -40,7 +39,7 @@ export default async function TiketSayaPage() {
   const { data: sessions } = sessionIds.length
     ? await supabase
         .from('event_sessions')
-        .select('id, nama_sesi, tipe, tanggal_waktu, lokasi_atau_link')
+        .select('id, nama_sesi, tanggal_waktu, lokasi_atau_link')
         .in('id', sessionIds)
     : { data: [] }
 
@@ -198,7 +197,11 @@ export default async function TiketSayaPage() {
                     <div style={{ color: '#4b5563', lineHeight: 1.7 }}>
                       <p>{formatDateTime(session.tanggal_waktu)} WIB</p>
                       {session.lokasi_atau_link && <p>{session.lokasi_atau_link}</p>}
-                      <p style={{ marginTop: 8, textTransform: 'capitalize' }}>Tipe: {session.tipe}</p>
+                      {booking.jumlah_anak > 0 && (
+                        <p style={{ marginTop: 6, color: '#047857', fontWeight: 600 }}>
+                          Kids Corner: {booking.jumlah_anak} anak
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <p style={{ color: '#b91c1c', lineHeight: 1.6 }}>

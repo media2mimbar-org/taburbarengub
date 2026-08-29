@@ -26,25 +26,20 @@ on conflict (id) do update set
 
 -- Satu sesi per skenario yang perlu diuji di UI.
 insert into public.event_sessions
-  (nama_sesi, tipe, tanggal_waktu, lokasi_atau_link, deskripsi, kapasitas, kuota_terisi, status)
+  (nama_sesi, tanggal_waktu, lokasi_atau_link, deskripsi, kapasitas, kuota_terisi, kapasitas_kids, kuota_kids_terisi, status)
 values
-  -- Jalur bahagia: bisa dibooking.
-  ('Sesi 1 — Tadabbur Pembuka', 'offline', now() + interval '10 days',
-   'Masjid Raden Patah UB', 'Sesi pembuka yang terbuka untuk umum.', 60, 0, 'published'),
+  -- Jalur bahagia: bisa dibooking + Kids Corner tersedia.
+  ('Sesi 1 — Tadabbur Pembuka', now() + interval '10 days',
+   'Masjid Raden Patah UB', 'Sesi pembuka yang terbuka untuk umum.', 60, 0, 15, 0, 'published'),
 
   -- Tombol harus mati dengan alasan "Kuota Penuh".
-  ('Sesi 2 — Kelas Penuh', 'offline', now() + interval '14 days',
-   'Gedung Widyaloka UB', 'Dipakai untuk menguji tampilan kuota habis.', 5, 5, 'published'),
-
-  -- Tombol harus mati dengan alasan "Terkunci" (Fase 2).
-  ('Sesi 3 — Kelas Online', 'online', now() + interval '21 days',
-   'Link Zoom dikirim ke member', 'Sesi online terkunci sampai membership aktif.', 40, 0, 'published'),
+  ('Sesi 2 — Kelas Penuh', now() + interval '14 days',
+   'Gedung Widyaloka UB', 'Dipakai untuk menguji tampilan kuota habis.', 5, 5, 0, 0, 'published'),
 
   -- Tidak boleh muncul di landing sama sekali.
-  ('Sesi 4 — Draft Belum Terbit', 'offline', now() + interval '30 days',
-   'Belum ditentukan', 'Masih draft, hanya admin yang boleh melihat.', 50, 0, 'draft')
+  ('Sesi 3 — Draft Belum Terbit', now() + interval '30 days',
+   'Belum ditentukan', 'Masih draft, hanya admin yang boleh melihat.', 50, 0, 10, 0, 'draft')
 on conflict do nothing;
-
 -- ============================================================
 -- Seed Data Season 1 & Kloter 1
 -- ============================================================

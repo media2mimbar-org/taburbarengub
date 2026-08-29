@@ -112,7 +112,6 @@ export default async function AdminSessionDetailPage({
               {session.nama_sesi}
             </h1>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
-              <Badge label={session.tipe} status={session.tipe} />
               <Badge label={session.status} status={session.status} />
             </div>
           </div>
@@ -167,11 +166,14 @@ export default async function AdminSessionDetailPage({
             <strong>{checkedInCount}</strong>
           </div>
           <div style={{ border: '1px solid #e5e7eb', background: '#fff', borderRadius: 14, padding: 16 }}>
-            <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 4 }}>Sisa kuota</p>
+            <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 4 }}>Kids Corner</p>
+            <strong>{session.kuota_kids_terisi}</strong> / {session.kapasitas_kids}
+          </div>
+          <div style={{ border: '1px solid #e5e7eb', background: '#fff', borderRadius: 14, padding: 16 }}>
+            <p style={{ color: '#6b7280', fontSize: 13, marginBottom: 4 }}>Sisa kursi</p>
             <strong>{sisaKuota}</strong>
           </div>
         </section>
-
         <section style={{ border: '1px solid #e5e7eb', background: '#fff', borderRadius: 16, padding: 18, marginBottom: 18 }}>
           <h2 style={{ fontSize: 20, marginBottom: 10 }}>Informasi Sesi</h2>
           <div style={{ display: 'grid', gap: 8, color: '#4b5563', lineHeight: 1.6 }}>

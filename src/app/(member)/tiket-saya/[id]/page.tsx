@@ -8,7 +8,6 @@ import { TicketQrCode } from '@/features/booking/client/ticket-qr-code'
 type SessionSummary = {
   id: string
   nama_sesi: string
-  tipe: string
   tanggal_waktu: string
   lokasi_atau_link: string | null
   deskripsi: string | null
@@ -32,7 +31,7 @@ export default async function TicketDetailPage({
 
   const { data: booking, error: bookingError } = await supabase
     .from('bookings')
-    .select('id, session_id, status, qr_token, created_at, checked_in_at')
+    .select('id, session_id, status, qr_token, created_at, checked_in_at, jumlah_anak')
     .eq('id', id)
     .eq('user_id', user.id)
     .maybeSingle()
@@ -43,10 +42,9 @@ export default async function TicketDetailPage({
 
   const { data: session } = await supabase
     .from('event_sessions')
-    .select('id, nama_sesi, tipe, tanggal_waktu, lokasi_atau_link, deskripsi')
+    .select('id, nama_sesi, tanggal_waktu, lokasi_atau_link, deskripsi')
     .eq('id', booking.session_id)
     .maybeSingle()
-
   const sessionData = session as SessionSummary | null
   const canShowQr = booking.status !== 'cancelled'
 
@@ -85,7 +83,11 @@ export default async function TicketDetailPage({
             <div style={{ color: '#4b5563', lineHeight: 1.7, marginTop: 16 }}>
               <p>{formatDateTime(sessionData.tanggal_waktu)} WIB</p>
               {sessionData.lokasi_atau_link && <p>{sessionData.lokasi_atau_link}</p>}
-              <p style={{ marginTop: 8, textTransform: 'capitalize' }}>Tipe: {sessionData.tipe}</p>
+              {booking.jumlah_anak > 0 && (
+                <p style={{ marginTop: 6, color: '#047857', fontWeight: 600 }}>
+                  Kids Corner: {booking.jumlah_anak} anak
+                </p>
+              )}
             </div>
           ) : (
             <p style={{ color: '#b91c1c', lineHeight: 1.6, marginTop: 16 }}>

@@ -73,13 +73,6 @@ function BookingCtaAction({
         </button>
       )
 
-    case 'online_locked':
-      return (
-        <button disabled style={disabledButtonStyle}>
-          Sesi online terkunci
-        </button>
-      )
-
     case 'full':
       return (
         <button disabled style={disabledButtonStyle}>
@@ -194,7 +187,7 @@ export default async function SessionDetailPage({
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start' }}>
             <div>
               <p style={{ color: '#6b7280', fontWeight: 700, marginBottom: 8 }}>
-                {session.tipe === 'offline' ? 'Sesi Offline' : 'Sesi Online'}
+                Kajian Pembuka Offline
               </p>
               <h1 style={{ fontSize: 36, lineHeight: 1.1, letterSpacing: -0.8 }}>
                 {session.nama_sesi}
@@ -206,12 +199,12 @@ export default async function SessionDetailPage({
                 padding: '6px 12px',
                 fontSize: 13,
                 fontWeight: 800,
-                background: session.tipe === 'offline' ? '#ecfdf5' : '#eff6ff',
-                color: session.tipe === 'offline' ? '#047857' : '#1d4ed8',
-                border: `1px solid ${session.tipe === 'offline' ? '#a7f3d0' : '#bfdbfe'}`,
+                background: '#ecfdf5',
+                color: '#047857',
+                border: '1px solid #a7f3d0',
               }}
             >
-              {session.tipe.toUpperCase()}
+              OFFLINE
             </span>
           </div>
 
@@ -224,31 +217,37 @@ export default async function SessionDetailPage({
             {session.lokasi_atau_link && (
               <div>
                 <dt style={{ fontSize: 13, color: '#6b7280', fontWeight: 700 }}>
-                  {session.tipe === 'offline' ? 'Lokasi' : 'Catatan online'}
+                  Lokasi Venue
                 </dt>
                 <dd style={{ marginTop: 4 }}>{session.lokasi_atau_link}</dd>
               </div>
             )}
 
             <div>
-              <dt style={{ fontSize: 13, color: '#6b7280', fontWeight: 700 }}>Kuota</dt>
+              <dt style={{ fontSize: 13, color: '#6b7280', fontWeight: 700 }}>Kuota Kursi</dt>
               <dd style={{ marginTop: 4 }}>
                 {isPast
                   ? 'Sesi sudah selesai'
-                  : session.tipe === 'offline'
-                    ? `${sisaKuota} seat tersisa dari ${session.kapasitas}`
-                    : 'Sesi online belum dibuka untuk booking di Fase 1'}
+                  : `${sisaKuota} kursi tersisa dari ${session.kapasitas}`}
               </dd>
             </div>
+            {session.kapasitas_kids > 0 && (
+              <div>
+                <dt style={{ fontSize: 13, color: '#6b7280', fontWeight: 700 }}>Kids Corner</dt>
+                <dd style={{ marginTop: 4 }}>
+                  {isPast
+                    ? 'Sesi sudah selesai'
+                    : `${Math.max(session.kapasitas_kids - session.kuota_kids_terisi, 0)} kuota anak tersisa dari ${session.kapasitas_kids}`}
+                </dd>
+              </div>
+            )}
           </dl>
-
           {session.deskripsi && (
             <section style={{ marginTop: 28 }}>
               <h2 style={{ fontSize: 20, marginBottom: 8 }}>Deskripsi</h2>
               <p style={{ color: '#4b5563', lineHeight: 1.8 }}>{session.deskripsi}</p>
             </section>
           )}
-
           <div style={{ marginTop: 32, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <BookingCtaAction
               cta={cta}
