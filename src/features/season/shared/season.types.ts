@@ -43,17 +43,31 @@ export type CertificateType = Database['public']['Tables']['certificates']['Row'
 export type SeasonSource = Database['public']['Tables']['user_seasons']['Row']['sumber']
 
 export interface KloterWithPhases extends Kloter {
-  phases: KloterPhase[]
+  phases?: KloterPhase[]
+  kloter_phases?: KloterPhase[]
 }
 
 export interface SeasonWithPhases extends Season {
   kloters: KloterWithPhases[]
 }
 
+export interface SeasonOverview extends Season {
+  kloters: (Kloter & { kloter_phases?: KloterPhase[] })[]
+  kelas: Kelas[]
+}
+
 export interface UserSeasonOwnership {
-  ownsSeason: boolean
+  owned: boolean
+  ownsSeason?: boolean
+  userSeasonId: string
   seasonId: string
-  userSeasonId?: string
-  sumber?: SeasonSource
-  tanggalDiperoleh?: string
+  kloterDaftarId: string
+  tanggalDiperoleh: string
+  sumber: SeasonSource
+  menyimakOpensAt: string | null
+}
+
+export interface PublicSeasonCalendar {
+  activeKloter: KloterAktif | null
+  currentSeason: Season | null
 }
