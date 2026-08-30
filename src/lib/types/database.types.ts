@@ -477,7 +477,7 @@ export type Database = {
           no_hp: string | null
           profesi: string | null
           role: string
-          usia: number | null
+          tanggal_lahir: string | null
         }
         Insert: {
           created_at?: string
@@ -490,7 +490,7 @@ export type Database = {
           no_hp?: string | null
           profesi?: string | null
           role?: string
-          usia?: number | null
+          tanggal_lahir?: string | null
         }
         Update: {
           created_at?: string
@@ -503,7 +503,7 @@ export type Database = {
           no_hp?: string | null
           profesi?: string | null
           role?: string
-          usia?: number | null
+          tanggal_lahir?: string | null
         }
         Relationships: []
       }
@@ -708,7 +708,7 @@ export type Database = {
           p_nama_panggilan?: string
           p_no_hp?: string
           p_profesi?: string
-          p_usia?: number
+          p_tanggal_lahir?: string
         }
         Returns: {
           created_at: string
@@ -721,7 +721,7 @@ export type Database = {
           no_hp: string | null
           profesi: string | null
           role: string
-          usia: number | null
+          tanggal_lahir: string | null
         }
         SetofOptions: {
           from: "*"

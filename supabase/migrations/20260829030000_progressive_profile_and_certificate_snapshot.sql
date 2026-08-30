@@ -12,7 +12,7 @@ declare
   v_nama_panggilan text;
   v_no_hp text;
   v_jenis_kelamin text;
-  v_usia integer;
+  v_tanggal_lahir date;
   v_profesi text;
   v_domisili text;
 begin
@@ -39,11 +39,13 @@ begin
   end if;
 
   begin
-    v_usia := nullif(new.raw_user_meta_data->>'usia', '')::integer;
-  exception when invalid_text_representation then
-    v_usia := null;
+    v_tanggal_lahir := nullif(new.raw_user_meta_data->>'tanggal_lahir', '')::date;
+    if v_tanggal_lahir > current_date or v_tanggal_lahir < '1900-01-01' then
+      v_tanggal_lahir := null;
+    end if;
+  exception when others then
+    v_tanggal_lahir := null;
   end;
-
   insert into public.users (
     id,
     nama,
@@ -51,7 +53,7 @@ begin
     email,
     no_hp,
     jenis_kelamin,
-    usia,
+    tanggal_lahir,
     profesi,
     domisili
   )
@@ -62,12 +64,11 @@ begin
     new.email,
     v_no_hp,
     v_jenis_kelamin,
-    v_usia,
+    v_tanggal_lahir,
     v_profesi,
     v_domisili
   )
   on conflict (id) do nothing;
-
   return new;
 end;
 $$;
@@ -75,15 +76,18 @@ $$;
 -- ============================================================
 -- 2. Modifikasi Skema Tabel Users, Event Sessions, & Certificates
 -- ============================================================
--- A. Bersihkan profile_completed & tambah jenis_kelamin di users
+-- A. Bersihkan profile_completed & usia, tambah jenis_kelamin & tanggal_lahir di users
 alter table public.users
   drop constraint if exists profile_completed_requires_full_profile,
-  drop column if exists profile_completed;
+  drop constraint if exists users_usia_check,
+  drop column if exists profile_completed,
+  drop column if exists usia;
 
 alter table public.users
   add column if not exists jenis_kelamin text
-  check (jenis_kelamin in ('ikhwan', 'akhwat'));
-
+  check (jenis_kelamin in ('ikhwan', 'akhwat')),
+  add column if not exists tanggal_lahir date
+  check (tanggal_lahir is null or (tanggal_lahir <= current_date and tanggal_lahir >= '1900-01-01'));
 -- B. Pastikan kapasitas_kids & kuota_kids_terisi NOT NULL DEFAULT 0 (Fail-closed)
 update public.event_sessions
 set kapasitas_kids = coalesce(kapasitas_kids, 0),
@@ -108,6 +112,7 @@ drop function if exists public.create_booking(uuid);
 drop function if exists public.create_booking(uuid, integer);
 drop function if exists public.update_profile(text, text, text, integer, text, text);
 drop function if exists public.update_profile(text, text, text, text, integer, text, text);
+drop function if exists public.update_profile(text, text, text, text, date, text, text);
 -- ============================================================
 -- 4. Buat RPC update_profile (Fleksibel, Normalisasi No. HP, Aman auth.uid())
 -- ============================================================
@@ -116,7 +121,7 @@ create or replace function public.update_profile(
   p_nama_panggilan text default null,
   p_no_hp text default null,
   p_jenis_kelamin text default null,
-  p_usia integer default null,
+  p_tanggal_lahir date default null,
   p_profesi text default null,
   p_domisili text default null
 )
@@ -139,6 +144,10 @@ begin
       using errcode = '22000', hint = 'JENIS_KELAMIN_TIDAK_VALID';
   end if;
 
+  if p_tanggal_lahir is not null and (p_tanggal_lahir > current_date or p_tanggal_lahir < '1900-01-01') then
+    raise exception 'Tanggal lahir tidak valid'
+      using errcode = '22000', hint = 'TANGGAL_LAHIR_TIDAK_VALID';
+  end if;
   if p_no_hp is not null and trim(p_no_hp) <> '' then
     v_clean_no_hp := trim(p_no_hp);
     if v_clean_no_hp !~ '^(\+62|62|0)8[0-9]{8,12}$' then
@@ -161,7 +170,7 @@ begin
       nama_panggilan = coalesce(nullif(trim(p_nama_panggilan), ''), nama_panggilan),
       no_hp = coalesce(v_clean_no_hp, no_hp),
       jenis_kelamin = coalesce(p_jenis_kelamin, jenis_kelamin),
-      usia = coalesce(p_usia, usia),
+      tanggal_lahir = coalesce(p_tanggal_lahir, tanggal_lahir),
       profesi = coalesce(nullif(trim(p_profesi), ''), profesi),
       domisili = coalesce(nullif(trim(p_domisili), ''), domisili)
   where id = (select auth.uid())
@@ -289,8 +298,8 @@ $$;
 -- ============================================================
 -- 6. Set Grants Keamanan (Termasuk create_booking yang baru di-DROP)
 -- ============================================================
-revoke all on function public.update_profile(text, text, text, text, integer, text, text) from public, anon;
-grant execute on function public.update_profile(text, text, text, text, integer, text, text) to authenticated;
+revoke all on function public.update_profile(text, text, text, text, date, text, text) from public, anon;
+grant execute on function public.update_profile(text, text, text, text, date, text, text) to authenticated;
 
 revoke all on function public.create_booking(uuid, integer) from public, anon;
 grant execute on function public.create_booking(uuid, integer) to authenticated;

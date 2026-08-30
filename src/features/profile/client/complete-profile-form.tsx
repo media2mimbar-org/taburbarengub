@@ -37,9 +37,6 @@ export function CompleteProfileForm({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
-
-    const usia = Number(form.usia)
-
     if (!form.nama.trim()) {
       setError('Nama lengkap wajib diisi')
       return
@@ -50,8 +47,8 @@ export function CompleteProfileForm({
       return
     }
 
-    if (!Number.isInteger(usia) || usia <= 0) {
-      setError('Usia harus berupa angka lebih dari 0')
+    if (form.tanggal_lahir && !/^\d{4}-\d{2}-\d{2}$/.test(form.tanggal_lahir)) {
+      setError('Format tanggal lahir tidak valid')
       return
     }
 
@@ -120,13 +117,11 @@ export function CompleteProfileForm({
         </label>
 
         <label style={{ display: 'grid', gap: 6, minWidth: 0 }}>
-          <span style={{ fontWeight: 700 }}>Usia</span>
+          <span style={{ fontWeight: 700 }}>Tanggal Lahir</span>
           <input
-            type="number"
-            min={1}
-            value={form.usia}
-            onChange={updateField('usia')}
-            required
+            type="date"
+            value={form.tanggal_lahir}
+            onChange={updateField('tanggal_lahir')}
             style={inputStyle}
           />
         </label>

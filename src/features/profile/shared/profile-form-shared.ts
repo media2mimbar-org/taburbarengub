@@ -9,7 +9,7 @@ export type ProfileCompletionData = Pick<
   | 'nama_panggilan'
   | 'no_hp'
   | 'jenis_kelamin'
-  | 'usia'
+  | 'tanggal_lahir'
   | 'profesi'
   | 'domisili'
 >
@@ -19,7 +19,8 @@ export type ProfileFormState = {
   nama: string
   nama_panggilan: string
   no_hp: string
-  usia: string
+  jenis_kelamin?: string
+  tanggal_lahir: string
   profesi: string
   domisili: string
 }
@@ -29,7 +30,8 @@ export function createInitialState(profile: UserProfile | null): ProfileFormStat
     nama: profile?.nama ?? '',
     nama_panggilan: profile?.nama_panggilan ?? '',
     no_hp: profile?.no_hp ?? '',
-    usia: profile?.usia ? String(profile.usia) : '',
+    jenis_kelamin: profile?.jenis_kelamin ?? '',
+    tanggal_lahir: profile?.tanggal_lahir ?? '',
     profesi: profile?.profesi ?? '',
     domisili: profile?.domisili ?? '',
   }
@@ -75,7 +77,8 @@ export async function submitProfile(form: ProfileFormState): Promise<SubmitResul
         nama: form.nama,
         nama_panggilan: form.nama_panggilan,
         no_hp: form.no_hp,
-        usia: Number(form.usia),
+        jenis_kelamin: form.jenis_kelamin || undefined,
+        tanggal_lahir: form.tanggal_lahir || undefined,
         profesi: form.profesi,
         domisili: form.domisili,
       }),

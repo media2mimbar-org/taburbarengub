@@ -237,13 +237,10 @@ export function ProfileCompletionPrompt({
   async function handleSubmit() {
     setError(null)
 
-    const usia = Number(form.usia)
-
-    if (!Number.isInteger(usia) || usia <= 0) {
-      setError('Usia wajib diisi')
+    if (form.tanggal_lahir && !/^\d{4}-\d{2}-\d{2}$/.test(form.tanggal_lahir)) {
+      setError('Format tanggal lahir tidak valid')
       return
     }
-
     if (!form.profesi.trim()) {
       setError('Profesi wajib diisi')
       return
@@ -450,13 +447,11 @@ export function ProfileCompletionPrompt({
                 </div>
 
                 <label style={{ display: 'grid', gap: 6, minWidth: 0 }}>
-                  <span style={{ fontWeight: 700 }}>Usia</span>
+                  <span style={{ fontWeight: 700 }}>Tanggal Lahir</span>
                   <input
-                    type="number"
-                    min={1}
-                    value={form.usia}
-                    onChange={updateField('usia')}
-                    required
+                    type="date"
+                    value={form.tanggal_lahir}
+                    onChange={updateField('tanggal_lahir')}
                     style={inputStyle}
                   />
                 </label>

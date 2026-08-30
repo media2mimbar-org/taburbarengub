@@ -32,7 +32,7 @@ export async function updateUserProfile(
       p_nama_panggilan: input.nama_panggilan,
       p_no_hp: input.no_hp,
       p_jenis_kelamin: input.jenis_kelamin,
-      p_usia: input.usia,
+      p_tanggal_lahir: input.tanggal_lahir,
       p_profesi: input.profesi,
       p_domisili: input.domisili,
     })

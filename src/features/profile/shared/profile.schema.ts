@@ -17,10 +17,12 @@ export const completeProfileSchema = z.object({
       message: 'Format nomor WhatsApp tidak valid (contoh: 08123456789)',
     }),
   jenis_kelamin: z.enum(['ikhwan', 'akhwat']).optional(),
-  usia: z
-    .number({ message: 'Usia harus berupa angka' })
-    .int({ message: 'Usia harus berupa angka bulat' })
-    .positive({ message: 'Usia harus lebih dari 0' }),
+  tanggal_lahir: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, {
+      message: 'Format tanggal lahir tidak valid (YYYY-MM-DD)',
+    })
+    .optional(),
   profesi: z.string().trim().min(1, { message: 'Profesi wajib diisi' }),
   domisili: z.string().trim().min(1, { message: 'Domisili wajib diisi' }),
 })
@@ -38,7 +40,12 @@ export const updateProfileSchema = z.object({
     })
     .optional(),
   jenis_kelamin: z.enum(['ikhwan', 'akhwat']).optional(),
-  usia: z.number().int().positive().optional(),
+  tanggal_lahir: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, {
+      message: 'Format tanggal lahir tidak valid (YYYY-MM-DD)',
+    })
+    .optional(),
   profesi: z.string().trim().min(1).optional(),
   domisili: z.string().trim().min(1).optional(),
 })
