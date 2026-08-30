@@ -74,14 +74,19 @@ $$;
 REVOKE ALL ON FUNCTION public.nilai_karya(uuid, jsonb) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.nilai_karya(uuid, jsonb) TO authenticated;
 
--- Admin SELECT policy for writing_submissions (mentors/admins need to
--- see all submissions to grade them, not just their own)
-CREATE POLICY writing_submissions_select_admin
+-- Consolidated SELECT policy for writing_submissions (single permissive policy for authenticated)
+DROP POLICY IF EXISTS writing_submissions_select_own ON public.writing_submissions;
+DROP POLICY IF EXISTS writing_submissions_select_admin ON public.writing_submissions;
+DROP POLICY IF EXISTS writing_submissions_select ON public.writing_submissions;
+
+CREATE POLICY writing_submissions_select
   ON public.writing_submissions
   FOR SELECT
   TO authenticated
-  USING ((SELECT public.is_admin()));
-
+  USING (
+    user_id = (SELECT auth.uid())
+    OR (SELECT public.is_admin())
+  );
 -- ------------------------------------------------------------
 -- 3. Restrict kelas.video_url via secure view
 --

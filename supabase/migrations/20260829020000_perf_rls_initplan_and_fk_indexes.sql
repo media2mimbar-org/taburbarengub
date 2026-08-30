@@ -159,3 +159,7 @@ create index if not exists idx_kloter_mentors_kloter_id
 
 create index if not exists idx_kloter_mentors_mentor_id
   on public.kloter_mentors (mentor_id);
+
+-- kloter_phases foreign keys
+create index if not exists idx_kloter_phases_override_by
+  on public.kloter_phases (override_by);
