@@ -69,7 +69,7 @@ export function ProfileCompletionPrompt({
   const bodyRef = useRef<HTMLDivElement>(null)
   const [minBodyHeight, setMinBodyHeight] = useState(0)
 
-  const isProfileComplete = Boolean(profile?.nama && profile?.no_hp)
+  const isProfileComplete = Boolean(profile?.no_hp)
 
   useEffect(() => {
     if (isProfileComplete) return

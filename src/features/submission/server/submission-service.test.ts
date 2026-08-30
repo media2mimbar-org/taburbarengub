@@ -198,11 +198,11 @@ describe('submitWriting', () => {
     }
   })
 
-  it('maps "Belum masuk" error to UNAUTHORIZED', async () => {
+  it('maps BELUM_MASUK hint to UNAUTHORIZED', async () => {
     const supabase = createMockSupabaseClient({
       rpcHandler: () => ({
         data: null,
-        error: { message: 'Belum masuk', code: '42501' },
+        error: { message: 'Belum masuk', code: '28000', hint: 'BELUM_MASUK' },
       }),
     })
 
@@ -217,11 +217,11 @@ describe('submitWriting', () => {
     }
   })
 
-  it('maps "Tidak ada kloter berjalan" error to NO_ACTIVE_KLOTER', async () => {
+  it('maps KLOTER_TIDAK_ADA hint to NO_ACTIVE_KLOTER', async () => {
     const supabase = createMockSupabaseClient({
       rpcHandler: () => ({
         data: null,
-        error: { message: 'Tidak ada kloter berjalan', code: 'P0002' },
+        error: { message: 'Tidak ada kloter berjalan', code: 'P0002', hint: 'KLOTER_TIDAK_ADA' },
       }),
     })
 
@@ -236,13 +236,14 @@ describe('submitWriting', () => {
     }
   })
 
-  it('maps "jendela setor" error to WINDOW_CLOSED', async () => {
+  it('maps JENDELA_SETOR_TERTUTUP hint to WINDOW_CLOSED', async () => {
     const supabase = createMockSupabaseClient({
       rpcHandler: () => ({
         data: null,
         error: {
           message: 'Belum/sudah lewat jendela setor (fase: menyimak)',
           code: '22000',
+          hint: 'JENDELA_SETOR_TERTUTUP',
         },
       }),
     })
@@ -258,13 +259,14 @@ describe('submitWriting', () => {
     }
   })
 
-  it('maps "Bukan season milikmu" error to NOT_OWNED', async () => {
+  it('maps BUKAN_SEASON_MILIK hint to NOT_OWNED', async () => {
     const supabase = createMockSupabaseClient({
       rpcHandler: () => ({
         data: null,
         error: {
           message: 'Bukan season milikmu yang sedang berjalan',
           code: '42501',
+          hint: 'BUKAN_SEASON_MILIK',
         },
       }),
     })
@@ -441,8 +443,7 @@ describe('gradeSubmission', () => {
     }
   })
 
-  it('updates submission with status dinilai and GradePayload', async () => {
-    const capturedStates: MockQueryState[] = []
+  it('calls nilai_karya RPC with correct payload', async () => {
     const fixedTime = '2026-08-29T14:30:00.000Z'
 
     const updatedRow = {
@@ -462,9 +463,13 @@ describe('gradeSubmission', () => {
       created_at: '2026-08-29T10:00:00.000Z',
     }
 
+    let capturedFn = ''
+    let capturedArgs: Record<string, unknown> = {}
+
     const supabase = createMockSupabaseClient({
-      queryHandler: (state) => {
-        capturedStates.push(state)
+      rpcHandler: (fnName, args) => {
+        capturedFn = fnName
+        capturedArgs = args
         return { data: updatedRow, error: null }
       },
     })
@@ -481,24 +486,17 @@ describe('gradeSubmission', () => {
       fixedTime
     )
 
-    const capturedState = capturedStates[0]
+    assert.strictEqual(capturedFn, 'nilai_karya')
+    assert.strictEqual(capturedArgs['p_submission_id'], submissionId)
+
+    const payload = capturedArgs['p_nilai'] as GradePayload
+    assert.strictEqual(payload.graded_by, mentorId)
+    assert.strictEqual(payload.graded_at, fixedTime)
+    assert.strictEqual(payload.rubrik.konten, 'A')
+    assert.strictEqual(payload.feedback, 'Karya luar biasa!')
+    assert.strictEqual(payload.rekomendasi, 'lulus')
 
     assert.strictEqual(result.ok, true)
-    assert.strictEqual(capturedState?.table, 'writing_submissions')
-    assert.strictEqual(capturedState?.action, 'update')
-    assert.strictEqual(capturedState?.filters['id'], submissionId)
-
-    const updatePayload = capturedState?.updateData as {
-      status: string
-      nilai: GradePayload
-    }
-    assert.strictEqual(updatePayload.status, 'dinilai')
-    assert.strictEqual(updatePayload.nilai.graded_by, mentorId)
-    assert.strictEqual(updatePayload.nilai.graded_at, fixedTime)
-    assert.strictEqual(updatePayload.nilai.rubrik.konten, 'A')
-    assert.strictEqual(updatePayload.nilai.feedback, 'Karya luar biasa!')
-    assert.strictEqual(updatePayload.nilai.rekomendasi, 'lulus')
-
     if (result.ok) {
       assert.strictEqual(result.submission.id, submissionId)
       assert.strictEqual(result.submission.status, 'dinilai')
@@ -507,11 +505,11 @@ describe('gradeSubmission', () => {
     }
   })
 
-  it('returns error when database update fails', async () => {
+  it('returns error when RPC fails', async () => {
     const supabase = createMockSupabaseClient({
-      queryHandler: () => ({
+      rpcHandler: () => ({
         data: null,
-        error: { message: 'Row level security violation' },
+        error: { message: 'Akses ditolak', code: '42501' },
       }),
     })
 
@@ -523,7 +521,7 @@ describe('gradeSubmission', () => {
 
     assert.strictEqual(result.ok, false)
     if (!result.ok) {
-      assert.strictEqual(result.error, 'Row level security violation')
+      assert.strictEqual(result.error, 'Akses ditolak')
     }
   })
 })

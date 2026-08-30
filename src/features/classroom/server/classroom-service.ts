@@ -38,7 +38,7 @@ export async function getClassListWithProgress(
 
     const { data: kelasList, error: kelasError } = await supabase
       .from('kelas')
-      .select('id, season_id, nomor, judul, video_url')
+      .select('id, season_id, nomor, judul')
       .eq('season_id', seasonId)
       .order('nomor', { ascending: true })
 
@@ -60,6 +60,22 @@ export async function getClassListWithProgress(
       }
     }
 
+    const videoUrlResults = canAccess
+      ? await Promise.all(
+          kelasList.map((k) =>
+            supabase.rpc('get_video_url', { p_kelas_id: k.id }).then((r) => ({
+              id: k.id,
+              url: r.data as string | null,
+            }))
+          )
+        )
+      : []
+
+    const videoUrlLookup: Record<string, string | null> = {}
+    for (const v of videoUrlResults) {
+      videoUrlLookup[v.id] = v.url
+    }
+
     return kelasList.map((kelas) => {
       const progress = progressLookup[kelas.id]
       return {
@@ -67,7 +83,7 @@ export async function getClassListWithProgress(
         season_id: kelas.season_id,
         nomor: kelas.nomor,
         judul: kelas.judul,
-        video_url: canAccess ? kelas.video_url : null,
+        video_url: canAccess ? (videoUrlLookup[kelas.id] ?? null) : null,
         ditonton: progress?.ditonton ?? false,
         skor: progress?.skor ?? null,
         is_locked: !canAccess,
