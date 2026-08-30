@@ -21,7 +21,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'admin') {
+  const isStaffOrAdminOrMentor =
+    profile?.role === 'admin' ||
+    profile?.role === 'staff' ||
+    profile?.role === 'mentor'
+
+  if (!isStaffOrAdminOrMentor) {
     redirect('/app')
   }
 

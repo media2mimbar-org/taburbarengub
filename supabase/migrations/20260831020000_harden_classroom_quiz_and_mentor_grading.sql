@@ -78,6 +78,10 @@ GRANT EXECUTE ON FUNCTION app_internal.is_mentor_for_kloter(uuid) TO authenticat
 -- 2. Single Gate of Write for Classroom Progress (HIGH-1)
 -- ------------------------------------------------------------
 
+-- Drop direct write policies so all mutations MUST go through the RPC
+DROP POLICY IF EXISTS video_progress_insert_own ON public.video_progress;
+DROP POLICY IF EXISTS video_progress_update_own ON public.video_progress;
+
 CREATE OR REPLACE FUNCTION public.submit_classroom_progress(
   p_kelas_id uuid,
   p_watched_seconds integer default 0,
@@ -139,30 +143,25 @@ BEGIN
   v_completed := (coalesce(p_watched_seconds, 0) >= 60 OR p_quiz_answers IS NOT NULL);
 
   -- 5. Upsert progress atomically
+  -- 5. Upsert progress atomically matching table schema
   INSERT INTO public.video_progress (
     user_id,
     kelas_id,
-    watched_seconds,
-    completed,
-    quiz_answers,
-    quiz_score,
-    updated_at
+    ditonton,
+    jawaban_soal,
+    skor
   )
   VALUES (
     v_user_id,
     p_kelas_id,
-    coalesce(p_watched_seconds, 0),
     v_completed,
     p_quiz_answers,
-    v_score,
-    now()
+    v_score
   )
   ON CONFLICT (user_id, kelas_id) DO UPDATE
-  SET watched_seconds = GREATEST(public.video_progress.watched_seconds, EXCLUDED.watched_seconds),
-      completed = public.video_progress.completed OR EXCLUDED.completed,
-      quiz_answers = coalesce(EXCLUDED.quiz_answers, public.video_progress.quiz_answers),
-      quiz_score = coalesce(EXCLUDED.quiz_score, public.video_progress.quiz_score),
-      updated_at = now()
+  SET ditonton = public.video_progress.ditonton OR EXCLUDED.ditonton,
+      jawaban_soal = coalesce(EXCLUDED.jawaban_soal, public.video_progress.jawaban_soal),
+      skor = coalesce(EXCLUDED.skor, public.video_progress.skor)
   RETURNING * INTO v_progress;
 
   RETURN v_progress;
@@ -337,7 +336,7 @@ BEGIN
 
   -- Validasi format storage path (.docx, .doc, .pdf)
   v_clean_path := trim(coalesce(p_file_url, ''));
-  IF v_clean_path !~ '^[\w\-/.]+\.(docx|doc|pdf)$' THEN
+  IF v_clean_path ~ '\.\.' OR v_clean_path !~ '^[\w\-/.]+\.(docx|doc|pdf)$' THEN
     RAISE EXCEPTION 'Format berkas harus .docx, .doc, atau .pdf'
       USING errcode = '22000', hint = 'FORMAT_FILE_TIDAK_VALID';
   END IF;
