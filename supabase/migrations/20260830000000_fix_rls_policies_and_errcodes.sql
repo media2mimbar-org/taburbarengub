@@ -221,3 +221,8 @@ REVOKE ALL ON FUNCTION public.is_admin() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
 
 REVOKE ALL ON FUNCTION public.guard_tanggal_sesi() FROM PUBLIC, anon, authenticated;
+
+-- ------------------------------------------------------------
+-- 6. Clarify storage object path semantics on file_url
+-- ------------------------------------------------------------
+COMMENT ON COLUMN public.writing_submissions.file_url IS 'Storage object path in private bucket karya-tulis (e.g. user_id/kloter_id/filename.pdf); signed URL is generated dynamically for inline preview.';
