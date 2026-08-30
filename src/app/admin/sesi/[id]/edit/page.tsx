@@ -1,8 +1,8 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { BackLink } from '@/components/ui/back-link'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import { SessionForm } from '@/features/session/client/session-form'
-
 export default async function EditSessionPage({
   params,
 }: {
@@ -11,6 +11,11 @@ export default async function EditSessionPage({
   const { id } = await params
   const supabase = await createClient()
 
+  try {
+    await requireAdmin(supabase)
+  } catch {
+    redirect('/admin')
+  }
   const { data: session, error } = await supabase
     .from('event_sessions')
     .select('*')

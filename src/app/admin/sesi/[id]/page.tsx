@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { BackLink } from '@/components/ui/back-link'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import { formatDateTimeCompact } from '@/lib/format'
 import { getUser, type UserSummary } from '@/features/session/shared/participant'
 
@@ -59,6 +60,11 @@ export default async function AdminSessionDetailPage({
   const { id } = await params
   const supabase = await createClient()
 
+  try {
+    await requireAdmin(supabase)
+  } catch {
+    redirect('/admin')
+  }
   const { data: session, error: sessionError } = await supabase
     .from('event_sessions')
     .select('*')

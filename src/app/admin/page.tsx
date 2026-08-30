@@ -52,8 +52,8 @@ export default async function AdminDashboardPage() {
     ? await supabase.from('users').select('role').eq('id', user.id).single()
     : { data: null }
 
-  const role = (profile?.role as 'admin' | 'staff' | 'mentor' | undefined) ?? 'admin'
-  const visibleItems = menuItems.filter((item) => item.roles.includes(role))
+  const role = (profile?.role as 'admin' | 'staff' | 'mentor' | undefined) ?? 'user'
+  const visibleItems = menuItems.filter((item) => item.roles.includes(role as 'admin' | 'staff' | 'mentor'))
   return (
     <main style={{ minHeight: '100vh', background: '#fafafa', color: '#171717' }}>
       <div style={{ maxWidth: 960, margin: '0 auto', padding: '40px 20px 80px' }}>

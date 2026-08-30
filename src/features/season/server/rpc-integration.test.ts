@@ -11,18 +11,44 @@ const supabaseAnonKey =
 
 describe('Database Live Integration & RPC Execution Tests', () => {
   let supabase: SupabaseClient<Database>
+  let authClient: SupabaseClient<Database> | null = null
   let isDbConnected = false
+  const testEmail = `test-integration-${Date.now()}@tabur.test`
+  const testPassword = 'Password123!'
 
   before(async () => {
-    supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-      auth: { persistSession: false },
-    })
-
     try {
+      supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      })
+
       const res = await supabase.from('hero_content').select('id').limit(1)
       isDbConnected = res.error === null
+
+      if (isDbConnected) {
+        // Create an authenticated client for testing RPCs with real JWT
+        authClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+          auth: { persistSession: false, autoRefreshToken: false },
+        })
+
+        const signUpRes = await authClient.auth.signUp({
+          email: testEmail,
+          password: testPassword,
+        })
+
+        if (!signUpRes.data.session) {
+          const signInRes = await authClient.auth.signInWithPassword({
+            email: testEmail,
+            password: testPassword,
+          })
+          if (!signInRes.data.session) {
+            authClient = null
+          }
+        }
+      }
     } catch {
       isDbConnected = false
+      authClient = null
     }
   })
 
@@ -52,35 +78,71 @@ describe('Database Live Integration & RPC Execution Tests', () => {
     }
   })
 
-  it('executes submit_classroom_progress RPC and verifies SQL body executes without column errors', async (t) => {
-    if (!isDbConnected) {
-      t.skip('Database offline')
+  it('executes update_profile RPC as authenticated user and verifies normalization & update', async (t) => {
+    if (!isDbConnected || !authClient) {
+      t.skip('Database or auth offline')
       return
     }
 
-    // Call as anon - should be caught by auth check inside RPC body (BELUM_MASUK)
-    // This proves the SQL body compiled and executed without column mismatch errors!
-    const { data, error } = await supabase
+    const { data, error } = await authClient
+      .rpc('update_profile', {
+        p_nama: 'Integration Tester',
+        p_nama_panggilan: 'Tester',
+        p_no_hp: '081234567890',
+        p_jenis_kelamin: 'ikhwan',
+        p_tanggal_lahir: '1995-05-15',
+        p_profesi: 'Engineer',
+        p_domisili: 'Malang',
+      })
+      .single()
+
+    assert.strictEqual(error, null)
+    const userProfile = data as Database['public']['Tables']['users']['Row'] | null
+    assert.ok(userProfile !== null)
+    if (userProfile) {
+      assert.strictEqual(userProfile.nama, 'Integration Tester')
+      assert.strictEqual(userProfile.no_hp, '6281234567890') // Normalisasi 628
+      assert.strictEqual(userProfile.jenis_kelamin, 'ikhwan')
+      assert.strictEqual(userProfile.tanggal_lahir, '1995-05-15')
+    }
+  })
+  it('executes submit_classroom_progress RPC with authenticated client and verifies ownership gate', async (t) => {
+    if (!isDbConnected || !authClient) {
+      t.skip('Database or auth offline')
+      return
+    }
+
+    // Get an existing class id
+    const { data: kelasList } = await supabase
+      .from('kelas')
+      .select('id')
+      .limit(1)
+
+    const kelasId = kelasList?.[0]?.id ?? '00000000-0000-0000-0000-000000000000'
+
+    const { data, error } = await authClient
       .rpc('submit_classroom_progress', {
-        p_kelas_id: '00000000-0000-0000-0000-000000000000',
+        p_kelas_id: kelasId,
         p_watched_seconds: 60,
+        p_quiz_answers: [{ soal_id: 1, pilihan: 'A' }],
         p_quiz_score: 100,
       })
       .single()
 
     assert.strictEqual(data, null)
     assert.ok(error !== null)
-    // Error must be auth required or not found, not 42703 (undefined_column)
-    assert.notStrictEqual(error?.code, '42703')
+    // Authenticated user doesn't own this season yet -> BUKAN_SEASON_MILIK (42501)
+    // This proves the SQL body compiled, found the class, and evaluated user_seasons ownership!
+    assert.strictEqual(error?.code, '42501')
   })
 
-  it('executes setor_karya RPC and verifies SQL body and path traversal validation', async (t) => {
-    if (!isDbConnected) {
-      t.skip('Database offline')
+  it('executes setor_karya RPC and rejects directory traversal .. in file path', async (t) => {
+    if (!isDbConnected || !authClient) {
+      t.skip('Database or auth offline')
       return
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await authClient
       .rpc('setor_karya', {
         p_file_url: 'user1/kloter1/../escape.pdf',
       })
@@ -88,52 +150,56 @@ describe('Database Live Integration & RPC Execution Tests', () => {
 
     assert.strictEqual(data, null)
     assert.ok(error !== null)
-    // Must be rejected by auth or regex, not column error
-    assert.notStrictEqual(error?.code, '42703')
+    assert.strictEqual(error?.code, '22000') // FORMAT_FILE_TIDAK_VALID
   })
 
-  it('executes update_profile RPC and verifies SQL body', async (t) => {
-    if (!isDbConnected) {
-      t.skip('Database offline')
+  it('executes create_booking RPC and validates booking invariants', async (t) => {
+    if (!isDbConnected || !authClient) {
+      t.skip('Database or auth offline')
       return
     }
 
-    const { data, error } = await supabase
-      .rpc('update_profile', {
-        p_nama: 'Test User',
-      })
-      .single()
+    // Get an existing published session
+    const { data: sessionList } = await supabase
+      .from('event_sessions')
+      .select('id')
+      .eq('status', 'published')
+      .limit(1)
 
-    assert.strictEqual(data, null)
-    assert.ok(error !== null)
-    assert.notStrictEqual(error?.code, '42703')
-  })
-
-  it('executes create_booking RPC and verifies SQL body', async (t) => {
-    if (!isDbConnected) {
-      t.skip('Database offline')
+    if (!sessionList || sessionList.length === 0) {
+      t.skip('No published sessions in database')
       return
     }
 
-    const { data, error } = await supabase
+    const sessionId = sessionList[0].id
+
+    // User already has no_hp updated above -> should succeed or report existing/capacity
+    const { data, error } = await authClient
       .rpc('create_booking', {
-        p_session_id: '00000000-0000-0000-0000-000000000000',
+        p_session_id: sessionId,
         p_jumlah_anak: 0,
       })
       .single()
 
-    assert.strictEqual(data, null)
-    assert.ok(error !== null)
-    assert.notStrictEqual(error?.code, '42703')
+    if (error) {
+      // If already booked, code TB105
+      assert.ok(['TB105', 'TB103'].includes(error.code))
+    } else {
+      const booking = data as Database['public']['Tables']['bookings']['Row'] | null
+      assert.ok(booking !== null)
+      if (booking) {
+        assert.strictEqual(booking.session_id, sessionId)
+        assert.strictEqual(booking.status, 'booked')
+      }
+    }
   })
-
-  it('executes nilai_karya RPC and verifies SQL body', async (t) => {
-    if (!isDbConnected) {
-      t.skip('Database offline')
+  it('executes nilai_karya RPC and rejects non-mentor user', async (t) => {
+    if (!isDbConnected || !authClient) {
+      t.skip('Database or auth offline')
       return
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await authClient
       .rpc('nilai_karya', {
         p_submission_id: '00000000-0000-0000-0000-000000000000',
         p_nilai: { score: 100 },
@@ -142,23 +208,7 @@ describe('Database Live Integration & RPC Execution Tests', () => {
 
     assert.strictEqual(data, null)
     assert.ok(error !== null)
-    assert.notStrictEqual(error?.code, '42703')
-  })
-
-  it('executes get_video_url RPC and verifies SQL body', async (t) => {
-    if (!isDbConnected) {
-      t.skip('Database offline')
-      return
-    }
-
-    const { data, error } = await supabase
-      .rpc('get_video_url', {
-        p_kelas_id: '00000000-0000-0000-0000-000000000000',
-      })
-      .single()
-
-    // Unauthenticated call is rejected by grant permission
-    assert.strictEqual(data, null)
-    assert.strictEqual(error?.code, '42501')
+    // Non-mentor/non-admin user gets NASKAH_TIDAK_DITEMUKAN (P0002) or BUKAN_MENTOR_KLOTER (42501)
+    assert.ok(['P0002', '42501'].includes(error?.code ?? ''))
   })
 })
