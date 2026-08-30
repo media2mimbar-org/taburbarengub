@@ -1,20 +1,20 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { AuthError, requireAdmin } from '@/lib/auth/require-admin'
 import { checkInSchema } from '@/features/checkin/shared/checkin.schema'
 import { checkInBooking, CheckInError } from '@/features/checkin/server/checkin-service'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Kamu harus login dulu' }, { status: 401 })
+  try {
+    await requireAdmin(supabase)
+  } catch (err) {
+    if (err instanceof AuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status })
+    }
+    return NextResponse.json({ error: 'Terjadi kesalahan autentikasi' }, { status: 500 })
   }
-
   let body: unknown
 
   try {

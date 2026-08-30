@@ -661,7 +661,6 @@ export type Database = {
         }
       }
       get_video_url: { Args: { p_kelas_id: string }; Returns: string }
-      is_admin: { Args: never; Returns: boolean }
       nilai_karya: {
         Args: { p_nilai: Json; p_submission_id: string }
         Returns: {
