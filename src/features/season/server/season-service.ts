@@ -42,7 +42,7 @@ export async function getSeasonOverview(
   try {
     const { data, error } = await supabase
       .from('seasons')
-      .select('*, kloters(*, kloter_phases(*)), kelas(*)')
+      .select('*, kloters(*, kloter_phases(*)), kelas(id, season_id, nomor, judul)')
       .eq('id', seasonId)
       .maybeSingle()
 

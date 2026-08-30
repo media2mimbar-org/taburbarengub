@@ -7,9 +7,12 @@ export class AuthError extends Error {
   }
 }
 
-export async function requireAdmin(
-  supabase: SupabaseClient<Database>
-): Promise<User> {
+export type AllowedRole = 'admin' | 'staff' | 'mentor'
+
+export async function requireRole(
+  supabase: SupabaseClient<Database>,
+  allowedRoles: AllowedRole[]
+): Promise<{ user: User; role: AllowedRole }> {
   const {
     data: { user },
     error: authError,
@@ -25,9 +28,32 @@ export async function requireAdmin(
     .eq('id', user.id)
     .single()
 
-  if (profileError || profile?.role !== 'admin') {
+  const role = profile?.role as AllowedRole | undefined
+
+  if (profileError || !role || !allowedRoles.includes(role)) {
     throw new AuthError('Akses ditolak', 403)
   }
 
+  return { user, role }
+}
+
+export async function requireAdmin(
+  supabase: SupabaseClient<Database>
+): Promise<User> {
+  const { user } = await requireRole(supabase, ['admin'])
+  return user
+}
+
+export async function requireStaffOrAdmin(
+  supabase: SupabaseClient<Database>
+): Promise<User> {
+  const { user } = await requireRole(supabase, ['admin', 'staff'])
+  return user
+}
+
+export async function requireMentorOrAdmin(
+  supabase: SupabaseClient<Database>
+): Promise<User> {
+  const { user } = await requireRole(supabase, ['admin', 'mentor'])
   return user
 }

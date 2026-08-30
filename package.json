@@ -12,7 +12,7 @@
     "db:diff": "supabase db diff --linked",
     "db:push": "supabase db push --linked",
     "typecheck": "tsc --noEmit --pretty false",
-    "test": "tsx --test src/**/*.test.ts"
+    "test": "tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

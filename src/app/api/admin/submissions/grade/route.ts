@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { AuthError, requireAdmin } from '@/lib/auth/require-admin'
+import { AuthError, requireMentorOrAdmin } from '@/lib/auth/require-admin'
 import { createClient } from '@/lib/supabase/server'
 import { gradeSubmissionSchema } from '@/features/submission/shared/submission.schema'
 import { gradeSubmission } from '@/features/submission/server/submission-service'
@@ -9,7 +9,7 @@ export async function POST(request: Request) {
 
   let adminUser
   try {
-    adminUser = await requireAdmin(supabase)
+    adminUser = await requireMentorOrAdmin(supabase)
   } catch (err) {
     if (err instanceof AuthError) {
       return NextResponse.json({ error: err.message }, { status: err.status })

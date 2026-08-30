@@ -1,17 +1,16 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database, Json } from '../../../lib/types/database.types.ts'
-import { getUserSeasonOwnership } from '../../season/server/season-service.ts'
-import { canAccessVideo } from '../../season/shared/season-rules.ts'
+import type { Database, Json } from '@/lib/types/database.types'
+import { getUserSeasonOwnership } from '@/features/season/server/season-service'
+import { canAccessVideo } from '@/features/season/shared/season-rules'
 import type {
   ClassWithProgress,
   QuizAnswerItem,
   QuizSubmissionPayload,
-} from '../shared/classroom.types.ts'
+} from '@/features/classroom/shared/classroom.types'
 import {
   submitQuizSchema,
   type SubmitQuizInput,
-} from '../shared/classroom.schema.ts'
-
+} from '@/features/classroom/shared/classroom.schema'
 export type VideoProgressRow = Database['public']['Tables']['video_progress']['Row']
 
 export type SubmitQuizResult =
@@ -158,21 +157,25 @@ export async function submitQuizProgress(
     }
 
     const { data, error } = await supabase
-      .from('video_progress')
-      .upsert(
-        {
-          user_id: userId,
-          kelas_id: validData.kelas_id,
-          ditonton: true,
-          jawaban_soal: payload as unknown as Json,
-          skor,
-        },
-        { onConflict: 'user_id,kelas_id' }
-      )
-      .select('*')
+      .rpc('submit_classroom_progress', {
+        p_kelas_id: validData.kelas_id,
+        p_watched_seconds: 60,
+        p_quiz_answers: payload as unknown as Json,
+        p_quiz_score: skor,
+      })
       .single()
 
     if (error || !data) {
+      const errHint = error && typeof error === 'object' && 'hint' in error ? error.hint : undefined
+      if (errHint === 'BUKAN_SEASON_MILIK') {
+        return { ok: false, error: 'Kamu belum terdaftar di season ini' }
+      }
+      if (errHint === 'FASE_BELUM_DIBUKA') {
+        return { ok: false, error: 'Akses materi kelas belum dibuka untuk kloter ini' }
+      }
+      if (errHint === 'KELAS_TIDAK_DITEMUKAN') {
+        return { ok: false, error: 'Kelas tidak ditemukan' }
+      }
       return {
         ok: false,
         error: error?.message ?? 'Gagal menyimpan progres kuis',

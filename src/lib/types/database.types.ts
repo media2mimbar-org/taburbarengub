@@ -699,6 +699,28 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      submit_classroom_progress: {
+        Args: {
+          p_kelas_id: string
+          p_quiz_answers?: Json
+          p_quiz_score?: number
+          p_watched_seconds?: number
+        }
+        Returns: {
+          ditonton: boolean
+          id: string
+          jawaban_soal: Json | null
+          kelas_id: string
+          skor: number | null
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "video_progress"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_profile: {
         Args: {
           p_domisili?: string

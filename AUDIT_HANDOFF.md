@@ -1,9 +1,9 @@
-# Audit Handoff — TaburBarengUB Fase 1
+# [HISTORICAL ARCHIVE] Audit Handoff — TaburBarengUB Fase 1
 
-Tanggal handoff: 2026-07-26
+> **Catatan Historis (2026-08-30):** Dokumen ini adalah artefak historis dari audit MVP Fase 1 (Juli 2026).
+> Seluruh keputusan arsitektur dan model data terkini telah dirombak dan didokumentasikan secara otoritatif di **`docs/ARCHITECTURE.md`**, **`docs/ROADMAP.md`**, dan **`docs/REVIEW_ACTION_TRACKER.md`**.
 
-Dokumen ini dibuat sebagai konteks untuk reviewer/auditor. Project adalah MVP Fase 1 platform event TaburBarengUB: info event, sign up/login, booking seat sesi offline, QR ticket, QR check-in staff, dan admin dashboard dasar.
-
+Tanggal handoff asli: 2026-07-26
 ## 1. Stack
 
 - Next.js App Router, dengan source di `src/`

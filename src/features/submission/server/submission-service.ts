@@ -1,19 +1,18 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database, Json } from '../../../lib/types/database.types.ts'
+import type { Database, Json } from '@/lib/types/database.types'
 import type {
   GradePayload,
   GradeSubmissionResult,
   SubmissionStatus,
   SubmitWritingResult,
   WritingSubmissionDTO,
-} from '../shared/submission.types.ts'
+} from '@/features/submission/shared/submission.types'
 import {
   gradeSubmissionSchema,
   submitWritingSchema,
   type GradeSubmissionInput,
   type SubmitWritingInput,
-} from '../shared/submission.schema.ts'
-
+} from '@/features/submission/shared/submission.schema'
 export type WritingSubmissionRow =
   Database['public']['Tables']['writing_submissions']['Row']
 

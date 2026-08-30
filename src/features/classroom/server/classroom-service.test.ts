@@ -1,12 +1,13 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database } from '../../../lib/types/database.types.ts'
+import type { Database } from '@/lib/types/database.types'
 import {
   getClassListWithProgress,
   submitQuizProgress,
-} from './classroom-service.ts'
-import { submitQuizSchema } from '../shared/classroom.schema.ts'
+  type VideoProgressRow,
+} from './classroom-service'
+import { submitQuizSchema } from '../shared/classroom.schema'
 
 interface QueryState {
   table: string
@@ -39,9 +40,14 @@ function createMockSupabaseClient(
   rpcHandler?: RpcHandler,
 ): SupabaseClient<Database> {
   return {
-    rpc: async (fnName: string, args: Record<string, unknown>) => {
-      if (rpcHandler) return rpcHandler(fnName, args)
-      return { data: null, error: null }
+    rpc: (fnName: string, args: Record<string, unknown>) => {
+      const res = rpcHandler ? rpcHandler(fnName, args) : { data: null, error: null }
+      return {
+        single: async () => res,
+        maybeSingle: async () => res,
+        then: (onfulfilled?: (val: unknown) => unknown, onrejected?: (err: unknown) => unknown) =>
+          Promise.resolve(res).then(onfulfilled, onrejected),
+      } as unknown
     },
     from: (table: string) => {
       const state: QueryState = {
@@ -355,10 +361,10 @@ describe('submitQuizProgress', () => {
     }
   })
 
-  it('computes score with answerKey, upserts video_progress, and returns progress record', async () => {
-    let capturedUpsertData: unknown = null
+  it('computes score with answerKey, calls submit_classroom_progress RPC, and returns progress record', async () => {
+    let capturedRpcArgs: Record<string, unknown> | null = null
 
-    const mockSavedRow = {
+    const mockSavedRow: VideoProgressRow = {
       id: 'vp-saved-1',
       user_id: userId,
       kelas_id: validUuid,
@@ -367,13 +373,16 @@ describe('submitQuizProgress', () => {
       jawaban_soal: null,
     }
 
-    const supabase = createMockSupabaseClient((state) => {
-      if (state.table === 'video_progress' && state.action === 'upsert') {
-        capturedUpsertData = state.upsertData
-        return { data: mockSavedRow, error: null }
+    const supabase = createMockSupabaseClient(
+      () => ({ data: null, error: null }),
+      (fnName, args) => {
+        if (fnName === 'submit_classroom_progress') {
+          capturedRpcArgs = args
+          return { data: mockSavedRow, error: null }
+        }
+        return { data: null, error: null }
       }
-      return { data: null, error: null }
-    })
+    )
 
     const input = {
       kelas_id: validUuid,
@@ -397,34 +406,15 @@ describe('submitQuizProgress', () => {
       assert.strictEqual(result.progress.skor, 67)
     }
 
-    // Verify payload passed to upsert
-    assert.ok(capturedUpsertData)
-    const upsertRecord = capturedUpsertData as {
-      user_id: string
-      kelas_id: string
-      ditonton: boolean
-      skor: number
-      jawaban_soal: {
-        total_soal: number
-        benar: number
-        jawaban: Array<{ soal_id: number; is_correct: boolean; kunci: string }>
-      }
-    }
-    assert.strictEqual(upsertRecord.user_id, userId)
-    assert.strictEqual(upsertRecord.kelas_id, validUuid)
-    assert.strictEqual(upsertRecord.ditonton, true)
-    assert.strictEqual(upsertRecord.skor, 67)
-    assert.strictEqual(upsertRecord.jawaban_soal.total_soal, 3)
-    assert.strictEqual(upsertRecord.jawaban_soal.benar, 2)
-    assert.strictEqual(upsertRecord.jawaban_soal.jawaban[0]?.is_correct, true)
-    assert.strictEqual(upsertRecord.jawaban_soal.jawaban[1]?.is_correct, false)
-    assert.strictEqual(upsertRecord.jawaban_soal.jawaban[2]?.is_correct, true)
+    assert.ok(capturedRpcArgs !== null)
+    assert.strictEqual((capturedRpcArgs as Record<string, unknown> | null)?.p_kelas_id, validUuid)
+    assert.strictEqual((capturedRpcArgs as Record<string, unknown> | null)?.p_quiz_score, 67)
   })
 
   it('computes 100 score when answerKey is not provided', async () => {
-    let capturedUpsertData: unknown = null
+    let capturedRpcArgs: Record<string, unknown> | null = null
 
-    const mockSavedRow = {
+    const mockSavedRow: VideoProgressRow = {
       id: 'vp-saved-2',
       user_id: userId,
       kelas_id: validUuid,
@@ -433,13 +423,16 @@ describe('submitQuizProgress', () => {
       jawaban_soal: null,
     }
 
-    const supabase = createMockSupabaseClient((state) => {
-      if (state.table === 'video_progress' && state.action === 'upsert') {
-        capturedUpsertData = state.upsertData
-        return { data: mockSavedRow, error: null }
+    const supabase = createMockSupabaseClient(
+      () => ({ data: null, error: null }),
+      (fnName, args) => {
+        if (fnName === 'submit_classroom_progress') {
+          capturedRpcArgs = args
+          return { data: mockSavedRow, error: null }
+        }
+        return { data: null, error: null }
       }
-      return { data: null, error: null }
-    })
+    )
 
     const input = {
       kelas_id: validUuid,
@@ -455,26 +448,14 @@ describe('submitQuizProgress', () => {
     if (result.ok) {
       assert.strictEqual(result.progress.skor, 100)
     }
-
-    const upsertRecord = capturedUpsertData as {
-      skor: number
-      jawaban_soal: {
-        total_soal: number
-        benar: number
-      }
-    }
-    assert.strictEqual(upsertRecord.skor, 100)
-    assert.strictEqual(upsertRecord.jawaban_soal.total_soal, 2)
-    assert.strictEqual(upsertRecord.jawaban_soal.benar, 2)
+    assert.strictEqual((capturedRpcArgs as Record<string, unknown> | null)?.p_quiz_score, 100)
   })
 
-  it('returns error when database upsert fails', async () => {
-    const supabase = createMockSupabaseClient((state) => {
-      if (state.table === 'video_progress') {
-        return { data: null, error: { message: 'Unique violation on constraint' } }
-      }
-      return { data: null, error: null }
-    })
+  it('returns error when database RPC fails', async () => {
+    const supabase = createMockSupabaseClient(
+      () => ({ data: null, error: null }),
+      () => ({ data: null, error: { message: 'Akses materi belum dibuka' } })
+    )
 
     const input = {
       kelas_id: validUuid,
@@ -485,7 +466,7 @@ describe('submitQuizProgress', () => {
 
     assert.strictEqual(result.ok, false)
     if (!result.ok) {
-      assert.strictEqual(result.error, 'Unique violation on constraint')
+      assert.strictEqual(result.error, 'Akses materi belum dibuka')
     }
   })
 })

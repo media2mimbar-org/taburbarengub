@@ -3,13 +3,14 @@ import { z } from 'zod'
 export const submitWritingSchema = z.object({
   file_url: z
     .string()
-    .url('URL file tidak valid')
+    .trim()
+    .min(1, 'Path file tidak boleh kosong')
     .refine(
-      (url) => {
-        const cleanUrl = url.split('?')[0]
-        return /\.(docx|pdf)$/i.test(cleanUrl)
+      (val) => {
+        const clean = val.split('?')[0] ?? ''
+        return /^[\w\-/.]+\.(docx|doc|pdf)$/i.test(clean) || /^https?:\/\/.+\.(docx|doc|pdf)$/i.test(clean)
       },
-      { message: 'File karya harus berformat Word (.docx) atau PDF (.pdf)' }
+      { message: 'File karya harus berformat Word (.docx, .doc) atau PDF (.pdf)' }
     ),
 })
 export type SubmitWritingInput = z.infer<typeof submitWritingSchema>

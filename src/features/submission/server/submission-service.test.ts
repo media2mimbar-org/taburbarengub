@@ -194,7 +194,7 @@ describe('submitWriting', () => {
     assert.strictEqual(result.ok, false)
     if (!result.ok) {
       assert.strictEqual(result.code, 'VALIDATION_ERROR')
-      assert.match(result.error, /Word \(\.docx\) atau PDF \(\.pdf\)/)
+      assert.match(result.error, /Word.*PDF/i)
     }
   })
 

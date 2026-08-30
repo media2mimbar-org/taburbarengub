@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { AuthError, requireAdmin } from '@/lib/auth/require-admin'
+import { AuthError, requireStaffOrAdmin } from '@/lib/auth/require-admin'
 import { checkInSchema } from '@/features/checkin/shared/checkin.schema'
 import { checkInBooking, CheckInError } from '@/features/checkin/server/checkin-service'
 
@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   const supabase = await createClient()
 
   try {
-    await requireAdmin(supabase)
+    await requireStaffOrAdmin(supabase)
   } catch (err) {
     if (err instanceof AuthError) {
       return NextResponse.json({ error: err.message }, { status: err.status })

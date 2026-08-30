@@ -11,10 +11,9 @@ export class SessionError extends Error {
 }
 
 function mapSessionSaveError(error: { code?: string; message: string }): SessionError {
-  if (error.code === 'TB301') {
+  if (error.code === 'TB104' || error.code === 'TB301') {
     return new SessionError('Sesi bertanggal lampau tidak bisa dipublikasikan', 409)
   }
-
   if (error.code === '23514') {
     return new SessionError('Data sesi melanggar aturan database', 400)
   }
