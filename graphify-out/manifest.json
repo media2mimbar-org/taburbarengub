@@ -1,9 +1,4 @@
 {
-  "docs/schema-fase1-annotated.sql": {
-    "mtime": 1785111783.3443432,
-    "ast_hash": "53aaa232bdfc0cf0580a57505f7f01c8",
-    "semantic_hash": "53aaa232bdfc0cf0580a57505f7f01c8"
-  },
   "eslint.config.mjs": {
     "mtime": 1785080623.7232194,
     "ast_hash": "8ce0f92199014c49832f79d2b75221ad",
@@ -625,9 +620,9 @@
     "semantic_hash": "41ebc675d805f64dccb4080433f0ba7e"
   },
   "supabase/migrations/20260830000000_fix_rls_policies_and_errcodes.sql": {
-    "mtime": 1788086915.0079284,
-    "ast_hash": "abcebb5a08b19b8a241944d1655fc57f",
-    "semantic_hash": "abcebb5a08b19b8a241944d1655fc57f"
+    "mtime": 1788093994.0291963,
+    "ast_hash": "ef8d049ac79708d8bb2865b6b6c25da8",
+    "semantic_hash": "ef8d049ac79708d8bb2865b6b6c25da8"
   },
   "supabase/migrations/20260831000000_isolate_app_internal_schema.sql": {
     "mtime": 1788089388.1706185,
@@ -638,21 +633,6 @@
     "mtime": 1788092317.1242876,
     "ast_hash": "b32645a722047c451323d9531de7111a",
     "semantic_hash": "b32645a722047c451323d9531de7111a"
-  },
-  "docs/superpowers/plans/2026-08-25-landing-page.md": {
-    "mtime": 1787650149.2431316,
-    "ast_hash": "75ede5c190f3aa970a395f7ba8d4f795",
-    "semantic_hash": "75ede5c190f3aa970a395f7ba8d4f795"
-  },
-  "docs/superpowers/plans/2026-08-29-season-kloter-backend.md": {
-    "mtime": 1788002517.49271,
-    "ast_hash": "f9f175056a7005265ca4a05b2fc6ac27",
-    "semantic_hash": "f9f175056a7005265ca4a05b2fc6ac27"
-  },
-  "docs/superpowers/specs/2026-08-25-landing-page-design.md": {
-    "mtime": 1787649992.6753213,
-    "ast_hash": "d79e721769ef16ac8406def1b7a9320c",
-    "semantic_hash": "d79e721769ef16ac8406def1b7a9320c"
   },
   "src/app/opengraph-image.alt.txt": {
     "mtime": 1787662363.4094777,
