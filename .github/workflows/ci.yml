@@ -40,9 +40,13 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+
+      - name: Start Supabase Local
+        run: supabase start
 
       - name: Test
         run: npm test
-
       - name: Build
         run: npm run build
