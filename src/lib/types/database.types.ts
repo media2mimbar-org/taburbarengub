@@ -87,6 +87,7 @@ export type Database = {
           id: string
           issued_at: string
           jenis: string
+          nama_penerima: string
           user_id: string
           user_season_id: string
         }
@@ -94,6 +95,7 @@ export type Database = {
           id?: string
           issued_at?: string
           jenis: string
+          nama_penerima?: string
           user_id: string
           user_season_id: string
         }
@@ -101,6 +103,7 @@ export type Database = {
           id?: string
           issued_at?: string
           jenis?: string
+          nama_penerima?: string
           user_id?: string
           user_season_id?: string
         }
@@ -468,11 +471,11 @@ export type Database = {
           domisili: string | null
           email: string
           id: string
+          jenis_kelamin: string | null
           nama: string | null
           nama_panggilan: string | null
           no_hp: string | null
           profesi: string | null
-          profile_completed: boolean
           role: string
           usia: number | null
         }
@@ -481,11 +484,11 @@ export type Database = {
           domisili?: string | null
           email: string
           id: string
+          jenis_kelamin?: string | null
           nama?: string | null
           nama_panggilan?: string | null
           no_hp?: string | null
           profesi?: string | null
-          profile_completed?: boolean
           role?: string
           usia?: number | null
         }
@@ -494,11 +497,11 @@ export type Database = {
           domisili?: string | null
           email?: string
           id?: string
+          jenis_kelamin?: string | null
           nama?: string | null
           nama_panggilan?: string | null
           no_hp?: string | null
           profesi?: string | null
-          profile_completed?: boolean
           role?: string
           usia?: number | null
         }
@@ -638,35 +641,6 @@ export type Database = {
           user_id: string
         }[]
       }
-      complete_user_profile: {
-        Args: {
-          p_domisili: string
-          p_nama: string
-          p_nama_panggilan: string
-          p_no_hp: string
-          p_profesi: string
-          p_usia: number
-        }
-        Returns: {
-          created_at: string
-          domisili: string | null
-          email: string
-          id: string
-          nama: string | null
-          nama_panggilan: string | null
-          no_hp: string | null
-          profesi: string | null
-          profile_completed: boolean
-          role: string
-          usia: number | null
-        }
-        SetofOptions: {
-          from: "*"
-          to: "users"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
       create_booking: {
         Args: { p_jumlah_anak?: number; p_session_id: string }
         Returns: {
@@ -702,6 +676,36 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "writing_submissions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_profile: {
+        Args: {
+          p_domisili?: string
+          p_jenis_kelamin?: string
+          p_nama?: string
+          p_nama_panggilan?: string
+          p_no_hp?: string
+          p_profesi?: string
+          p_usia?: number
+        }
+        Returns: {
+          created_at: string
+          domisili: string | null
+          email: string
+          id: string
+          jenis_kelamin: string | null
+          nama: string | null
+          nama_panggilan: string | null
+          no_hp: string | null
+          profesi: string | null
+          role: string
+          usia: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "users"
           isOneToOne: true
           isSetofReturn: false
         }

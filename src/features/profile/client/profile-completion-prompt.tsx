@@ -69,9 +69,10 @@ export function ProfileCompletionPrompt({
   const bodyRef = useRef<HTMLDivElement>(null)
   const [minBodyHeight, setMinBodyHeight] = useState(0)
 
-  useEffect(() => {
-    if (profile?.profile_completed) return
+  const isProfileComplete = Boolean(profile?.nama && profile?.no_hp)
 
+  useEffect(() => {
+    if (isProfileComplete) return
     let active = true
 
     const timer = window.setTimeout(() => {
@@ -98,7 +99,7 @@ export function ProfileCompletionPrompt({
       active = false
       window.clearTimeout(timer)
     }
-  }, [autoOpen, profile?.profile_completed])
+  }, [autoOpen, isProfileComplete])
 
   useEffect(() => {
     if (!open) return
@@ -181,7 +182,7 @@ export function ProfileCompletionPrompt({
     setMinBodyHeight((prev) => (measured > prev ? measured : prev))
   }, [open, step])
 
-  if (profile?.profile_completed) {
+  if (isProfileComplete) {
     return null
   }
 

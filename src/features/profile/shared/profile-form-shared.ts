@@ -8,12 +8,11 @@ export type ProfileCompletionData = Pick<
   | 'nama'
   | 'nama_panggilan'
   | 'no_hp'
+  | 'jenis_kelamin'
   | 'usia'
   | 'profesi'
   | 'domisili'
-  | 'profile_completed'
 >
-
 export type UserProfile = ProfileCompletionData
 
 export type ProfileFormState = {

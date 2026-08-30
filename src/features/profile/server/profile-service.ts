@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/types/database.types'
-import type { CompleteProfileInput } from '@/features/profile/shared/profile.schema'
+import type { CompleteProfileInput, UpdateProfileInput } from '@/features/profile/shared/profile.schema'
 
 type UserProfile = Database['public']['Tables']['users']['Row']
 
@@ -12,6 +12,8 @@ export class ProfileError extends Error {
 
 const PETA_ERROR: Record<string, { pesan: string; status: number }> = {
   '28000': { pesan: 'Kamu harus login dulu', status: 401 },
+  '22000': { pesan: 'Data profil tidak valid', status: 400 },
+  P0002: { pesan: 'Profil pengguna tidak ditemukan', status: 404 },
   TB401: { pesan: 'Nama lengkap wajib diisi', status: 400 },
   TB402: { pesan: 'No. HP wajib diisi', status: 400 },
   TB403: { pesan: 'Usia wajib diisi dan harus lebih dari 0', status: 400 },
@@ -20,15 +22,16 @@ const PETA_ERROR: Record<string, { pesan: string; status: number }> = {
   TB406: { pesan: 'Domisili wajib diisi', status: 400 },
 }
 
-export async function completeUserProfile(
+export async function updateUserProfile(
   supabase: SupabaseClient<Database>,
-  input: CompleteProfileInput
+  input: UpdateProfileInput
 ): Promise<UserProfile> {
   const { data, error } = await supabase
-    .rpc('complete_user_profile', {
+    .rpc('update_profile', {
       p_nama: input.nama,
       p_nama_panggilan: input.nama_panggilan,
       p_no_hp: input.no_hp,
+      p_jenis_kelamin: input.jenis_kelamin,
       p_usia: input.usia,
       p_profesi: input.profesi,
       p_domisili: input.domisili,
@@ -42,11 +45,18 @@ export async function completeUserProfile(
       throw new ProfileError(dikenal.pesan, dikenal.status)
     }
 
-    console.error('complete_user_profile: errcode tidak dikenal', error.code, error.message)
+    console.error('update_profile: errcode tidak dikenal', error.code, error.message)
     throw new ProfileError('Gagal menyimpan profil, coba lagi', 500)
   }
 
   return data as UserProfile
+}
+
+export async function completeUserProfile(
+  supabase: SupabaseClient<Database>,
+  input: CompleteProfileInput
+): Promise<UserProfile> {
+  return updateUserProfile(supabase, input)
 }
 
 /**
@@ -117,7 +127,18 @@ export async function getProfileGate(
     return { tag: 'unavailable', reason: 'row_missing' }
   }
 
-  return data.profile_completed
+  const isComplete = Boolean(
+    data.nama &&
+      data.nama.trim() !== '' &&
+      data.no_hp &&
+      data.no_hp.trim() !== ''
+  )
+
+  return isComplete
     ? { tag: 'complete', profile: data }
     : { tag: 'incomplete', profile: data }
+}
+
+export function hasWhatsAppNumber(profile: UserProfile | null | undefined): boolean {
+  return Boolean(profile?.no_hp && profile.no_hp.trim() !== '')
 }

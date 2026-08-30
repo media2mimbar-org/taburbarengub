@@ -19,6 +19,7 @@ const PETA_ERROR: Record<string, { pesan: string; status: number }> = {
   TB106: { pesan: 'Lengkapi profil kamu dulu sebelum booking', status: 403 },
   TB107: { pesan: 'Jumlah anak harus antara 0 sampai 5', status: 400 },
   TB108: { pesan: 'Kuota Kids Corner untuk sesi ini sudah penuh', status: 409 },
+  TB109: { pesan: 'Nomor WhatsApp wajib diisi sebelum memesan tiket', status: 400 },
 }
 
 export async function createBooking(
