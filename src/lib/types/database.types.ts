@@ -95,7 +95,7 @@ export type Database = {
           id?: string
           issued_at?: string
           jenis: string
-          nama_penerima?: string
+          nama_penerima: string
           user_id: string
           user_season_id: string
         }
@@ -660,7 +660,27 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_video_url: { Args: { p_kelas_id: string }; Returns: string }
       is_admin: { Args: never; Returns: boolean }
+      nilai_karya: {
+        Args: { p_nilai: Json; p_submission_id: string }
+        Returns: {
+          created_at: string
+          file_url: string
+          id: string
+          kloter_id: string
+          nilai: Json | null
+          status: string
+          user_id: string
+          versi: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "writing_submissions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       setor_karya: {
         Args: { p_file_url: string }
         Returns: {

@@ -43,9 +43,15 @@ export async function submitWriting(
     })
 
     if (error) {
-      const rawErrorText = `${error.message ?? ''} ${error.details ?? ''}`
+      // Match on hint (stable machine identifier) set by setor_karya RPC,
+      // falling back to errcode. Never match on message text.
+      const hint =
+        error && typeof error === 'object' && 'hint' in error && typeof error.hint === 'string'
+          ? error.hint
+          : ''
+      const code = error.code ?? ''
 
-      if (rawErrorText.includes('Belum masuk')) {
+      if (hint === 'BELUM_MASUK' || code === '28000') {
         return {
           ok: false,
           code: 'UNAUTHORIZED',
@@ -53,7 +59,7 @@ export async function submitWriting(
         }
       }
 
-      if (rawErrorText.includes('Tidak ada kloter berjalan')) {
+      if (hint === 'KLOTER_TIDAK_ADA' || code === 'P0002') {
         return {
           ok: false,
           code: 'NO_ACTIVE_KLOTER',
@@ -61,7 +67,7 @@ export async function submitWriting(
         }
       }
 
-      if (rawErrorText.toLowerCase().includes('jendela setor')) {
+      if (hint === 'JENDELA_SETOR_TERTUTUP' || code === '22000') {
         return {
           ok: false,
           code: 'WINDOW_CLOSED',
@@ -69,7 +75,7 @@ export async function submitWriting(
         }
       }
 
-      if (rawErrorText.includes('Bukan season milikmu')) {
+      if (hint === 'BUKAN_SEASON_MILIK') {
         return {
           ok: false,
           code: 'NOT_OWNED',
@@ -159,8 +165,8 @@ export async function getUserSubmissions(
 
 /**
  * Menyimpan penilaian naskah karya peserta oleh mentor/admin.
- * Memvalidasi input rubrik, membuat payload penilaian (GradePayload),
- * dan memperbarui status naskah menjadi 'dinilai'.
+ * Memanggil RPC nilai_karya (SECURITY DEFINER, gated on is_admin())
+ * sehingga tidak bergantung pada RLS write policy di client.
  */
 export async function gradeSubmission(
   supabase: SupabaseClient<Database>,
@@ -186,15 +192,10 @@ export async function gradeSubmission(
       rekomendasi,
     }
 
-    const { data, error } = await supabase
-      .from('writing_submissions')
-      .update({
-        status: 'dinilai',
-        nilai: gradePayload as unknown as Json,
-      })
-      .eq('id', submission_id)
-      .select('*')
-      .single()
+    const { data, error } = await supabase.rpc('nilai_karya', {
+      p_submission_id: submission_id,
+      p_nilai: gradePayload as unknown as Json,
+    })
 
     if (error || !data) {
       return {
@@ -203,15 +204,17 @@ export async function gradeSubmission(
       }
     }
 
+    const row = data as unknown as WritingSubmissionRow
+
     const submission: WritingSubmissionDTO = {
-      id: data.id,
-      user_id: data.user_id,
-      kloter_id: data.kloter_id,
-      versi: data.versi,
-      file_url: data.file_url,
-      status: data.status as SubmissionStatus,
-      nilai: (data.nilai as unknown as GradePayload) ?? null,
-      created_at: data.created_at,
+      id: row.id,
+      user_id: row.user_id,
+      kloter_id: row.kloter_id,
+      versi: row.versi,
+      file_url: row.file_url,
+      status: row.status as SubmissionStatus,
+      nilai: (row.nilai as unknown as GradePayload) ?? null,
+      created_at: row.created_at,
     }
 
     return { ok: true, submission }

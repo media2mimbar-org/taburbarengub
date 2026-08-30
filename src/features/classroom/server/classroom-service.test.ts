@@ -20,6 +20,13 @@ interface QueryState {
   orderOptions?: { ascending?: boolean }
 }
 
+interface RpcHandler {
+  (fnName: string, args: Record<string, unknown>): {
+    data: unknown
+    error: { message: string; code?: string } | null
+  }
+}
+
 interface MockHandler {
   (state: QueryState): {
     data: unknown
@@ -27,8 +34,15 @@ interface MockHandler {
   }
 }
 
-function createMockSupabaseClient(handler: MockHandler): SupabaseClient<Database> {
+function createMockSupabaseClient(
+  handler: MockHandler,
+  rpcHandler?: RpcHandler,
+): SupabaseClient<Database> {
   return {
+    rpc: async (fnName: string, args: Record<string, unknown>) => {
+      if (rpcHandler) return rpcHandler(fnName, args)
+      return { data: null, error: null }
+    },
     from: (table: string) => {
       const state: QueryState = {
         table,
@@ -87,16 +101,19 @@ describe('getClassListWithProgress', () => {
       season_id: seasonId,
       nomor: 1,
       judul: 'Kelas 1: Pengenalan Tabur',
-      video_url: 'https://youtube.com/watch?v=video1',
     },
     {
       id: 'kelas-2',
       season_id: seasonId,
       nomor: 2,
       judul: 'Kelas 2: Strategi Menulis',
-      video_url: 'https://youtube.com/watch?v=video2',
     },
   ]
+
+  const videoUrlLookup: Record<string, string> = {
+    'kelas-1': 'https://youtube.com/watch?v=video1',
+    'kelas-2': 'https://youtube.com/watch?v=video2',
+  }
 
   it('locks video URLs when user does not own season', async () => {
     const supabase = createMockSupabaseClient((state) => {
@@ -177,34 +194,43 @@ describe('getClassListWithProgress', () => {
       },
     ]
 
-    const supabase = createMockSupabaseClient((state) => {
-      if (state.table === 'user_seasons') {
-        return {
-          data: {
-            id: 'us-1',
-            user_id: userId,
-            season_id: seasonId,
-            kloter_daftar_id: 'kloter-1',
-            tanggal_diperoleh: '2026-08-25T00:00:00Z',
-            sumber: 'checkout',
-          },
-          error: null,
+    const supabase = createMockSupabaseClient(
+      (state) => {
+        if (state.table === 'user_seasons') {
+          return {
+            data: {
+              id: 'us-1',
+              user_id: userId,
+              season_id: seasonId,
+              kloter_daftar_id: 'kloter-1',
+              tanggal_diperoleh: '2026-08-25T00:00:00Z',
+              sumber: 'checkout',
+            },
+            error: null,
+          }
         }
-      }
-      if (state.table === 'kloter_phases') {
-        return {
-          data: { opens_at: '2026-09-01T00:00:00Z' }, // opened before now (2026-09-01T12:00:00Z)
-          error: null,
+        if (state.table === 'kloter_phases') {
+          return {
+            data: { opens_at: '2026-09-01T00:00:00Z' }, // opened before now (2026-09-01T12:00:00Z)
+            error: null,
+          }
         }
-      }
-      if (state.table === 'kelas') {
-        return { data: mockClasses, error: null }
-      }
-      if (state.table === 'video_progress') {
-        return { data: mockProgress, error: null }
-      }
-      return { data: null, error: null }
-    })
+        if (state.table === 'kelas') {
+          return { data: mockClasses, error: null }
+        }
+        if (state.table === 'video_progress') {
+          return { data: mockProgress, error: null }
+        }
+        return { data: null, error: null }
+      },
+      (fnName, args) => {
+        if (fnName === 'get_video_url') {
+          const kelasId = args['p_kelas_id'] as string
+          return { data: videoUrlLookup[kelasId] ?? null, error: null }
+        }
+        return { data: null, error: null }
+      },
+    )
 
     const result = await getClassListWithProgress(supabase, userId, seasonId, now)
 

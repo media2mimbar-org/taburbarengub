@@ -76,9 +76,9 @@ export type ProfileGate =
    * melakukan UPDATE (bukan UPSERT) sehingga selalu gagal dengan TB404.
    */
   | { tag: 'unavailable'; reason: 'query_failed' | 'row_missing' }
-  /** Profil ada tapi belum lengkap — booking akan ditolak TB106. */
+  /** Profil ada tapi belum lengkap — booking akan ditolak TB109. */
   | { tag: 'incomplete'; profile: UserProfile }
-  /** Profil lengkap, boleh booking. */
+  /** Profil lengkap (minimal no_hp terisi), boleh booking. */
   | { tag: 'complete'; profile: UserProfile }
 
 /** ProfileGate untuk pemanggil yang sudah memastikan user-nya login. */
@@ -127,12 +127,7 @@ export async function getProfileGate(
     return { tag: 'unavailable', reason: 'row_missing' }
   }
 
-  const isComplete = Boolean(
-    data.nama &&
-      data.nama.trim() !== '' &&
-      data.no_hp &&
-      data.no_hp.trim() !== ''
-  )
+  const isComplete = hasWhatsAppNumber(data)
 
   return isComplete
     ? { tag: 'complete', profile: data }
