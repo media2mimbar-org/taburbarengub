@@ -1,30 +1,59 @@
 import Link from 'next/link'
 import { BackLink } from '@/components/ui/back-link'
+import { createClient } from '@/lib/supabase/server'
 
-const menuItems = [
+type MenuItem = {
+  href: string
+  title: string
+  description: string
+  roles: Array<'admin' | 'staff' | 'mentor'>
+}
+
+const menuItems: MenuItem[] = [
   {
     href: '/admin/sesi',
     title: 'Kelola Sesi',
     description: 'Lihat daftar sesi, status publikasi, dan kuota peserta.',
+    roles: ['admin'],
   },
   {
     href: '/admin/hero',
     title: 'Konten Landing',
     description: 'Edit judul, filosofi, tagline, dan profil pemateri di landing page.',
+    roles: ['admin'],
   },
   {
     href: '/admin/scanner',
     title: 'Scan QR',
     description: 'Tool staff untuk check-in peserta di venue.',
+    roles: ['admin', 'staff'],
   },
   {
     href: '/admin/peserta',
     title: 'Daftar Peserta',
     description: 'Lihat peserta per sesi dan status check-in.',
+    roles: ['admin'],
+  },
+  {
+    href: '/admin/karya',
+    title: 'Baca & Nilai Karya',
+    description: 'Panel peninjauan dan penilaian naskah kloter oleh mentor.',
+    roles: ['admin', 'mentor'],
   },
 ]
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const { data: profile } = user
+    ? await supabase.from('users').select('role').eq('id', user.id).single()
+    : { data: null }
+
+  const role = (profile?.role as 'admin' | 'staff' | 'mentor' | undefined) ?? 'admin'
+  const visibleItems = menuItems.filter((item) => item.roles.includes(role))
   return (
     <main style={{ minHeight: '100vh', background: '#fafafa', color: '#171717' }}>
       <div style={{ maxWidth: 960, margin: '0 auto', padding: '40px 20px 80px' }}>
@@ -61,7 +90,7 @@ export default function AdminDashboardPage() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
-          {menuItems.map((item) => {
+          {visibleItems.map((item) => {
             const card = (
               <article
                 style={{

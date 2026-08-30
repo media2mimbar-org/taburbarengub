@@ -1,7 +1,9 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import styles from './sesi.module.css'
 import { BackLink } from '@/components/ui/back-link'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import { formatDateTimeCompact } from '@/lib/format'
 
 function statusStyle(status: string) {
@@ -19,6 +21,11 @@ function statusStyle(status: string) {
 export default async function AdminSesiPage() {
   const supabase = await createClient()
 
+  try {
+    await requireAdmin(supabase)
+  } catch {
+    redirect('/admin')
+  }
   const { data: sessions, error } = await supabase
     .from('event_sessions')
     .select('*')

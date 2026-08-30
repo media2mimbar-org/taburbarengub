@@ -1,6 +1,8 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { BackLink } from '@/components/ui/back-link'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import { formatDateTimeCompact } from '@/lib/format'
 import { getUser, type UserSummary } from '@/features/session/shared/participant'
 
@@ -36,6 +38,11 @@ export default async function AdminPesertaPage({
   const { session_id: sessionIdFromQuery } = await searchParams
   const supabase = await createClient()
 
+  try {
+    await requireAdmin(supabase)
+  } catch {
+    redirect('/admin')
+  }
   const { data: sessions, error: sessionsError } = await supabase
     .from('event_sessions')
     .select('id, nama_sesi, tanggal_waktu, status, kapasitas, kuota_terisi, kapasitas_kids, kuota_kids_terisi')

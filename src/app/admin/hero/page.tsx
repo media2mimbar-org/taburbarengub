@@ -1,9 +1,17 @@
+import { redirect } from 'next/navigation'
 import { BackLink } from '@/components/ui/back-link'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/require-admin'
 import { HeroForm } from '@/features/hero/client/hero-form'
 
 export default async function AdminHeroPage() {
   const supabase = await createClient()
+
+  try {
+    await requireAdmin(supabase)
+  } catch {
+    redirect('/admin')
+  }
 
   const { data: hero } = await supabase
     .from('hero_content')
@@ -15,7 +23,6 @@ export default async function AdminHeroPage() {
     <main style={{ minHeight: '100vh', background: '#fafafa', color: '#171717' }}>
       <div style={{ maxWidth: 820, margin: '0 auto', padding: '40px 20px 80px' }}>
         <BackLink />
-
         <section
           style={{
             marginTop: 24,
