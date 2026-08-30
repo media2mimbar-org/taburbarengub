@@ -85,7 +85,6 @@ alter table public.users
   check (jenis_kelamin in ('ikhwan', 'akhwat'));
 
 -- B. Pastikan kapasitas_kids & kuota_kids_terisi NOT NULL DEFAULT 0 (Fail-closed)
--- Amankan baris existing terlebih dahulu agar ALTER TABLE tidak gagal
 update public.event_sessions
 set kapasitas_kids = coalesce(kapasitas_kids, 0),
     kuota_kids_terisi = coalesce(kuota_kids_terisi, 0)
@@ -107,8 +106,8 @@ alter table public.certificates
 drop function if exists public.complete_user_profile(text, text, text, integer, text, text);
 drop function if exists public.create_booking(uuid);
 drop function if exists public.create_booking(uuid, integer);
+drop function if exists public.update_profile(text, text, text, integer, text, text);
 drop function if exists public.update_profile(text, text, text, text, integer, text, text);
-
 -- ============================================================
 -- 4. Buat RPC update_profile (Fleksibel, Normalisasi No. HP, Aman auth.uid())
 -- ============================================================
