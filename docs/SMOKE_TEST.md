@@ -1,149 +1,125 @@
 # Smoke Test Checklist — TaburBarengUB
 
-Gunakan checklist ini setelah deploy, setelah migration Supabase, atau setelah perubahan yang menyentuh auth, booking, admin, QR, atau RLS.
+Gunakan checklist ini setelah deploy, setelah migration Supabase, atau setelah perubahan yang menyentuh auth, booking, classroom, tugas naskah, admin, QR, atau RLS.
+
+---
 
 ## 0. Environment
 
 - [ ] App yang diuji adalah URL deploy yang benar.
 - [ ] Supabase project yang dipakai adalah production/staging yang benar.
 - [ ] Migration remote sudah sinkron:
-
-```bash
-npx supabase migration list --linked
-```
-
+  ```bash
+  npx supabase migration list --linked
+  ```
 - [ ] Jangan uji production dengan `.env.development.local` yang masih menunjuk ke Supabase lokal.
 
-## 1. Public landing
+---
+
+## 1. Public Landing & Beranda
 
 - [ ] `/` terbuka tanpa login.
-- [ ] Hero content tampil.
+- [ ] Hero content tampil dinamis dari database.
 - [ ] `Sesi Mendatang` hanya menampilkan sesi published yang belum lewat.
-- [ ] `Histori Sesi` menampilkan sesi published yang sudah lewat jika ada.
 - [ ] Sesi `draft` tidak tampil di publik.
-- [ ] Sesi online tampil locked.
 - [ ] Sesi offline future punya tombol `Lihat Detail`.
+- [ ] Fallback sapaan navbar menampilkan `"Sahabat Tabur"` jika user login belum mengisi nama/panggilan.
 
-## 2. Auth
+---
+
+## 2. Auth & Progressive Profiling
 
 - [ ] User baru bisa register dengan email/password.
-- [ ] Row muncul di Supabase Auth.
-- [ ] Row profile minimal muncul di `public.users` dengan `profile_completed = false`.
-- [ ] Setelah signup, user diarahkan ke `/complete-profile` jika session langsung aktif.
-- [ ] User bisa melengkapi profil di `/complete-profile`.
-- [ ] Setelah profil lengkap, `profile_completed = true`.
-- [ ] User bisa login.
-- [ ] Tombol logout berfungsi.
-- [ ] Link `/login` ↔ `/register` berfungsi.
-- [ ] `/forgot-password` mengirim pesan generik setelah submit email.
-- [ ] Link reset password mengarah ke `/reset-password` dan password baru bisa disimpan.
+- [ ] Row akun baru muncul di `auth.users` dan trigger `app_internal.handle_new_user()` membuat profil di `public.users`.
+- [ ] Kolom `users.nama` murni bernilai `NULL` (tanpa teks palsu) jika tidak dikirim saat signup.
+- [ ] Nomor WhatsApp otomatis dinormalkan ke format `628...` (misal: `08123` atau `+628123` menjadi `628123`).
+- [ ] Tanggal lahir tersimpan dengan format ISO `YYYY-MM-DD` dan tervalidasi `<= CURRENT_DATE`.
+- [ ] User bisa login dan logout dengan lancar.
+- [ ] `/forgot-password` mengirim email reset dan password baru bisa disimpan di `/reset-password`.
 
-## 3. Admin access
+---
 
-- [ ] User biasa tidak bisa membuka `/admin`.
-- [ ] Admin bisa membuka `/admin`.
-- [ ] Admin bisa membuka `/admin/sesi`.
-- [ ] Admin bisa membuka `/admin/peserta`.
-- [ ] Admin bisa membuka `/admin/scanner`.
-- [ ] Admin bisa membuka `/admin/hero`.
-
-## 4. Admin kelola sesi
-
-- [ ] Admin bisa membuat sesi `draft`.
-- [ ] Admin bisa membuat sesi `published` dengan tanggal masa depan.
-- [ ] Admin tidak bisa publish sesi bertanggal lampau.
-- [ ] Admin bisa edit nama/deskripsi/lokasi sesi.
-- [ ] Admin tidak bisa set kapasitas lebih kecil dari `kuota_terisi`.
-- [ ] `kuota_terisi` tidak bisa diedit manual dari UI.
-
-## 5. Admin hero CMS
-
-- [ ] Admin bisa mengubah `judul_acara`.
-- [ ] Admin bisa mengubah `filosofi_tabur`.
-- [ ] Admin bisa mengubah `tagline`.
-- [ ] Admin bisa mengubah `nama_pemateri`.
-- [ ] Admin bisa mengubah `bio_pemateri`.
-- [ ] Admin bisa mengisi/menghapus `foto_pemateri_url`.
-- [ ] Perubahan terlihat di landing page.
-
-## 6. Booking user
+## 3. Booking Kajian Offline & Kids Corner
 
 Siapkan sesi offline published dengan tanggal masa depan dan kuota tersedia.
 
-- [ ] User login dengan profil belum lengkap tidak bisa booking dan diarahkan/diminta melengkapi profil.
-- [ ] User login dengan profil lengkap bisa membuka detail sesi.
-- [ ] User bisa klik `Booking Seat`.
-- [ ] Setelah sukses, user diarahkan ke `/tiket-saya`.
-- [ ] Tiket tampil dengan status `Booked`.
-- [ ] `/tiket-saya` menampilkan list tiket tanpa QR besar.
-- [ ] Klik `Lihat QR` membuka halaman detail satu tiket.
-- [ ] QR tampil hanya di halaman detail tiket.
-- [ ] Row `bookings` bertambah.
-- [ ] `event_sessions.kuota_terisi` naik.
-- [ ] Booking kedua untuk sesi yang sama ditolak / UI menampilkan sudah booking.
-- [ ] Sesi online tidak bisa dibooking.
-- [ ] Sesi lampau tidak bisa dibooking.
-- [ ] Sesi penuh tidak bisa dibooking.
+- [ ] User login tanpa nomor WhatsApp akan dicegat `TB109` (`NO_HP_DIPERLUKAN`) dan diminta memasukkan nomor WA (bukan form 6-field kaku).
+- [ ] User bisa memilih jumlah anak untuk Kids Corner (0 sampai 5 anak).
+- [ ] Jika kuota Kids Corner habis, booking dengan anak ditolak `TB108` (`KIDS_CORNER_PENUH`), namun booking 0 anak tetap berhasil jika kursi dewasa tersedia.
+- [ ] Setelah sukses booking, kuota kursi (`kuota_terisi`) dan kuota anak (`kuota_kids_terisi`) bertambah secara atomik.
+- [ ] Tiket tampil di `/tiket-saya` dengan status `Booked`.
+- [ ] Klik tiket membuka halaman detail dengan kode QR unik (`/tiket-saya/[id]`).
+- [ ] Booking kedua untuk sesi yang sama ditolak (`TB105`).
+- [ ] Sesi lampau (`TB104`) dan sesi penuh (`TB103`) ditolak.
 
-## 7. QR check-in
+---
 
-Gunakan HP/browser admin untuk test scanner di HTTPS deploy URL.
+## 4. QR Check-in (Scanner)
 
-- [ ] Admin bisa membuka `/admin/scanner`.
+Gunakan HP/browser admin/staff untuk test scanner di HTTPS deploy URL.
+
+- [ ] Admin/staff membuka `/admin/scanner`.
 - [ ] Browser meminta izin kamera.
 - [ ] QR tiket valid menghasilkan `Check-in berhasil`.
-- [ ] Hasil check-in menampilkan nama sesi dan jadwal sesi.
-- [ ] `bookings.status` berubah menjadi `checked_in`.
-- [ ] `checked_in_at` terisi.
-- [ ] Scan ulang QR yang sama menghasilkan `QR sudah dipakai`.
-- [ ] QR random/palsu menghasilkan `QR tidak valid`.
-- [ ] Response scanner tidak menampilkan `no_hp`.
+- [ ] Hasil check-in menampilkan nama peserta, nama sesi, dan jadwal sesi.
+- [ ] `bookings.status` berubah menjadi `checked_in` dan `checked_in_at` terisi.
+- [ ] Scan ulang QR yang sama menghasilkan `QR sudah dipakai` (`TB202`).
+- [ ] QR palsu/random menghasilkan `QR tidak valid` (`TB201`).
+- [ ] User non-admin/non-staff tidak bisa memanggil endpoint check-in.
 
-## 8. Admin peserta dan CSV
+---
+
+## 5. Season & Kloter (Kelas Online, Video, & Kuis)
+
+- [ ] **Threshold Video (`menyimak`):**
+  - User yang belum memiliki `user_seasons` tidak bisa melihat URL video kelas (`canAccess = false`).
+  - User pemilik season sebelum fase `menyimak` (sebelum `opens_at`) melihat video terkunci.
+  - Saat fase `menyimak` aktif, RPC `get_video_url` mengembalikan streaming URL Bunny.net.
+- [ ] **Kuis & Progress Video:**
+  - Submit durasi video dan jawaban kuis ke `/api/classroom/progress` berhasil mencatat `video_progress`.
+  - Nilai kuis dihitung otomatis (skor 0–100) dan tersimpan di database.
+
+---
+
+## 6. Pengumpulan Naskah Tugas & Grading
+
+- [ ] **Jendela Setor (`menulis_setor`):**
+  - Di luar fase `menulis_setor`, pengumpulan naskah ditolak (`22000` / `JENDELA_SETOR_TERTUTUP`).
+  - Saat fase `menulis_setor` aktif, user pemilik season bisa submit link file naskah via `/api/submissions`.
+  - Submit berulang menghasilkan auto-increment nomor versi naskah (Versi 1, Versi 2, dst.).
+- [ ] **Grading Mentor/Admin:**
+  - Mentor/admin bisa menilai naskah via `/api/admin/submissions/grade` (`nilai_karya` RPC).
+  - Status naskah berubah menjadi `dinilai` dan payload penilaian JSONB tersimpan.
+
+---
+
+## 7. Admin Peserta & CSV Export
 
 - [ ] `/admin/peserta` bisa memilih sesi.
-- [ ] Peserta booking muncul di tabel.
+- [ ] Peserta booking muncul di tabel beserta jumlah anak Kids Corner.
 - [ ] Status `booked` / `checked_in` tampil benar.
-- [ ] Export CSV terdownload.
-- [ ] CSV berisi peserta sesi yang benar.
-- [ ] CSV tidak mengeksekusi formula spreadsheet dari input user.
-- [ ] User biasa/non-admin tidak bisa mengakses export CSV.
+- [ ] Export CSV terdownload dengan aman (bebas formula injection spreadsheet).
+- [ ] User non-admin ditolak saat mengakses export CSV.
 
-## 9. Navigasi "Kembali"
+---
 
-Perilaku back-link beda tergantung ada/tidaknya history in-app, jadi dua jalurnya
-harus dites terpisah. Lihat `docs/ROADMAP.md` §7.6.
+## 8. Navigasi Lintas Halaman
 
-- [ ] Turun normal `/` → `/tiket-saya` → tiket detail, lalu Kembali 2x sampai `/`. Harus **instan** (tidak ada skeleton, tidak ada request baru) dan posisi scroll kembali seperti semula.
-- [ ] Buka URL tiket detail langsung di tab baru (simulasi link di-share / QR), lalu Kembali 2x. Harus sampai `/` tanpa keluar dari app dan **tanpa muter** balik ke halaman tiket.
-- [ ] Buka `/admin/scanner` langsung di tab baru, klik Kembali. Harus ke `/admin`, bukan keluar app.
-- [ ] Pakai tombol back/forward browser di tengah alur, lalu klik Kembali. Tidak boleh muter antara dua halaman.
-- [ ] Sesudah login berhasil, tombol back browser tidak boleh kembali ke form login.
-- [ ] Klik-tengah / buka-di-tab-baru pada tombol Kembali tetap membuka halaman parent di tab baru.
+- [ ] Navigasi normal `/` → `/tiket-saya` → tiket detail, lalu klik tombol "Kembali" 2x kembali ke `/` secara instan.
+- [ ] Buka URL tiket detail langsung di tab baru (simulasi link dibagikan), lalu klik "Kembali". Harus mengarah ke `/tiket-saya` atau `/` tanpa keluar dari aplikasi.
+- [ ] Buka `/admin/scanner` langsung di tab baru, klik "Kembali". Harus kembali ke `/admin`.
 
-Prefetch cuma aktif di production build. Untuk mengukur kecepatan, tes lewat
-`npm run build && npm run start`, bukan `npm run dev`.
+---
 
-## 10. Build checks
+## 9. Quality & Build Checks
 
-Sebelum deploy besar:
+Sebelum deploy ke production:
 
 ```bash
+npm test
+npm run typecheck
 npm run lint
 npm run build
 ```
 
-Keduanya harus lulus.
-
-## 11. Catatan hasil
-
-Isi manual setelah test:
-
-```text
-Tanggal test:
-URL app:
-Supabase project:
-Tester:
-Hasil: PASS / FAIL
-Catatan:
-```
+Semua 4 perintah di atas wajib lulus 100% tanpa error.

@@ -699,6 +699,58 @@ Sumber: Analisis mendalam 2026-08-03 — 4/5 service memetakan error DB → HTTP
 - `DONE` Profile completion onboarding modal introduced.
 - `DONE` Graphify artifacts generated, but hygiene still tracked separately.
 
+
+---
+
+# Wave 3 — Season & Kloter Architecture & Backend Overhaul
+
+## PR-11 — Season & Kloter Core Domain
+
+Status: `DONE`  
+Target PR: `feat(season): implement season and kloter core schema with btree_gist anti-overlap and setor_karya rpc`  
+Priority: `P0 Core Architecture`  
+Evidence/commit: `c43d900`, `20260829000000_season_kloter_core.sql`  
+Verification: `btree_gist` constraint `kloter_tidak_overlap` & `fase_tidak_overlap` aktif; view `kloter_aktif` (`security_invoker = true`); RPC `setor_karya(text)` dengan `FOR UPDATE` lock; 13 unit tests lulus di `season-rules.test.ts` & `season-service.test.ts`.
+
+## PR-12 — Event Sessions Overhaul & Kids Corner Dual-Counter Atomic Lock
+
+Status: `DONE`  
+Target PR: `feat(events): overhaul event_sessions, add kids corner quota, and expand user roles`  
+Priority: `P1 Feature`  
+Evidence/commit: `a0d9719`, `20260829010000_overhaul_event_sessions_and_kids_corner.sql`  
+Verification: Kolom `tipe` dihapus dari `event_sessions`; kolom `kapasitas_kids` dan `kuota_kids_terisi` ditambahkan dengan `NOT NULL DEFAULT 0`; `bookings.jumlah_anak` dibatasi 0–5; RPC `create_booking` atomik dual-counter fail-closed.
+
+## PR-13 — Performa RLS InitPlan & Foreign Key Indexing
+
+Status: `DONE`  
+Target PR: `perf(db): optimize RLS policies with initplan subqueries and add foreign key indexes`  
+Priority: `P1 Performance & Standards`  
+Evidence/commit: `4a064ab`, `20260829020000_perf_rls_initplan_and_fk_indexes.sql`  
+Verification: Subquery `(SELECT auth.uid())` dan `(SELECT app_internal.is_admin())` di semua policy; 100% kolom FK terindeks B-tree; `supabase db advisors --local` lulus dengan 0 warning.
+
+## PR-14 — Progressive Profiling, Normalisasi WhatsApp, & Certificate Snapshot Invariant
+
+Status: `DONE`  
+Target PR: `feat(profile): implement progressive profiling, phone normalization, and certificate snapshot`  
+Priority: `P0 Data Architecture`  
+Evidence/commit: `3d8596b`, `20260829030000_progressive_profile_and_certificate_snapshot.sql`  
+Verification: Kolom `profile_completed` dan `users.usia` dihapus; ditambahkan `users.tanggal_lahir date` dan `users.jenis_kelamin`; normalisasi regex `628...`; `certificates.nama_penerima` berstatus `NOT NULL` tanpa default palsu (G9 closed); RPC `update_profile` fleksibel; `create_booking` memvalidasi syarat riil No. WA (`TB109`).
+
+## PR-15 — RLS Write Policies, Grading RPC, & Video URL Gating
+
+Status: `DONE`  
+Target PR: `fix(db): add missing RLS policies, restrict video_url, fix error codes`  
+Priority: `P0 Security Critical`  
+Evidence/commit: `375485b`, `20260830000000_fix_rls_policies_and_errcodes.sql`  
+Verification: Policy INSERT/UPDATE pada `video_progress`; RPC `nilai_karya` (`SECURITY DEFINER`, `is_admin()`); kolom `kelas.video_url` dicabut dari SELECT publik dan digate via RPC `get_video_url(p_kelas_id)`; route `POST /api/admin/submissions/grade` terpasang; 59 unit tests lulus 100%.
+
+## PR-16 — Isolasi Skema app_internal & Admin Route Hardening
+
+Status: `DONE`  
+Target PR: `feat(db): isolate internal functions to app_internal schema and harden admin routes`  
+Priority: `P0 Security & Least Privilege`  
+Evidence/commit: `9557930`, `20260831000000_isolate_app_internal_schema.sql`  
+Verification: Skema `app_internal` dibuat; `is_admin()`, `guard_tanggal_sesi()`, dan `handle_new_user()` dipindahkan ke `app_internal` (100% tersembunyi dari HTTP PostgREST API); route `/api/check-in` dilindungi `requireAdmin(supabase)`; `supabase db advisors --local` menghasilkan 0 issues.
 ---
 
 # Current recommended execution order
