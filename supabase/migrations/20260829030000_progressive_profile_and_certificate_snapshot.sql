@@ -73,6 +73,8 @@ begin
 end;
 $$;
 
+revoke all on function public.handle_new_user() from public, anon, authenticated;
+
 -- ============================================================
 -- 2. Modifikasi Skema Tabel Users, Event Sessions, & Certificates
 -- ============================================================

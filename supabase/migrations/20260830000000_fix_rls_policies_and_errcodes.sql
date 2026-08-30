@@ -208,3 +208,16 @@ BEGIN
 
   RETURN v_hasil;
 END $$;
+
+-- ------------------------------------------------------------
+-- 5. Revoke unneeded public/anon privileges on SECURITY DEFINER functions
+-- ------------------------------------------------------------
+REVOKE ALL ON FUNCTION public.setor_karya(text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.setor_karya(text) TO authenticated;
+
+REVOKE ALL ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
+
+REVOKE ALL ON FUNCTION public.is_admin() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
+
+REVOKE ALL ON FUNCTION public.guard_tanggal_sesi() FROM PUBLIC, anon, authenticated;
