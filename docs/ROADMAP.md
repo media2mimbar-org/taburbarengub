@@ -70,17 +70,17 @@
 ### Milestone F.3 — Portal Pengumpulan Naskah & Review (`/app/season/[id]/tugas`)
 - **Tujuan:** Halaman setor karya tadabbur selama jendela fase `menulis_setor`.
 - **Fitur:**
-  - Upload file link Google Docs / PDF via `/api/submissions`.
+  - Unggah berkas dokumen fisik (.docx / .doc / .pdf) langsung ke Supabase Storage (bucket privat `karya-tulis`).
+  - Pencatatan path file aman di tabel `writing_submissions` via `/api/submissions`.
   - Riwayat versi naskah (Versi 1, Versi 2, dst.).
   - Tampilan catatan & nilai dari mentor saat fase `wrapped`.
 
-### Milestone F.4 — Antarmuka Admin & Mentor (`/admin`)
-- **Tujuan:** Dashboard penilaian dan manajemen peserta kloter.
+### Milestone F.4 — Antarmuka Admin & Mentor (`/admin/karya`)
+- **Tujuan:** Dashboard penilaian dan peninjauan naskah peserta per kloter.
 - **Fitur:**
-  - Portal grading naskah kloter (`/admin/submissions`) via `/api/admin/submissions/grade`.
-  - Manajemen sesi kajian fisik dan kuota Kids Corner.
-  - Ekspor CSV data peserta dengan formula injection guard.
-
+  - Halaman Baca & Nilai Karya (`/admin/karya`) dengan filter kloter asli vs susulan (G10).
+  - Panel previewer naskah terintegrasi menggunakan signed URL aman.
+  - Form penilaian naskah via API `/api/admin/submissions/grade` (`nilai_karya` RPC).
 ### Milestone F.5 — Progressive Profiling Bottom-Sheet (Booking Kajian)
 - **Tujuan:** Pengalaman pendaftaran tiket offline tanpa hambatan (*frictionless registration*).
 - **Fitur:**
