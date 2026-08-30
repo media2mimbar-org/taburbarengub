@@ -49,10 +49,22 @@
 - [x] **Isolasi Skema `app_internal` (`20260831000000_isolate_app_internal_schema.sql`):**
   - Pemindahan helper `is_admin()` dan trigger database keluar dari skema `public` ke `app_internal` (100% tersembunyi dari HTTP PostgREST API).
 
+### 2.2 Sisa Pekerjaan Pilar 1 (Database & Deployment)
+- [ ] **Cloud Preflight & Migration Push (`supabase db push --linked`):**
+  - Melakukan preflight query pada database Cloud Supabase (data 11 user & 11 booking existing).
+  - Memastikan eksekusi migrasi yang menghapus kolom (`profile_completed`, `usia`, `tipe`) berjalan aman tanpa mematahkan data produksi yang sudah ada.
+
 ---
 
-## 3. Milestones Selanjutnya: Fase F (Frontend & User Experience)
+## 3. Status Spesifikasi & Content Inventory
 
+> **Aturan Baku Pelacakan Content Inventory:** *Selalu sebutkan yang belum selesai.*  
+> **Status Saat Ini:** **10 tuntas, 4 admin belum** (`/admin/season`, `/admin/kloter/[id]`, `/admin/karya`, `/admin/pembayaran`).  
+> **Prasyarat Desain Milestone F.4:** Menyusun dokumen spesifikasi 5W2H untuk halaman `/admin/karya` (menentukan mekanisme pembagian beban mentor ~100 naskah dan filter karya susulan G10) sebelum coding dimulai.
+
+---
+
+## 4. Milestones Selanjutnya: Fase F (Frontend & User Experience)
 ### Milestone F.1 — State-Aware Member Hub (`/app`)
 - **Tujuan:** Menjadikan `/app` sebagai beranda personal member yang merespons fase kloter aktif.
 - **Fitur:**
