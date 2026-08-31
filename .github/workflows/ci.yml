@@ -44,6 +44,8 @@ jobs:
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
 
       - name: Start Supabase Local
         run: supabase start -x studio,imgproxy,inbucket,edge-runtime,functions,realtime,storage,vector,analytics
