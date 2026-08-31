@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - 'rombak/**'
 
 permissions:
   contents: read
@@ -20,7 +21,7 @@ env:
 
 jobs:
   quality:
-    name: Lint, typecheck, and build
+    name: Lint, typecheck, test, and build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -40,13 +41,20 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
 
       - name: Start Supabase Local
-        run: supabase start
+        run: supabase start -x studio,imgproxy,inbucket,edge-runtime,functions,realtime,storage,vector,analytics
 
+      # Env di level workflow menunjuk ke example.supabase.co (dummy untuk build).
+      # Step ini WAJIB menimpanya ke instance lokal, kalau tidak probe koneksi
+      # gagal dan 7 test integrasi RPC skip tanpa pernah menyentuh database.
       - name: Test
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
         run: npm test
+
       - name: Build
         run: npm run build
