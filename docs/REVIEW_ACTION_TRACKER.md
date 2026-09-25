@@ -751,6 +751,20 @@ Target PR: `feat(db): isolate internal functions to app_internal schema and hard
 Priority: `P0 Security & Least Privilege`  
 Evidence/commit: `9557930`, `20260831000000_isolate_app_internal_schema.sql`  
 Verification: Skema `app_internal` dibuat; `is_admin()`, `guard_tanggal_sesi()`, dan `handle_new_user()` dipindahkan ke `app_internal` (100% tersembunyi dari HTTP PostgREST API); route `/api/check-in` dilindungi `requireAdmin(supabase)`; `supabase db advisors --local` menghasilkan 0 issues.
+
+## PR-17 — Baseline season/kloter (gabungan 18 migrasi)
+
+Status: `DONE`  
+Target PR: `feat(db): replace 18 migrations with a single baseline for the season/kloter redesign`  
+Priority: `P0 Core Architecture`  
+Evidence/commit: `750ae31` (baseline + seed), `63aeeed` (kode aplikasi), `32b3c33` (tes pgTAP), `9f8b650`, `c562b56`, `a4218c9` (beres-beres + dokumen); CI run `36145589884` hijau  
+Verification: Migrasi PR-11 s.d. PR-16 dan PR-02/PR-03 digabung ke `supabase/migrations/20260925000000_baseline.sql`; file lamanya tidak ada lagi. Katalog lokal: 13 tabel (RLS 13/13), 2 view, 14 RPC publik, 11 fungsi `app_internal`. `db lint` dan `db advisors` 0 temuan. 56 assertion pgTAP (`supabase test db`) lulus di lokal dan CI; 24 tes unit lulus; typecheck, lint, build bersih. Menutup cacat gerbang video, macetnya "selesaikan kloter", dan skor kuis dari klien (`docs/BACKEND.md` §5).  
+Belum: deploy ke cloud ditunda (`docs/BACKEND.md` §4.5); cloud masih berskema Fase 1.
+
+Dampak ke item lain:
+
+- PR-08 sebagian terpenuhi: replay migrasi (`db reset` di CI), tes RLS anon/user/admin, dan penolakan update kolom status/counter langsung kini ada di pgTAP. Sisanya (tes konkurensi booking/check-in, CSV, Playwright) belum.
+- PR-10 sebagian: `graphify-out/` tidak lagi ditrack Git.
 ---
 
 # Current recommended execution order

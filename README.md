@@ -60,39 +60,35 @@ http://localhost:3000
 ```bash
 npm run lint
 npm run typecheck
+npm test
 npm run build
+npx supabase test db   # tes perilaku DB (pgTAP), butuh Supabase lokal
 ```
 
-CI menjalankan tiga command tersebut pada Node 22.
+CI (Node 22) menjalankan semuanya, dengan Supabase lokal menyala.
 
 ## Supabase workflow
 
-Migration ada di:
+Skema ada di satu file baseline:
 
 ```text
-supabase/migrations/
+supabase/migrations/20260925000000_baseline.sql
+supabase/tests/         # tes pgTAP
+supabase/seed.sql       # data contoh lokal
 ```
 
-Push migration ke project linked:
-
-```bash
-npm run db:push
-```
-
-Generate TypeScript types dari Supabase linked project:
-
-```bash
-npm run db:types:linked
-```
-
-Untuk local Supabase jika dipakai:
+Kerja lokal (butuh Docker):
 
 ```bash
 npx supabase start
+npx supabase db reset   # terapkan baseline + seed
 npm run db:types
+npx supabase test db
 ```
 
-Catatan: beberapa workflow lokal Supabase membutuhkan Docker.
+Cloud (`db:push`, `db:types:linked`) **jangan dipakai dulu**: cloud masih berskema Fase 1, dan baseline tidak bisa di-push di atasnya. Deploy butuh ekspor–reset–impor akun; lihat `docs/BACKEND.md` §4.5.
+
+Desain dan keputusan backend: `docs/BACKEND.md`. Pola arsitektur: `docs/ARCHITECTURE.md`.
 
 ## Main routes
 
@@ -110,6 +106,7 @@ Public/auth:
 Member:
 
 ```text
+/app
 /tiket-saya
 /tiket-saya/[id]
 ```
@@ -125,6 +122,7 @@ Admin:
 /admin/sesi/[id]/edit
 /admin/peserta
 /admin/scanner
+/admin/karya
 ```
 
 API:
@@ -133,18 +131,24 @@ API:
 POST /api/bookings
 POST /api/check-in
 PATCH /api/me/profile
+GET  /api/classroom/kuis?kelas_id=...
+POST /api/classroom/kuis
+POST /api/submissions
 POST /api/admin/sessions
 PATCH /api/admin/sessions/[id]
 PATCH /api/admin/hero
+POST /api/admin/submissions/grade
 GET /admin/peserta/export.csv?session_id=...
 ```
 
 ## Documentation
 
-- `docs/ARCHITECTURE.md` — keputusan arsitektur dan pola layering.
+- `docs/BACKEND.md` — desain backend season/kloter: keputusan, gerbang, yang masih terbuka.
+- `docs/ARCHITECTURE.md` — ringkasan pola layering dan tempat logika.
+- `docs/ROADMAP.md` — status fase dan milestone frontend.
 - `docs/SMOKE_TEST.md` — checklist smoke test manual.
 - `docs/REVIEW_ACTION_TRACKER.md` — tracker action item hasil review.
-- `AUDIT_HANDOFF.md` — konteks audit/handoff sebelumnya.
+- `AUDIT_HANDOFF.md` — konteks audit/handoff Juli–Agustus (historis).
 
 ## Deployment notes
 

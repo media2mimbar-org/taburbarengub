@@ -12,6 +12,7 @@ Gunakan checklist ini setelah deploy, setelah migration Supabase, atau setelah p
   ```bash
   npx supabase migration list --linked
   ```
+  Per 25 Sep cloud **belum** menjalankan baseline (deploy ditunda, `docs/BACKEND.md` §4.5). Bagian 5 dan 6 hanya bisa diuji di Supabase lokal sampai deploy selesai.
 - [ ] Jangan uji production dengan `.env.development.local` yang masih menunjuk ke Supabase lokal.
 
 ---
@@ -71,25 +72,32 @@ Gunakan HP/browser admin/staff untuk test scanner di HTTPS deploy URL.
 
 ## 5. Season & Kloter (Kelas Online, Video, & Kuis)
 
-- [ ] **Threshold Video (`menyimak`):**
-  - User yang belum memiliki `user_seasons` tidak bisa melihat URL video kelas (`canAccess = false`).
-  - User pemilik season sebelum fase `menyimak` (sebelum `opens_at`) melihat video terkunci.
-  - Saat fase `menyimak` aktif, RPC `get_video_url` mengembalikan streaming URL Bunny.net.
-- [ ] **Kuis & Progress Video:**
-  - Submit durasi video dan jawaban kuis ke `/api/classroom/progress` berhasil mencatat `video_progress`.
-  - Nilai kuis dihitung otomatis (skor 0–100) dan tersimpan di database.
+Aturan gerbang di bawah sudah diuji otomatis oleh `npx supabase test db`. Smoke test di sini memastikan layar membaca hasil yang sama.
+
+- [ ] **Video (ambang):**
+  - User tanpa `user_seasons` melihat semua video terkunci.
+  - Peserta bimbingan sebelum b3 (`tgl_mulai_menyimak`) kloter asalnya melihat video terkunci; sesudahnya terbuka dan tetap terbuka.
+  - Pembeli arsip langsung bisa menonton video season arsip.
+- [ ] **Kuis:**
+  - Kuis hanya bisa dibuka selama fase menyimak kloter asal (`GET /api/classroom/kuis?kelas_id=`), menyajikan soal tanpa kunci.
+  - Membuka ulang menampilkan soal yang sama (undian tersimpan).
+  - Kelas dengan bank soal kurang tampil "belum tersedia".
+  - Jawaban dikirim sekali (`POST /api/classroom/kuis`); kiriman kedua ditolak (`KUIS_SUDAH_DIJAWAB`). Skor tidak ditampilkan ke peserta.
+  - Pembeli arsip tidak mendapat kuis.
 
 ---
 
 ## 6. Pengumpulan Naskah Tugas & Grading
 
-- [ ] **Jendela Setor (`menulis_setor`):**
-  - Di luar fase `menulis_setor`, pengumpulan naskah ditolak (`22000` / `JENDELA_SETOR_TERTUTUP`).
-  - Saat fase `menulis_setor` aktif, user pemilik season bisa submit link file naskah via `/api/submissions`.
-  - Submit berulang menghasilkan auto-increment nomor versi naskah (Versi 1, Versi 2, dst.).
-- [ ] **Grading Mentor/Admin:**
-  - Mentor/admin bisa menilai naskah via `/api/admin/submissions/grade` (`nilai_karya` RPC).
-  - Status naskah berubah menjadi `dinilai` dan payload penilaian JSONB tersimpan.
+- [ ] **Jendela setor `[b4, b5)`:**
+  - Di luar jendela, setor ditolak (`JENDELA_SETOR_TERTUTUP`).
+  - Berkas diunggah ke bucket `karya-tulis` di folder `{user_id}/…`; unggah ke folder orang lain ditolak.
+  - Setor berulang menaikkan nomor versi (Versi 1, Versi 2, dst.). Berkas lama tidak bisa ditimpa atau dihapus.
+- [ ] **Penilaian mentor/admin:**
+  - Sebelum tenggat setor (b5), penilaian ditolak (`PENILAIAN_BELUM_DIBUKA`).
+  - Hanya versi terakhir di kloter asal yang bisa dinilai; naskah latihan dan versi lama ditolak (`BUKAN_NASKAH_MENGIKAT`).
+  - Mentor bisa membuka berkas naskah lewat signed URL; peserta lain tidak.
+  - Kloter hanya bisa diselesaikan setelah semua naskah mengikat dinilai.
 
 ---
 
@@ -120,6 +128,8 @@ npm test
 npm run typecheck
 npm run lint
 npm run build
+npx supabase test db
+npx supabase db advisors --local
 ```
 
-Semua 4 perintah di atas wajib lulus 100% tanpa error.
+Semua perintah di atas wajib lulus tanpa error. Advisors wajib 0 temuan.
