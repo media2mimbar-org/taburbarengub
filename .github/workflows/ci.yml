@@ -48,7 +48,7 @@ jobs:
           version: 2.109.1
 
       - name: Start Supabase Local
-        run: supabase start -x studio,imgproxy,inbucket,edge-runtime,functions,realtime,storage,vector,analytics
+        run: supabase start -x studio,imgproxy,inbucket,edge-runtime,functions,realtime,vector,analytics
 
       # Env di level workflow menunjuk ke example.supabase.co (dummy untuk build).
       # Step ini WAJIB menimpanya ke instance lokal, kalau tidak probe koneksi

@@ -41,57 +41,63 @@ values
    'Belum ditentukan', 'Masih draft, hanya admin yang boleh melihat.', 50, 0, 10, 0, 'draft')
 on conflict do nothing;
 -- ============================================================
--- Seed Data Season 1 & Kloter 1
+-- Season 1 (berjalan, kloter 1 di fase menyimak) dan Season 0 (arsip).
 -- ============================================================
 do $$
 declare
   v_season_id uuid;
+  v_arsip_id  uuid;
   v_kloter_id uuid;
+  v_kelas1_id uuid;
 begin
-  -- 1. Insert Season 1 (Aktif/Berjalan)
-  insert into public.seasons (nomor_kaidah, nama, tanggal_mulai, tanggal_selesai, status)
-  values (
-    1,
-    'Kaidah 1: Mengagumi Keagungan Al-Quran',
-    now() - interval '14 days',
-    now() + interval '56 days',
-    'berjalan'
-  )
+  -- Season 0: sudah selesai, untuk menguji pembeli arsip.
+  insert into public.seasons (nomor_kaidah, nama, tanggal_mulai, tanggal_selesai, terbit)
+  values (0, 'Kaidah 0: Season Arsip Contoh', now() - interval '400 days', now() - interval '30 days', true)
+  returning id into v_arsip_id;
+
+  insert into public.kloters (season_id, nomor, kapasitas, status,
+    tanggal_mulai, tgl_mulai_orientasi, tgl_mulai_menyimak, tgl_mulai_setor, tgl_tenggat_setor, tanggal_selesai)
+  values (v_arsip_id, 1, 300, 'wrapped',
+    now() - interval '400 days', now() - interval '394 days', now() - interval '389 days',
+    now() - interval '373 days', now() - interval '359 days', now() - interval '340 days');
+
+  insert into public.kelas (season_id, nomor, judul, video_url)
+  values
+    (v_arsip_id, 1, 'Arsip: Kelas Pertama', 'https://iframe.mediadelivery.net/embed/demo/arsip-1'),
+    (v_arsip_id, 2, 'Arsip: Kelas Kedua',   'https://iframe.mediadelivery.net/embed/demo/arsip-2');
+
+  -- Season 1: berjalan.
+  insert into public.seasons (nomor_kaidah, nama, tanggal_mulai, terbit)
+  values (1, 'Kaidah 1: Mengagumi Keagungan Al-Quran', now() - interval '14 days', true)
   returning id into v_season_id;
 
-  -- 2. Insert Kloter 1 di Season 1
-  insert into public.kloters (season_id, nomor, tanggal_mulai, tanggal_selesai, kapasitas)
-  values (
-    v_season_id,
-    1,
-    now() - interval '14 days',
-    now() + interval '56 days',
-    300
-  )
+  -- Kloter 1: b1 … b5 relatif terhadap now(); sekarang di fase menyimak.
+  insert into public.kloters (season_id, nomor, kapasitas, status,
+    tanggal_mulai, tgl_mulai_orientasi, tgl_mulai_menyimak, tgl_mulai_setor, tgl_tenggat_setor,
+    livestream_url, livestream_at)
+  values (v_season_id, 1, 300, 'berjalan',
+    now() - interval '13 days', now() - interval '7 days', now() - interval '2 days',
+    now() + interval '14 days', now() + interval '28 days',
+    'https://www.youtube.com/watch?v=demo-livestream-1', now() + interval '13 days')
   returning id into v_kloter_id;
 
-  -- 3. Insert 7 Fase untuk Kloter 1 (Timeline relatif)
-  insert into public.kloter_phases (kloter_id, phase, opens_at, closes_at)
-  values
-    (v_kloter_id, 'offline',        now() - interval '14 days', now() - interval '13 days'),
-    (v_kloter_id, 'pendaftaran',    now() - interval '13 days', now() - interval '7 days'),
-    (v_kloter_id, 'orientasi',      now() - interval '7 days',  now() - interval '2 days'),
-    (v_kloter_id, 'menyimak',        now() - interval '2 days',  now() + interval '14 days'),
-    (v_kloter_id, 'menulis_setor',  now() + interval '14 days', now() + interval '28 days'),
-    (v_kloter_id, 'wrapped',        now() + interval '28 days', now() + interval '35 days'),
-    (v_kloter_id, 'antara_kloter',  now() + interval '35 days', now() + interval '56 days');
-
-  -- 4. Insert 6 Video Kelas untuk Season 1
   insert into public.kelas (season_id, nomor, judul, video_url)
   values
     (v_season_id, 1, 'Pengantar Kaidah Tadabbur Pertama', 'https://iframe.mediadelivery.net/embed/demo/kelas-1'),
-    (v_season_id, 2, 'Menyelami Makna Ayat Pilihan',     'https://iframe.mediadelivery.net/embed/demo/kelas-2'),
-    (v_season_id, 3, 'Refleksi Diri & Nilai Kehidupan',    'https://iframe.mediadelivery.net/embed/demo/kelas-3'),
-    (v_season_id, 4, 'Studi Kasus dalam Keseharian',       'https://iframe.mediadelivery.net/embed/demo/kelas-4'),
-    (v_season_id, 5, 'Menemukan Hikmah yang Tersembunyi',  'https://iframe.mediadelivery.net/embed/demo/kelas-5'),
-    (v_season_id, 6, 'Rangkuman & Penguatan Komitmen',     'https://iframe.mediadelivery.net/embed/demo/kelas-6');
+    (v_season_id, 2, 'Menyelami Makna Ayat Pilihan',      'https://iframe.mediadelivery.net/embed/demo/kelas-2'),
+    (v_season_id, 3, 'Refleksi Diri & Nilai Kehidupan',   'https://iframe.mediadelivery.net/embed/demo/kelas-3'),
+    (v_season_id, 4, 'Studi Kasus dalam Keseharian',      'https://iframe.mediadelivery.net/embed/demo/kelas-4'),
+    (v_season_id, 5, 'Menemukan Hikmah yang Tersembunyi', 'https://iframe.mediadelivery.net/embed/demo/kelas-5'),
+    (v_season_id, 6, 'Rangkuman & Penguatan Komitmen',    'https://iframe.mediadelivery.net/embed/demo/kelas-6');
 
-  -- 5. Hubungkan Sesi Offline Pembuka dengan Kloter 1
+  -- Bank soal hanya untuk kelas 1 (6 soal ≥ 5 tampil). Kelas lain sengaja kosong
+  -- supaya status "belum_tersedia" ikut teruji.
+  select id into v_kelas1_id from public.kelas where season_id = v_season_id and nomor = 1;
+  insert into public.soal (kelas_id, pertanyaan, pilihan, kunci)
+  select v_kelas1_id, 'Soal contoh nomor ' || n, '["A", "B", "C", "D"]'::jsonb, (n % 4)::smallint
+  from generate_series(1, 6) as n;
+
+  -- Sesi offline pembuka milik kloter 1.
   update public.event_sessions
   set kloter_id = v_kloter_id
   where nama_sesi like 'Sesi 1%';
