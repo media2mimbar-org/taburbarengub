@@ -10,7 +10,6 @@ export interface GradePayload {
   graded_at: string
   rubrik: GradeRubric
   feedback?: string
-  rekomendasi: 'lulus' | 'revisi' | 'ikut_serta'
 }
 
 export interface WritingSubmissionDTO {
@@ -27,7 +26,7 @@ export interface WritingSubmissionDTO {
 export type SubmitWritingErrorCode =
   | 'VALIDATION_ERROR'
   | 'UNAUTHORIZED'
-  | 'NO_ACTIVE_KLOTER'
+  | 'FILE_NOT_OWNED'
   | 'WINDOW_CLOSED'
   | 'NOT_OWNED'
   | 'DB_ERROR'

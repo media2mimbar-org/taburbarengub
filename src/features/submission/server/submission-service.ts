@@ -42,15 +42,10 @@ export async function submitWriting(
     })
 
     if (error) {
-      // Match on hint (stable machine identifier) set by setor_karya RPC,
-      // falling back to errcode. Never match on message text.
-      const hint =
-        error && typeof error === 'object' && 'hint' in error && typeof error.hint === 'string'
-          ? error.hint
-          : ''
-      const code = error.code ?? ''
+      // Cocokkan hint (penanda stabil dari setor_karya). Jangan pernah pada teks pesan.
+      const hint = typeof error.hint === 'string' ? error.hint : ''
 
-      if (hint === 'BELUM_MASUK' || code === '28000') {
+      if (hint === 'BELUM_MASUK') {
         return {
           ok: false,
           code: 'UNAUTHORIZED',
@@ -58,22 +53,21 @@ export async function submitWriting(
         }
       }
 
-      if (hint === 'KLOTER_TIDAK_ADA' || code === 'P0002') {
-        return {
-          ok: false,
-          code: 'NO_ACTIVE_KLOTER',
-          error: 'Tidak ada kloter yang sedang berjalan',
-        }
+      if (hint === 'FORMAT_FILE_TIDAK_VALID') {
+        return { ok: false, code: 'VALIDATION_ERROR', error: error.message }
       }
 
-      if (hint === 'JENDELA_SETOR_TERTUTUP' || code === '22000') {
+      if (hint === 'BERKAS_BUKAN_MILIK') {
+        return { ok: false, code: 'FILE_NOT_OWNED', error: 'Berkas harus diunggah ke folder milikmu sendiri' }
+      }
+
+      if (hint === 'JENDELA_SETOR_TERTUTUP') {
         return {
           ok: false,
           code: 'WINDOW_CLOSED',
           error: 'Jendela setor karya sedang ditutup',
         }
       }
-
       if (hint === 'BUKAN_SEASON_MILIK') {
         return {
           ok: false,
@@ -164,8 +158,7 @@ export async function getUserSubmissions(
 
 /**
  * Menyimpan penilaian naskah karya peserta oleh mentor/admin.
- * Memanggil RPC nilai_karya (SECURITY DEFINER, gated on is_admin())
- * sehingga tidak bergantung pada RLS write policy di client.
+ * Memanggil RPC nilai_karya: gerbang penilai, naskah mengikat, dan b5 dijaga DB.
  */
 export async function gradeSubmission(
   supabase: SupabaseClient<Database>,
@@ -181,14 +174,13 @@ export async function gradeSubmission(
       return { ok: false, error: errorMessage }
     }
 
-    const { submission_id, rubrik, feedback, rekomendasi } = validation.data
+    const { submission_id, rubrik, feedback } = validation.data
 
     const gradePayload: GradePayload = {
       graded_by: mentorUserId,
       graded_at: gradedAt ?? new Date().toISOString(),
       rubrik,
       ...(feedback ? { feedback } : {}),
-      rekomendasi,
     }
 
     const { data, error } = await supabase.rpc('nilai_karya', {

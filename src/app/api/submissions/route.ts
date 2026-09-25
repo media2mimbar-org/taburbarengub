@@ -46,9 +46,9 @@ export async function POST(request: Request) {
         ? 400
         : result.code === 'UNAUTHORIZED'
           ? 401
-          : result.code === 'NOT_OWNED'
+          : result.code === 'NOT_OWNED' || result.code === 'FILE_NOT_OWNED'
             ? 403
-            : result.code === 'WINDOW_CLOSED' || result.code === 'NO_ACTIVE_KLOTER'
+            : result.code === 'WINDOW_CLOSED'
               ? 409
               : 500
 

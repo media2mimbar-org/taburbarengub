@@ -136,6 +136,7 @@ export type Database = {
           kuota_terisi: number
           lokasi_atau_link: string | null
           nama_sesi: string
+          rekaman_url: string | null
           status: string
           tanggal_waktu: string
         }
@@ -150,6 +151,7 @@ export type Database = {
           kuota_terisi?: number
           lokasi_atau_link?: string | null
           nama_sesi: string
+          rekaman_url?: string | null
           status?: string
           tanggal_waktu: string
         }
@@ -164,6 +166,7 @@ export type Database = {
           kuota_terisi?: number
           lokasi_atau_link?: string | null
           nama_sesi?: string
+          rekaman_url?: string | null
           status?: string
           tanggal_waktu?: string
         }
@@ -172,7 +175,7 @@ export type Database = {
             foreignKeyName: "event_sessions_kloter_id_fkey"
             columns: ["kloter_id"]
             isOneToOne: false
-            referencedRelation: "kloter_aktif"
+            referencedRelation: "kloter_dalam_fase"
             referencedColumns: ["id"]
           },
           {
@@ -221,6 +224,7 @@ export type Database = {
         Row: {
           id: string
           judul: string
+          jumlah_soal_tampil: number
           nomor: number
           season_id: string
           video_url: string | null
@@ -228,6 +232,7 @@ export type Database = {
         Insert: {
           id?: string
           judul: string
+          jumlah_soal_tampil?: number
           nomor: number
           season_id: string
           video_url?: string | null
@@ -235,6 +240,7 @@ export type Database = {
         Update: {
           id?: string
           judul?: string
+          jumlah_soal_tampil?: number
           nomor?: number
           season_id?: string
           video_url?: string | null
@@ -273,7 +279,7 @@ export type Database = {
             foreignKeyName: "kloter_mentors_kloter_id_fkey"
             columns: ["kloter_id"]
             isOneToOne: false
-            referencedRelation: "kloter_aktif"
+            referencedRelation: "kloter_dalam_fase"
             referencedColumns: ["id"]
           },
           {
@@ -292,85 +298,57 @@ export type Database = {
           },
         ]
       }
-      kloter_phases: {
-        Row: {
-          closes_at: string
-          id: string
-          kloter_id: string
-          opens_at: string
-          override_active: boolean
-          override_at: string | null
-          override_by: string | null
-          phase: Database["public"]["Enums"]["phase_type"]
-        }
-        Insert: {
-          closes_at: string
-          id?: string
-          kloter_id: string
-          opens_at: string
-          override_active?: boolean
-          override_at?: string | null
-          override_by?: string | null
-          phase: Database["public"]["Enums"]["phase_type"]
-        }
-        Update: {
-          closes_at?: string
-          id?: string
-          kloter_id?: string
-          opens_at?: string
-          override_active?: boolean
-          override_at?: string | null
-          override_by?: string | null
-          phase?: Database["public"]["Enums"]["phase_type"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "kloter_phases_kloter_id_fkey"
-            columns: ["kloter_id"]
-            isOneToOne: false
-            referencedRelation: "kloter_aktif"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "kloter_phases_kloter_id_fkey"
-            columns: ["kloter_id"]
-            isOneToOne: false
-            referencedRelation: "kloters"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "kloter_phases_override_by_fkey"
-            columns: ["override_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       kloters: {
         Row: {
+          ambang_pengingat: string
           id: string
           kapasitas: number
+          livestream_at: string | null
+          livestream_url: string | null
           nomor: number
           season_id: string
+          status: string
           tanggal_mulai: string
           tanggal_selesai: string | null
+          target_penilaian: string | null
+          tgl_mulai_menyimak: string
+          tgl_mulai_orientasi: string
+          tgl_mulai_setor: string
+          tgl_tenggat_setor: string
         }
         Insert: {
+          ambang_pengingat?: string
           id?: string
           kapasitas: number
+          livestream_at?: string | null
+          livestream_url?: string | null
           nomor: number
           season_id: string
+          status?: string
           tanggal_mulai: string
           tanggal_selesai?: string | null
+          target_penilaian?: string | null
+          tgl_mulai_menyimak: string
+          tgl_mulai_orientasi: string
+          tgl_mulai_setor: string
+          tgl_tenggat_setor: string
         }
         Update: {
+          ambang_pengingat?: string
           id?: string
           kapasitas?: number
+          livestream_at?: string | null
+          livestream_url?: string | null
           nomor?: number
           season_id?: string
+          status?: string
           tanggal_mulai?: string
           tanggal_selesai?: string | null
+          target_penilaian?: string | null
+          tgl_mulai_menyimak?: string
+          tgl_mulai_orientasi?: string
+          tgl_mulai_setor?: string
+          tgl_tenggat_setor?: string
         }
         Relationships: [
           {
@@ -382,37 +360,118 @@ export type Database = {
           },
         ]
       }
+      kuis_peserta: {
+        Row: {
+          id: string
+          jawaban_soal: Json | null
+          kelas_id: string
+          skor: number | null
+          soal_terpilih: string[]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          jawaban_soal?: Json | null
+          kelas_id: string
+          skor?: number | null
+          soal_terpilih?: string[]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          jawaban_soal?: Json | null
+          kelas_id?: string
+          skor?: number | null
+          soal_terpilih?: string[]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kuis_peserta_kelas_id_fkey"
+            columns: ["kelas_id"]
+            isOneToOne: false
+            referencedRelation: "kelas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kuis_peserta_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seasons: {
         Row: {
           id: string
           nama: string
           nomor_kaidah: number
-          status: string
           tanggal_mulai: string
           tanggal_selesai: string | null
+          terbit: boolean
         }
         Insert: {
           id?: string
           nama: string
           nomor_kaidah: number
-          status?: string
           tanggal_mulai: string
           tanggal_selesai?: string | null
+          terbit?: boolean
         }
         Update: {
           id?: string
           nama?: string
           nomor_kaidah?: number
-          status?: string
           tanggal_mulai?: string
           tanggal_selesai?: string | null
+          terbit?: boolean
         }
         Relationships: []
+      }
+      soal: {
+        Row: {
+          aktif: boolean
+          created_at: string
+          id: string
+          kelas_id: string
+          kunci: number
+          pertanyaan: string
+          pilihan: Json
+        }
+        Insert: {
+          aktif?: boolean
+          created_at?: string
+          id?: string
+          kelas_id: string
+          kunci: number
+          pertanyaan: string
+          pilihan: Json
+        }
+        Update: {
+          aktif?: boolean
+          created_at?: string
+          id?: string
+          kelas_id?: string
+          kunci?: number
+          pertanyaan?: string
+          pilihan?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "soal_kelas_id_fkey"
+            columns: ["kelas_id"]
+            isOneToOne: false
+            referencedRelation: "kelas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_seasons: {
         Row: {
           id: string
-          kloter_daftar_id: string
+          jenis: string
+          kloter_daftar_id: string | null
           season_id: string
           sumber: string
           tanggal_diperoleh: string
@@ -420,7 +479,8 @@ export type Database = {
         }
         Insert: {
           id?: string
-          kloter_daftar_id: string
+          jenis: string
+          kloter_daftar_id?: string | null
           season_id: string
           sumber: string
           tanggal_diperoleh?: string
@@ -428,7 +488,8 @@ export type Database = {
         }
         Update: {
           id?: string
-          kloter_daftar_id?: string
+          jenis?: string
+          kloter_daftar_id?: string | null
           season_id?: string
           sumber?: string
           tanggal_diperoleh?: string
@@ -436,18 +497,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "user_seasons_kloter_daftar_id_fkey"
-            columns: ["kloter_daftar_id"]
+            foreignKeyName: "kloter_daftar_se_season"
+            columns: ["kloter_daftar_id", "season_id"]
             isOneToOne: false
-            referencedRelation: "kloter_aktif"
-            referencedColumns: ["id"]
+            referencedRelation: "kloter_dalam_fase"
+            referencedColumns: ["id", "season_id"]
           },
           {
-            foreignKeyName: "user_seasons_kloter_daftar_id_fkey"
-            columns: ["kloter_daftar_id"]
+            foreignKeyName: "kloter_daftar_se_season"
+            columns: ["kloter_daftar_id", "season_id"]
             isOneToOne: false
             referencedRelation: "kloters"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "season_id"]
           },
           {
             foreignKeyName: "user_seasons_season_id_fkey"
@@ -507,48 +568,6 @@ export type Database = {
         }
         Relationships: []
       }
-      video_progress: {
-        Row: {
-          ditonton: boolean
-          id: string
-          jawaban_soal: Json | null
-          kelas_id: string
-          skor: number | null
-          user_id: string
-        }
-        Insert: {
-          ditonton?: boolean
-          id?: string
-          jawaban_soal?: Json | null
-          kelas_id: string
-          skor?: number | null
-          user_id: string
-        }
-        Update: {
-          ditonton?: boolean
-          id?: string
-          jawaban_soal?: Json | null
-          kelas_id?: string
-          skor?: number | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "video_progress_kelas_id_fkey"
-            columns: ["kelas_id"]
-            isOneToOne: false
-            referencedRelation: "kelas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "video_progress_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       writing_submissions: {
         Row: {
           created_at: string
@@ -585,7 +604,7 @@ export type Database = {
             foreignKeyName: "writing_submissions_kloter_id_fkey"
             columns: ["kloter_id"]
             isOneToOne: false
-            referencedRelation: "kloter_aktif"
+            referencedRelation: "kloter_dalam_fase"
             referencedColumns: ["id"]
           },
           {
@@ -606,15 +625,21 @@ export type Database = {
       }
     }
     Views: {
-      kloter_aktif: {
+      kloter_dalam_fase: {
         Row: {
-          fase: Database["public"]["Enums"]["phase_type"] | null
+          ambang_pengingat: string | null
+          fase: string | null
           id: string | null
           kapasitas: number | null
+          livestream_at: string | null
           nomor: number | null
           season_id: string | null
+          status: string | null
           tanggal_mulai: string | null
-          tanggal_selesai: string | null
+          tgl_mulai_menyimak: string | null
+          tgl_mulai_orientasi: string | null
+          tgl_mulai_setor: string | null
+          tgl_tenggat_setor: string | null
         }
         Relationships: [
           {
@@ -622,6 +647,41 @@ export type Database = {
             columns: ["season_id"]
             isOneToOne: false
             referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      naskah_mengikat: {
+        Row: {
+          created_at: string | null
+          file_url: string | null
+          id: string | null
+          kloter_id: string | null
+          nilai: Json | null
+          status: string | null
+          user_id: string | null
+          versi: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "writing_submissions_kloter_id_fkey"
+            columns: ["kloter_id"]
+            isOneToOne: false
+            referencedRelation: "kloter_dalam_fase"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "writing_submissions_kloter_id_fkey"
+            columns: ["kloter_id"]
+            isOneToOne: false
+            referencedRelation: "kloters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "writing_submissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -660,7 +720,71 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      daftarkan_peserta: {
+        Args: { p_season_id: string; p_sumber: string; p_user_id: string }
+        Returns: {
+          id: string
+          jenis: string
+          kloter_daftar_id: string | null
+          season_id: string
+          sumber: string
+          tanggal_diperoleh: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_seasons"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      get_season_peristiwa: {
+        Args: { p_season_id: string }
+        Returns: {
+          jadwal: string
+          jenis: string
+          kloter_nomor: number
+          media_url: string
+        }[]
+      }
+      get_soal_kelas: {
+        Args: { p_kelas_id: string }
+        Returns: {
+          id: string
+          pertanyaan: string
+          pilihan: Json
+        }[]
+      }
+      get_status_kuis: {
+        Args: { p_season_id: string }
+        Returns: {
+          kelas_id: string
+          nomor: number
+          status: string
+        }[]
+      }
       get_video_url: { Args: { p_kelas_id: string }; Returns: string }
+      jawab_kuis: {
+        Args: { p_jawaban: Json; p_kelas_id: string }
+        Returns: {
+          id: string
+          jawaban_soal: Json | null
+          kelas_id: string
+          skor: number | null
+          soal_terpilih: string[]
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "kuis_peserta"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      koreksi_kunci: {
+        Args: { p_kunci: number; p_soal_id: string }
+        Returns: number
+      }
       nilai_karya: {
         Args: { p_nilai: Json; p_submission_id: string }
         Returns: {
@@ -699,24 +823,49 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      submit_classroom_progress: {
-        Args: {
-          p_kelas_id: string
-          p_quiz_answers?: Json
-          p_quiz_score?: number
-          p_watched_seconds?: number
-        }
+      status_siklus: {
+        Args: { s: Database["public"]["Tables"]["seasons"]["Row"] }
+        Returns: string
+      }
+      ubah_status_kloter: {
+        Args: { p_aksi: string; p_kloter_id: string }
         Returns: {
-          ditonton: boolean
+          ambang_pengingat: string
           id: string
-          jawaban_soal: Json | null
-          kelas_id: string
-          skor: number | null
-          user_id: string
+          kapasitas: number
+          livestream_at: string | null
+          livestream_url: string | null
+          nomor: number
+          season_id: string
+          status: string
+          tanggal_mulai: string
+          tanggal_selesai: string | null
+          target_penilaian: string | null
+          tgl_mulai_menyimak: string
+          tgl_mulai_orientasi: string
+          tgl_mulai_setor: string
+          tgl_tenggat_setor: string
         }
         SetofOptions: {
           from: "*"
-          to: "video_progress"
+          to: "kloters"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      ubah_status_season: {
+        Args: { p_aksi: string; p_season_id: string }
+        Returns: {
+          id: string
+          nama: string
+          nomor_kaidah: number
+          tanggal_mulai: string
+          tanggal_selesai: string | null
+          terbit: boolean
+        }
+        SetofOptions: {
+          from: "*"
+          to: "seasons"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -753,14 +902,7 @@ export type Database = {
       }
     }
     Enums: {
-      phase_type:
-        | "offline"
-        | "pendaftaran"
-        | "orientasi"
-        | "menyimak"
-        | "menulis_setor"
-        | "wrapped"
-        | "antara_kloter"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -890,17 +1032,7 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {
-      phase_type: [
-        "offline",
-        "pendaftaran",
-        "orientasi",
-        "menyimak",
-        "menulis_setor",
-        "wrapped",
-        "antara_kloter",
-      ],
-    },
+    Enums: {},
   },
 } as const
 

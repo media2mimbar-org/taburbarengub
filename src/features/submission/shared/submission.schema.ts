@@ -1,17 +1,12 @@
 import { z } from 'zod'
 
 export const submitWritingSchema = z.object({
+  // Path objek di bucket karya-tulis: {user_id}/.../{nama}.pdf. DB menolak folder milik orang lain.
   file_url: z
     .string()
     .trim()
     .min(1, 'Path file tidak boleh kosong')
-    .refine(
-      (val) => {
-        const clean = val.split('?')[0] ?? ''
-        return /^[\w\-/.]+\.(docx|doc|pdf)$/i.test(clean) || /^https?:\/\/.+\.(docx|doc|pdf)$/i.test(clean)
-      },
-      { message: 'File karya harus berformat Word (.docx, .doc) atau PDF (.pdf)' }
-    ),
+    .regex(/^[\w\-/.]+\.(docx|doc|pdf)$/i, 'File karya harus berformat Word (.docx, .doc) atau PDF (.pdf)'),
 })
 export type SubmitWritingInput = z.infer<typeof submitWritingSchema>
 
@@ -22,6 +17,5 @@ export const gradeSubmissionSchema = z.object({
     bahasa: z.enum(['A', 'B', 'C']),
   }),
   feedback: z.string().trim().max(2000).optional(),
-  rekomendasi: z.enum(['lulus', 'revisi', 'ikut_serta']),
 })
 export type GradeSubmissionInput = z.infer<typeof gradeSubmissionSchema>

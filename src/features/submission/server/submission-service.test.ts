@@ -93,14 +93,11 @@ function createMockSupabaseClient(
 }
 
 describe('submitWritingSchema', () => {
-  it('accepts valid .docx and .pdf URLs', () => {
+  it('accepts storage paths ending in .docx, .doc, or .pdf', () => {
     const validInputs = [
-      { file_url: 'https://storage.supabase.co/karya/naskah-1.docx' },
-      { file_url: 'https://storage.supabase.co/karya/naskah-1.pdf' },
-      { file_url: 'https://example.com/files/karya.DOCX' },
-      { file_url: 'https://example.com/files/karya.PDF' },
-      { file_url: 'https://storage.supabase.co/karya/naskah.pdf?token=abc123xyz' },
-      { file_url: 'https://storage.supabase.co/karya/naskah.docx?download=1&alt=media' },
+      { file_url: '123e4567-e89b-12d3-a456-426614174000/k1/naskah-1.docx' },
+      { file_url: '123e4567-e89b-12d3-a456-426614174000/k1/naskah-1.pdf' },
+      { file_url: '123e4567-e89b-12d3-a456-426614174000/k1/karya.DOC' },
     ]
 
     for (const input of validInputs) {
@@ -109,14 +106,13 @@ describe('submitWritingSchema', () => {
     }
   })
 
-  it('rejects invalid URLs and non-docx/pdf formats', () => {
+  it('rejects URLs, other formats, and query strings', () => {
     const invalidInputs = [
-      { file_url: 'not-a-valid-url' },
-      { file_url: 'ftp://invalid-url' },
-      { file_url: 'https://storage.supabase.co/karya/naskah.txt' },
-      { file_url: 'https://storage.supabase.co/karya/naskah.png' },
-      { file_url: 'https://storage.supabase.co/karya/naskah.docx.exe' },
-      { file_url: 'https://storage.supabase.co/karya/naskah' },
+      { file_url: 'https://storage.supabase.co/karya/naskah.pdf' },
+      { file_url: 'user/naskah.txt' },
+      { file_url: 'user/naskah.docx.exe' },
+      { file_url: 'user/naskah.pdf?token=abc' },
+      { file_url: 'user/naskah' },
     ]
 
     for (const input of invalidInputs) {
@@ -135,7 +131,6 @@ describe('gradeSubmissionSchema', () => {
         bahasa: 'B',
       },
       feedback: 'Tulisan sangat menarik dan terstruktur rapi.',
-      rekomendasi: 'lulus',
     })
 
     assert.strictEqual(valid.success, true)
@@ -148,18 +143,16 @@ describe('gradeSubmissionSchema', () => {
         konten: 'C',
         bahasa: 'C',
       },
-      rekomendasi: 'revisi',
     })
 
     assert.strictEqual(valid.success, true)
   })
 
-  it('rejects invalid uuid, invalid rubric grades, and invalid rekomendasi', () => {
+  it('rejects invalid uuid and invalid rubric grades', () => {
     assert.strictEqual(
       gradeSubmissionSchema.safeParse({
         submission_id: 'invalid-id',
         rubrik: { konten: 'A', bahasa: 'A' },
-        rekomendasi: 'lulus',
       }).success,
       false
     )
@@ -168,16 +161,6 @@ describe('gradeSubmissionSchema', () => {
       gradeSubmissionSchema.safeParse({
         submission_id: '123e4567-e89b-12d3-a456-426614174000',
         rubrik: { konten: 'D', bahasa: 'A' },
-        rekomendasi: 'lulus',
-      }).success,
-      false
-    )
-
-    assert.strictEqual(
-      gradeSubmissionSchema.safeParse({
-        submission_id: '123e4567-e89b-12d3-a456-426614174000',
-        rubrik: { konten: 'A', bahasa: 'A' },
-        rekomendasi: 'tidak_lulus',
       }).success,
       false
     )
@@ -188,7 +171,7 @@ describe('submitWriting', () => {
   it('returns VALIDATION_ERROR when input schema fails', async () => {
     const supabase = createMockSupabaseClient({})
     const result = await submitWriting(supabase, {
-      file_url: 'https://example.com/naskah.zip',
+      file_url: 'u1/naskah.zip',
     })
 
     assert.strictEqual(result.ok, false)
@@ -207,7 +190,7 @@ describe('submitWriting', () => {
     })
 
     const result = await submitWriting(supabase, {
-      file_url: 'https://example.com/karya.pdf',
+      file_url: 'u1/karya.pdf',
     })
 
     assert.strictEqual(result.ok, false)
@@ -217,22 +200,19 @@ describe('submitWriting', () => {
     }
   })
 
-  it('maps KLOTER_TIDAK_ADA hint to NO_ACTIVE_KLOTER', async () => {
+  it('maps BERKAS_BUKAN_MILIK hint to FILE_NOT_OWNED', async () => {
     const supabase = createMockSupabaseClient({
       rpcHandler: () => ({
         data: null,
-        error: { message: 'Tidak ada kloter berjalan', code: 'P0002', hint: 'KLOTER_TIDAK_ADA' },
+        error: { message: 'Berkas bukan milikmu', code: '42501', hint: 'BERKAS_BUKAN_MILIK' },
       }),
     })
 
-    const result = await submitWriting(supabase, {
-      file_url: 'https://example.com/karya.pdf',
-    })
+    const result = await submitWriting(supabase, { file_url: 'orang-lain/karya.pdf' })
 
     assert.strictEqual(result.ok, false)
     if (!result.ok) {
-      assert.strictEqual(result.code, 'NO_ACTIVE_KLOTER')
-      assert.strictEqual(result.error, 'Tidak ada kloter yang sedang berjalan')
+      assert.strictEqual(result.code, 'FILE_NOT_OWNED')
     }
   })
 
@@ -249,7 +229,7 @@ describe('submitWriting', () => {
     })
 
     const result = await submitWriting(supabase, {
-      file_url: 'https://example.com/karya.docx',
+      file_url: 'u1/karya.docx',
     })
 
     assert.strictEqual(result.ok, false)
@@ -272,7 +252,7 @@ describe('submitWriting', () => {
     })
 
     const result = await submitWriting(supabase, {
-      file_url: 'https://example.com/karya.pdf',
+      file_url: 'u1/karya.pdf',
     })
 
     assert.strictEqual(result.ok, false)
@@ -297,7 +277,7 @@ describe('submitWriting', () => {
     })
 
     const result = await submitWriting(supabase, {
-      file_url: 'https://example.com/karya.pdf',
+      file_url: 'u1/karya.pdf',
     })
 
     assert.strictEqual(result.ok, false)
@@ -313,7 +293,7 @@ describe('submitWriting', () => {
       user_id: 'user-456',
       kloter_id: 'kloter-789',
       versi: 1,
-      file_url: 'https://storage.supabase.co/karya/naskah.docx',
+      file_url: 'u1/k1/naskah.docx',
       status: 'menunggu',
       nilai: null,
       created_at: '2026-08-29T10:00:00.000Z',
@@ -329,13 +309,13 @@ describe('submitWriting', () => {
     })
 
     const result = await submitWriting(supabase, {
-      file_url: 'https://storage.supabase.co/karya/naskah.docx',
+      file_url: 'u1/k1/naskah.docx',
     })
 
     assert.strictEqual(result.ok, true)
     assert.deepStrictEqual(calledRpc, {
       fnName: 'setor_karya',
-      args: { p_file_url: 'https://storage.supabase.co/karya/naskah.docx' },
+      args: { p_file_url: 'u1/k1/naskah.docx' },
     })
 
     if (result.ok) {
@@ -358,7 +338,7 @@ describe('getUserSubmissions', () => {
         user_id: 'user-1',
         kloter_id: 'kloter-1',
         versi: 2,
-        file_url: 'https://example.com/v2.pdf',
+        file_url: 'u1/v2.pdf',
         status: 'menunggu',
         nilai: null,
         created_at: '2026-08-29T12:00:00.000Z',
@@ -368,14 +348,13 @@ describe('getUserSubmissions', () => {
         user_id: 'user-1',
         kloter_id: 'kloter-1',
         versi: 1,
-        file_url: 'https://example.com/v1.pdf',
+        file_url: 'u1/v1.pdf',
         status: 'dinilai',
         nilai: {
           graded_by: 'mentor-1',
           graded_at: '2026-08-29T11:00:00.000Z',
           rubrik: { konten: 'B', bahasa: 'A' },
           feedback: 'Perbaiki bab 2',
-          rekomendasi: 'revisi',
         } as unknown as Json,
         created_at: '2026-08-29T10:00:00.000Z',
       },
@@ -409,7 +388,6 @@ describe('getUserSubmissions', () => {
     assert.strictEqual(submissions[1]?.versi, 1)
     assert.strictEqual(submissions[1]?.status, 'dinilai')
     assert.strictEqual(submissions[1]?.nilai?.rubrik.konten, 'B')
-    assert.strictEqual(submissions[1]?.nilai?.rekomendasi, 'revisi')
   })
 
   it('returns empty array when error occurs or data is empty', async () => {
@@ -434,7 +412,6 @@ describe('gradeSubmission', () => {
     const result = await gradeSubmission(supabase, mentorId, {
       submission_id: 'not-a-uuid',
       rubrik: { konten: 'A', bahasa: 'A' },
-      rekomendasi: 'lulus',
     })
 
     assert.strictEqual(result.ok, false)
@@ -451,14 +428,13 @@ describe('gradeSubmission', () => {
       user_id: 'user-123',
       kloter_id: 'kloter-456',
       versi: 1,
-      file_url: 'https://example.com/karya.pdf',
+      file_url: 'u1/karya.pdf',
       status: 'dinilai',
       nilai: {
         graded_by: mentorId,
         graded_at: fixedTime,
         rubrik: { konten: 'A', bahasa: 'A' },
         feedback: 'Karya luar biasa!',
-        rekomendasi: 'lulus',
       },
       created_at: '2026-08-29T10:00:00.000Z',
     }
@@ -481,7 +457,6 @@ describe('gradeSubmission', () => {
         submission_id: submissionId,
         rubrik: { konten: 'A', bahasa: 'A' },
         feedback: 'Karya luar biasa!',
-        rekomendasi: 'lulus',
       },
       fixedTime
     )
@@ -494,13 +469,11 @@ describe('gradeSubmission', () => {
     assert.strictEqual(payload.graded_at, fixedTime)
     assert.strictEqual(payload.rubrik.konten, 'A')
     assert.strictEqual(payload.feedback, 'Karya luar biasa!')
-    assert.strictEqual(payload.rekomendasi, 'lulus')
 
     assert.strictEqual(result.ok, true)
     if (result.ok) {
       assert.strictEqual(result.submission.id, submissionId)
       assert.strictEqual(result.submission.status, 'dinilai')
-      assert.strictEqual(result.submission.nilai?.rekomendasi, 'lulus')
       assert.strictEqual(result.submission.nilai?.rubrik.konten, 'A')
     }
   })
@@ -516,7 +489,6 @@ describe('gradeSubmission', () => {
     const result = await gradeSubmission(supabase, mentorId, {
       submission_id: submissionId,
       rubrik: { konten: 'B', bahasa: 'B' },
-      rekomendasi: 'revisi',
     })
 
     assert.strictEqual(result.ok, false)

@@ -1,73 +1,44 @@
 import type { Database } from '@/lib/types/database.types'
 
-export type PhaseType = Database['public']['Enums']['phase_type']
+type Tables = Database['public']['Tables']
 
-export type SeasonStatus = Database['public']['Tables']['seasons']['Row']['status']
+/** Empat fase berjadwal (§3.3). Bukan enum DB; diturunkan dari tanggal b1–b5. */
+export type FaseKloter = 'pendaftaran' | 'orientasi' | 'menyimak' | 'menulis_setor'
 
-export type Season = Database['public']['Tables']['seasons']['Row']
-export type SeasonInsert = Database['public']['Tables']['seasons']['Insert']
-export type SeasonUpdate = Database['public']['Tables']['seasons']['Update']
+/** Status siklus season, diturunkan oleh computed field `status_siklus` (§3.2). */
+export type StatusSiklusSeason = 'draft' | 'akan_datang' | 'berjalan' | 'selesai'
 
-export type Kloter = Database['public']['Tables']['kloters']['Row']
-export type KloterInsert = Database['public']['Tables']['kloters']['Insert']
-export type KloterUpdate = Database['public']['Tables']['kloters']['Update']
+export type KloterStatus = 'draft' | 'berjalan' | 'wrapped'
 
-export type KloterPhase = Database['public']['Tables']['kloter_phases']['Row']
-export type KloterPhaseInsert = Database['public']['Tables']['kloter_phases']['Insert']
-export type KloterPhaseUpdate = Database['public']['Tables']['kloter_phases']['Update']
+export type Season = Tables['seasons']['Row']
+export type SeasonInsert = Tables['seasons']['Insert']
+export type SeasonUpdate = Tables['seasons']['Update']
 
-export type Kelas = Database['public']['Tables']['kelas']['Row']
-export type KelasInsert = Database['public']['Tables']['kelas']['Insert']
-export type KelasUpdate = Database['public']['Tables']['kelas']['Update']
+/** Kolom kloter yang boleh dibaca publik; `livestream_url` rahasia (§3.10). */
+export const KLOTER_PUBLIC_COLUMNS =
+  'id, season_id, nomor, kapasitas, status, tanggal_mulai, tgl_mulai_orientasi, tgl_mulai_menyimak, tgl_mulai_setor, tgl_tenggat_setor, tanggal_selesai, target_penilaian, ambang_pengingat, livestream_at' as const
 
-export type UserSeason = Database['public']['Tables']['user_seasons']['Row']
-export type UserSeasonInsert = Database['public']['Tables']['user_seasons']['Insert']
-export type UserSeasonUpdate = Database['public']['Tables']['user_seasons']['Update']
+export type Kloter = Omit<Tables['kloters']['Row'], 'livestream_url'>
+export type KloterInsert = Tables['kloters']['Insert']
+export type KloterUpdate = Tables['kloters']['Update']
 
-export type VideoProgress = Database['public']['Tables']['video_progress']['Row']
-export type VideoProgressInsert = Database['public']['Tables']['video_progress']['Insert']
-export type VideoProgressUpdate = Database['public']['Tables']['video_progress']['Update']
+/** Kolom kelas yang boleh dibaca publik; `video_url` rahasia (§3.10). */
+export const KELAS_PUBLIC_COLUMNS = 'id, season_id, nomor, judul, jumlah_soal_tampil' as const
 
-export type WritingSubmission = Database['public']['Tables']['writing_submissions']['Row']
-export type WritingSubmissionInsert = Database['public']['Tables']['writing_submissions']['Insert']
-export type WritingSubmissionUpdate = Database['public']['Tables']['writing_submissions']['Update']
+export type Kelas = Omit<Tables['kelas']['Row'], 'video_url'>
 
-export type Certificate = Database['public']['Tables']['certificates']['Row']
-export type CertificateInsert = Database['public']['Tables']['certificates']['Insert']
-export type CertificateUpdate = Database['public']['Tables']['certificates']['Update']
+export type UserSeason = Tables['user_seasons']['Row']
+export type SeasonSource = UserSeason['sumber']
 
-export type KloterAktif = Database['public']['Views']['kloter_aktif']['Row']
-
-export type SubmissionStatus = Database['public']['Tables']['writing_submissions']['Row']['status']
-export type CertificateType = Database['public']['Tables']['certificates']['Row']['jenis']
-export type SeasonSource = Database['public']['Tables']['user_seasons']['Row']['sumber']
-
-export interface KloterWithPhases extends Kloter {
-  phases?: KloterPhase[]
-  kloter_phases?: KloterPhase[]
-}
-
-export interface SeasonWithPhases extends Season {
-  kloters: KloterWithPhases[]
-}
+export type KloterDalamFase = Database['public']['Views']['kloter_dalam_fase']['Row']
 
 export interface SeasonOverview extends Season {
-  kloters: (Kloter & { kloter_phases?: KloterPhase[] })[]
+  status_siklus: StatusSiklusSeason
+  kloters: Kloter[]
   kelas: Kelas[]
 }
 
-export interface UserSeasonOwnership {
-  owned: boolean
-  ownsSeason?: boolean
-  userSeasonId: string
-  seasonId: string
-  kloterDaftarId: string
-  tanggalDiperoleh: string
-  sumber: SeasonSource
-  menyimakOpensAt: string | null
-}
-
 export interface PublicSeasonCalendar {
-  activeKloter: KloterAktif | null
-  currentSeason: Season | null
+  kloterDalamFase: KloterDalamFase | null
+  currentSeason: (Season & { status_siklus: StatusSiklusSeason }) | null
 }

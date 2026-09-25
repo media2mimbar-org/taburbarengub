@@ -60,16 +60,13 @@ describe('Database Live Integration & RPC Execution Tests', () => {
     assert.strictEqual(isDbConnected, true)
   })
 
-  it('verifies kloter_aktif computed view returns active kloter in menyimak phase', async (t) => {
+  it('reads kloter_dalam_fase as anon and resolves the seeded kloter to menyimak', async (t) => {
     if (!isDbConnected) {
       t.skip('Database offline')
       return
     }
 
-    const { data, error } = await supabase
-      .from('kloter_aktif')
-      .select('*')
-      .maybeSingle()
+    const { data, error } = await supabase.from('kloter_dalam_fase').select('*').maybeSingle()
 
     assert.strictEqual(error, null)
     if (data) {
@@ -106,34 +103,20 @@ describe('Database Live Integration & RPC Execution Tests', () => {
       assert.strictEqual(userProfile.tanggal_lahir, '1995-05-15')
     }
   })
-  it('executes submit_classroom_progress RPC with authenticated client and verifies ownership gate', async (t) => {
+  it('rejects get_soal_kelas for a user who is not a bimbingan participant', async (t) => {
     if (!isDbConnected || !authClient) {
       t.skip('Database or auth offline')
       return
     }
 
-    // Get an existing class id
-    const { data: kelasList } = await supabase
-      .from('kelas')
-      .select('id')
-      .limit(1)
-
+    const { data: kelasList } = await supabase.from('kelas').select('id').limit(1)
     const kelasId = kelasList?.[0]?.id ?? '00000000-0000-0000-0000-000000000000'
 
-    const { data, error } = await authClient
-      .rpc('submit_classroom_progress', {
-        p_kelas_id: kelasId,
-        p_watched_seconds: 60,
-        p_quiz_answers: [{ soal_id: 1, pilihan: 'A' }],
-        p_quiz_score: 100,
-      })
-      .single()
+    const { data, error } = await authClient.rpc('get_soal_kelas', { p_kelas_id: kelasId })
 
     assert.strictEqual(data, null)
-    assert.ok(error !== null)
-    // Authenticated user doesn't own this season yet -> BUKAN_SEASON_MILIK (42501)
-    // This proves the SQL body compiled, found the class, and evaluated user_seasons ownership!
     assert.strictEqual(error?.code, '42501')
+    assert.strictEqual(error?.hint, 'BUKAN_PESERTA_BIMBINGAN')
   })
 
   it('executes setor_karya RPC and rejects directory traversal .. in file path', async (t) => {
