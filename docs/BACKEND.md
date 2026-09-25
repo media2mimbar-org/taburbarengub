@@ -1133,22 +1133,20 @@ Perbaikan masuk baseline (§7). Tabel `soal` boleh kosong saat migrasi; isinya m
 
 `docs/ARCHITECTURE.md` sudah disunting ulang 25 Sep: hierarki 4 fase, anti-overlap `[b1, b5)` parsial, `kloter_dalam_fase`, gerbang per bentuk, kuis, naskah, kaidah jalur tulis, invarian vs kebijakan, dan status season turunan. Satu yang masih menunggu: §5.2 di sana baru menyebut rencana raport, kolomnya menyusul bersama §4.1.
 
-Di Notion:
+Notion disinkronkan 25 Sep:
 
-| Halaman | Yang perlu disunting |
+| Halaman | Yang disunting |
 |---|---|
-| *Keputusan yang pernah dibalik* | Tambah tiga entri (§4.4) |
-| `/app/season/[id]/setor` | *"Karya untuk kloter 4 dinilai mentor kloter 4"* — terbalik |
-| `Pertanyaan Terbuka` D15 | *"Penilaian mengikuti kloter karyanya"* — terbalik. Sisa pertanyaannya ("hasil di dua kloter, mana yang berlaku") tertutup |
-| `Pertanyaan Terbuka` D3d/D3e | Tertutup oleh update tim — semua lulus |
-| `Pertanyaan Terbuka` H5 | Tertutup oleh A.3 + nilai kuis ditahan. Tidak perlu status parsial di skema. Tapi **layar** "sedang dinilai" tetap perlu digambar |
-| `Pertanyaan Terbuka` A3b | Terjawab: penutupan season mensyaratkan tidak ada kloter berjalan |
-| `Pertanyaan Terbuka` D10 sisa | = H11. **Tertutup:** satu kesempatan, kiriman pertama mengikat |
-| `/app/season/[id]/kelas/[n]` | *"18–30 soal berbeda **per kloter**"* — frasanya longgar dan menyesatkan. Soal melekat di `kelas` (level season), berbeda antar video. Kalau dibaca harfiah, jadi beban penulisan soal 6× setahun |
-| `/app/season/[id]/kelas/[n]` | Tambah: bank soal lebih besar dari yang ditampilkan, diundi per peserta, undian dikunci saat kuis dibuka, satu kesempatan |
-| Halaman beli season | Dua produk: bimbingan (hanya di fase pendaftaran kloter) dan arsip (season sudah selesai), harga berbeda |
-| `/app/season/[id]/kelas/[n]` | Kuis hanya selama kloter asal; pembeli arsip tidak mendapat kuis |
-| `Pertanyaan Terbuka` — baru | Tambah §4.1 (desain raport) dan §4.2 (G10 pembagian, D4) |
+| Progress Proyek | status 3 pilar, log keputusan 5/6/25 Sep, entri 31 Agt `submit_classroom_progress` dicoret, **7 entri baru** di *Keputusan yang pernah dibalik* (penilaian kloter karyanya, `jenis` dihapus, kuis = ambang, `kloter_phases`, flag override, `seasons.status` enum, progres tontonan) |
+| Pertanyaan Terbuka | D3d/D3e, D6, D10 sisa, D15, H5, A3b ditutup. Baru: **R1** desain raport, **H6** pembagian mentor, **D17** jumlah bank soal |
+| `/app/season/[id]/setor` | penilaian ikut kloter karyanya → dibalik; tenggat & versi ✅; format file sementara |
+| `/app/season/[id]/kelas/[n]` | "soal per kloter" dikoreksi jadi per video; kuis = jendela, satu kesempatan, arsip tanpa kuis |
+| Keadaan Repo Sekarang | ditulis ulang dari katalog |
+| Status Alur Kerja | Pilar 1 & 2, milestone F.2 dan F.4 |
+| Schema Season/Kloter (26 Agt) | ditandai historis, dirujuk ke baseline |
+| Log Sesi AI | entri sesi 25 Sep, *Perlu tindak lanjut* = ya |
+
+Halaman beli season belum ada di Content Inventory; keputusan dua produk (bimbingan/arsip) sementara tercatat di log keputusan Progress Proyek.
 
 ---
 
