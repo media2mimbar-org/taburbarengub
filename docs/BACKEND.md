@@ -26,7 +26,7 @@ Klaim yang belum dibuktikan dengan eksekusi ditandai `[INFERENCE]`. Jangan diper
 
 Hubungan dengan dokumen lain:
 - `docs/REVIEW_BACKEND_TEMUAN.md` — temuan gabungan tiga review atas dokumen ini, plus verifikasi lima premis langsung ke migrasi. Sumber B1–B5, H1–H12, S1–S10.
-- `docs/ARCHITECTURE.md` — pola & tempat logika. §3.1 dan §3.2 di sana **jadi basi** setelah §3 dokumen ini diterapkan (lihat §6).
+- `docs/ARCHITECTURE.md` — ringkasan pola & tempat logika. Disinkronkan dengan baseline 25 Sep; kalau berbeda, §3 dokumen ini yang berlaku.
 - `docs/REVIEW_ACTION_TRACKER.md` — sumber status aktual. Item yang mulai dikerjakan dipromosikan jadi entri `PR-17` dan seterusnya di sana.
 - Notion `Content Inventory` — spesifikasi 5W2H per halaman, sumber kebenaran untuk isi layar.
 - Notion `Pertanyaan Terbuka` — daftar pertanyaan untuk tim media / Mas Titian / Ustadz Budi.
@@ -1131,17 +1131,7 @@ Perbaikan masuk baseline (§7). Tabel `soal` boleh kosong saat migrasi; isinya m
 
 ## 6. Yang jadi basi di dokumen lain
 
-Setelah §3 diterapkan, bagian berikut di `docs/ARCHITECTURE.md` harus diperbarui:
-
-| Bagian | Yang basi |
-|---|---|
-| §3.1 Hierarki Domain | "1 Kloter = 7 Fase Berurutan" — fase jadi 4; `offline`, `wrapped`, `antara_kloter` bukan fase |
-| §3.2 Anti-Overlap | Contoh view `kloter_aktif` masih men-JOIN `kloter_phases`; rentang GiST berubah ke `[b1, b5)` parsial; view diganti `kloter_dalam_fase` |
-| §3.3 Gating | "Akses video terbuka sejak `opens_at` dari fase `menyimak`" — sumbernya berubah ke kolom kloter asal user, dan bentuknya ambang bukan jendela. Kuis terpisah: jendela fase menyimak kloter asal |
-| §5.2 Snapshot Sertifikat | Perlu diperluas: raport membekukan nilai kuis + dua rubrik + catatan, bukan hanya `nama_penerima` |
-| Bagian mana pun yang menyebut `seasons.status` | Dipecah jadi `terbit` + turunan tanggal |
-| Prinsip Single Gate of Write | Tambahkan kaidah jalur tulis §3.10: tulis langsung admin untuk aturan per baris |
-| Prinsip umum | Tambahkan kaidah invarian vs kebijakan §2.4 |
+`docs/ARCHITECTURE.md` sudah disunting ulang 25 Sep: hierarki 4 fase, anti-overlap `[b1, b5)` parsial, `kloter_dalam_fase`, gerbang per bentuk, kuis, naskah, kaidah jalur tulis, invarian vs kebijakan, dan status season turunan. Satu yang masih menunggu: §5.2 di sana baru menyebut rencana raport, kolomnya menyusul bersama §4.1.
 
 Di Notion:
 
