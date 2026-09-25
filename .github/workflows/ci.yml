@@ -50,6 +50,10 @@ jobs:
       - name: Start Supabase Local
         run: supabase start -x studio,imgproxy,inbucket,edge-runtime,functions,realtime,vector,analytics
 
+      # Tes perilaku DB (pgTAP, supabase/tests): gerbang, kuis, naskah, pendaftaran.
+      - name: Test database
+        run: supabase test db
+
       # Env di level workflow menunjuk ke example.supabase.co (dummy untuk build).
       # Step ini WAJIB menimpanya ke instance lokal, kalau tidak probe koneksi
       # gagal dan 7 test integrasi RPC skip tanpa pernah menyentuh database.
