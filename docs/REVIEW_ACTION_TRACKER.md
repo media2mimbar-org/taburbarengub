@@ -374,6 +374,7 @@ Source: Review P2.2, P2.8, Graphify M-02
 - `checked_in` tidak boleh cancel tanpa koreksi khusus.
 - Session dengan booking tidak hard-delete; gunakan `status = cancelled`.
 - Sediakan reconciliation query.
+- **25 Sep: counter `kuota_terisi` / `kuota_kids_terisi` tetap disimpan.** RPC batal wajib menurunkannya di transaksi yang sama (`FOR UPDATE` baris sesi). Tidak ada pekerjaan sebelum keputusan produk di atas dijawab. Sampai saat itu, jangan ubah status booking lewat dashboard.
 
 ### Acceptance criteria
 

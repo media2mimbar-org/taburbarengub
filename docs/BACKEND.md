@@ -1053,7 +1053,7 @@ Sampai deploy dijalankan, cloud masih berskema Fase 1. Jangan jalankan `npm run 
 | **H4 sisa (Notion)** | Jendela setor dibuka berapa lama sebelum tenggat. Nilai tanggal, tidak memblokir bentuk skema |
 | **Layar "sedang dinilai"** | Notion menandainya sebagai *sisa ketergantungan H5*. Layar `wrapped` yang tergambar isinya sertifikat, bukan masa tunggu — kemungkinan satu layar belum punya gambar. Mode layar nomor 7 di §3.3 |
 | **Wireframe rev 2.3 pakai istilah lama** | "bulan ini" / "berulang tiap bulan" — setor mengikuti jadwal kloter, 6× setahun bukan 12× |
-| **`kuota_terisi` / `kuota_kids_terisi`** (H5) | Turunan tersimpan tanpa jalur penurun: tidak ada RPC cancel booking. `create_booking` sudah memegang `FOR UPDATE` di baris sesi, jadi `count(bookings aktif) < kapasitas` di bawah lock yang sama sama amannya tanpa risiko drift. PR-03 sudah mencabut hak update kolom ini dari `authenticated`, yang memperkuat argumen menghapusnya. **Dilacak sebagai PR-04 di `REVIEW_ACTION_TRACKER.md` — jangan dilacak dua kali** |
+| **`kuota_terisi` / `kuota_kids_terisi`** (H5) | **Diputuskan 25 Sep: counter tetap disimpan (KISS).** Drift hanya muncul kalau ada pembatalan, dan jalur batal belum ada. Saat fitur batal dibuat (PR-04), RPC-nya menurunkan kedua counter di transaksi yang sama di bawah `FOR UPDATE` baris sesi, cermin `create_booking`. Hitung langsung ditolak: ongkos baca kecil (uji lokal 500 sesi × 100k booking = 91 ms), tapi butuh trigger kapasitas + cast tipe di 6 pembaca. Sampai fitur batal ada: **jangan ubah status booking lewat dashboard**. Dilacak di PR-04 |
 
 ---
 
