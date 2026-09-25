@@ -763,7 +763,7 @@ Belum: deploy ke cloud ditunda (`docs/BACKEND.md` §4.5); cloud masih berskema F
 
 Dampak ke item lain:
 
-- PR-08 sebagian terpenuhi: replay migrasi (`db reset` di CI), tes RLS anon/user/admin, dan penolakan update kolom status/counter langsung kini ada di pgTAP. Sisanya (tes konkurensi booking/check-in, CSV, Playwright) belum.
+- PR-08 sebagian terpenuhi: replay migrasi (`db reset` di CI), tes RLS anon/user/admin, dan penolakan update langsung kolom status/soal kini ada di pgTAP. Sisanya (penolakan update counter kuota, tes konkurensi booking/check-in, CSV, Playwright) belum.
 - PR-10 sebagian: `graphify-out/` tidak lagi ditrack Git.
 ---
 
