@@ -3,6 +3,7 @@ import { BackLink } from '@/components/ui/back-link'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { SessionForm } from '@/features/session/client/session-form'
+import { SESSION_COLUMNS } from '@/features/session/shared/session.schema'
 export default async function EditSessionPage({
   params,
 }: {
@@ -18,7 +19,7 @@ export default async function EditSessionPage({
   }
   const { data: session, error } = await supabase
     .from('event_sessions')
-    .select('*')
+    .select(SESSION_COLUMNS)
     .eq('id', id)
     .maybeSingle()
 

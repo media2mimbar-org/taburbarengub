@@ -8,6 +8,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getProfileGate } from '@/features/profile/server/profile-service'
 import { formatDateTime } from '@/lib/format'
+import { SESSION_COLUMNS } from '@/features/session/shared/session.schema'
 
 const disabledButtonStyle = { padding: '12px 16px', borderRadius: 10 }
 
@@ -136,7 +137,7 @@ export default async function SessionDetailPage({
 
   const { data: session, error } = await supabase
     .from('event_sessions')
-    .select('*')
+    .select(SESSION_COLUMNS)
     .eq('id', id)
     .eq('status', 'published')
     .maybeSingle()

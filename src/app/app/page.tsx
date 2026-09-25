@@ -3,6 +3,7 @@ import { ProfileCompletionPrompt } from '@/features/profile/client/profile-compl
 import { createClient } from '@/lib/supabase/server'
 import { getProfileGate } from '@/features/profile/server/profile-service'
 import { formatDateTime } from '@/lib/format'
+import { SESSION_COLUMNS } from '@/features/session/shared/session.schema'
 
 function bookingStatusLabel(status: string) {
   if (status === 'checked_in') return 'Sudah check-in'
@@ -68,13 +69,13 @@ export default async function Home() {
     supabase.from('hero_content').select('*').eq('id', 1).maybeSingle(),
     supabase
       .from('event_sessions')
-      .select('*')
+      .select(SESSION_COLUMNS)
       .eq('status', 'published')
       .gte('tanggal_waktu', nowIso)
       .order('tanggal_waktu', { ascending: true }),
     supabase
       .from('event_sessions')
-      .select('*')
+      .select(SESSION_COLUMNS)
       .eq('status', 'published')
       .lt('tanggal_waktu', nowIso)
       .order('tanggal_waktu', { ascending: false })

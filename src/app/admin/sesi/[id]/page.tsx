@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { formatDateTimeCompact } from '@/lib/format'
 import { getUser, type UserSummary } from '@/features/session/shared/participant'
+import { SESSION_COLUMNS } from '@/features/session/shared/session.schema'
 
 type ParticipantBooking = {
   id: string
@@ -67,7 +68,7 @@ export default async function AdminSessionDetailPage({
   }
   const { data: session, error: sessionError } = await supabase
     .from('event_sessions')
-    .select('*')
+    .select(SESSION_COLUMNS)
     .eq('id', id)
     .maybeSingle()
 

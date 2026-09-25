@@ -1,5 +1,12 @@
 import { z } from 'zod'
 import { nullableTrimmedText } from '@/lib/zod-helpers'
+import type { Database } from '@/lib/types/database.types'
+
+/** Kolom sesi yang boleh dibaca klien. `rekaman_url` rahasia (§3.10), jadi `select('*')` ditolak DB. */
+export const SESSION_COLUMNS =
+  'id, nama_sesi, tanggal_waktu, lokasi_atau_link, deskripsi, kapasitas, kuota_terisi, kapasitas_kids, kuota_kids_terisi, status, kloter_id, created_at' as const
+
+export type EventSession = Omit<Database['public']['Tables']['event_sessions']['Row'], 'rekaman_url'>
 
 export const sessionPayloadSchema = z.object({
   nama_sesi: z.string().trim().min(1, { message: 'Nama sesi wajib diisi' }),

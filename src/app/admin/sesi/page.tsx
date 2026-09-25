@@ -5,6 +5,7 @@ import { BackLink } from '@/components/ui/back-link'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/require-admin'
 import { formatDateTimeCompact } from '@/lib/format'
+import { SESSION_COLUMNS } from '@/features/session/shared/session.schema'
 
 function statusStyle(status: string) {
   if (status === 'published') {
@@ -28,7 +29,7 @@ export default async function AdminSesiPage() {
   }
   const { data: sessions, error } = await supabase
     .from('event_sessions')
-    .select('*')
+    .select(SESSION_COLUMNS)
     .order('tanggal_waktu', { ascending: true })
 
   const safeSessions = sessions ?? []

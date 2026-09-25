@@ -2,9 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
-import type { Database } from '@/lib/types/database.types'
-
-type EventSession = Database['public']['Tables']['event_sessions']['Row']
+import type { EventSession } from '@/features/session/shared/session.schema'
 
 type SessionFormState = {
   nama_sesi: string

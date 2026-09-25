@@ -1,8 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/types/database.types'
-import type { SessionPayload } from '@/features/session/shared/session.schema'
-
-type EventSession = Database['public']['Tables']['event_sessions']['Row']
+import { SESSION_COLUMNS, type EventSession, type SessionPayload } from '@/features/session/shared/session.schema'
 
 export class SessionError extends Error {
   constructor(message: string, public status: number = 400) {
@@ -29,7 +27,7 @@ export async function createEventSession(
   const { data, error } = await supabase
     .from('event_sessions')
     .insert(payload)
-    .select('*')
+    .select(SESSION_COLUMNS)
     .single()
 
   if (error) {
@@ -70,7 +68,7 @@ export async function updateEventSession(
     .from('event_sessions')
     .update(payload)
     .eq('id', id)
-    .select('*')
+    .select(SESSION_COLUMNS)
     .single()
 
   if (error) {
