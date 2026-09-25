@@ -1012,7 +1012,7 @@ Alasannya bahkan menjawab dirinya sendiri: Notion sudah memutuskan skor tidak di
 
 Selama bank ≥ jumlah yang ditampilkan, mekanismenya jalan; bank yang pas-pasan hanya menipiskan manfaat anti-nyontek. Jadi angka ini tidak memblokir migrasi tabelnya. Angka realistisnya belum ditetapkan.
 
-**H9 — "hard deadline" tanpa penegak.** Notion menyebut tenggat penilaian sebagai *hard deadline yang mengunci penerbitan sertifikat*, tapi `target_penilaian` cuma timestamp internal. Kalau terlewat dan kloter masih `berjalan`, tidak ada apa pun yang menandai keterlambatan ke admin selain badge. Siapa yang mengingatkan, dan bagaimana, belum ditetapkan. Konsisten dengan B.2 (tanpa auto-wrap) berarti penegakannya memang manusia — tapi itu perlu dinyatakan, bukan diasumsikan.
+**H9 — "hard deadline" tanpa penegak. Diputuskan 26 Sep: manual.** Notion menyebut tenggat penilaian sebagai *hard deadline yang mengunci penerbitan sertifikat*, tapi `target_penilaian` cuma timestamp internal. Penegaknya admin, konsisten dengan B.2 (tanpa auto-wrap): penilaian terbuka dari b5 sampai admin menutup kloter lewat `ubah_status_kloter`, dan `target_penilaian` + `ambang_pengingat` hanya jadi pengingat di UI admin. Konsekuensi yang diterima: kalau admin lupa menutup kloter, mentor masih bisa menilai dan sertifikat tertahan. DB tidak memaksa apa pun.
 
 ### 4.4 Terangkat, belum ditutup
 
@@ -1162,7 +1162,7 @@ Halaman beli season belum ada di Content Inventory; keputusan dua produk (bimbin
 | 7 | **D4** → isi plug-in → 5W2H `/admin/karya` | D4 dari tim | ⬜ di-hold |
 | 8 | **§4.1** desain raport → paket sertifikat H3 → generator PDF | tim media | ⬜ |
 | 9 | **Payment gateway** (§3.8) | — | ⬜ ditunda |
-| 10 | **H5 lewat PR-04** → H9 → S1–S10 sisa | — | ⬜ |
+| 10 | ~~H5~~ (counter tetap, penurun ikut RPC batal di PR-04) → ~~H9~~ (manual) → S1–S10 sisa | — | ⬜ |
 
 Penulisan isi soal (~90 butir per season, §4.3) berjalan paralel dengan semuanya.
 
