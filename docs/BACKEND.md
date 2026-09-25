@@ -1021,7 +1021,6 @@ Selama bank ≥ jumlah yang ditampilkan, mekanismenya jalan; bank yang pas-pasan
 | **Payment gateway** | Desain checkout dengan tenggat sudah ada di §3.8. Pilihan gateway, tabel `pembayaran`, dan webhook ditunda sebagai bagian tersendiri |
 | **Layout admin: topbar vs sidebar** | Dua mockup ada di `docs/admin-mockup.html`, belum dipilih. `AdminLayout` sekarang hanya gerbang peran |
 | **`.docx` → PDF** | Tiga jalan disodorkan (konversi di klien / di backend / edukasi + fallback), belum dipilih. Bucket menerima PDF/DOC/DOCX; mockup mentor mengasumsikan semuanya PDF |
-| **Keputusan Notion yang terbalik** | "Kloter melekat di karyanya" (26 Agt), D15 *"penilaian mengikuti kloter karyanya"*, dan "kuis = ambang" (6 Sep). Pindahkan ke tabel *Keputusan yang pernah dibalik*, jangan dihapus |
 
 Yang **keluar** dari daftar ini karena sudah terjawab: sinkronisasi dua level status (D1 + A3b), gerbang tautan livestream (§3.4), nama tabel kuis (`kuis_peserta`), ambang "tenggat mendekat" (§3.2), override fase (§3.2), `kloter_daftar_id` untuk arsip (§3.7), jalur pendaftaran H8 (§3.8), `bookings.qr_token` UNIQUE (ada), kebijakan bucket S4 (§3.9), dan file menggantung S10 (mockup dipindah ke `docs/`, `graphify-out/` diabaikan Git, dump cloud dihapus).
 
