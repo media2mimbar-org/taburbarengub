@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mockup Admin & Mentor — TaburBarengUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --font-serif: 'Fraunces', Georgia, serif;
+      --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      
+      /* Color tokens DS v1 */
+      --salju: #F6FAFD;
+      --embun: #E9F1F7;
+      --langit-pagi: #D8E6F2;
+      --kebiruan-halus: #EEF6F2;
+      --tunas-muda: #DDECCE;
+      --hijau-segar: #C6E1B4;
+      --hijau-lembut: #A6C49A;
+      --hijau-alami: #7BA27A;
+      --hutan-tenang: #507C5B;
+      --hutan-malam: #203A2B;
+      --tanah-bumi: #7A583A;
+      
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --border: #E2E8F0;
+      --text: #0F172A;
+      --text-muted: #64748B;
+      --text-dim: #94A3B8;
+      
+      --primary: #203A2B;
+      --primary-hover: #16281E;
+      --accent: #7BA27A;
+      --accent-bg: #EEF6F2;
+      --warning-bg: #FEF3C7;
+      --warning-text: #B45309;
+      --success-bg: #DCFCE7;
+      --success-text: #15803D;
+      --info-bg: #E0F2FE;
+      --info-text: #0369A1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Switcher Floating Toolbar */
+    .role-switcher-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #0F172A;
+      color: #F8FAFC;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+    .switcher-btn-group {
+      display: flex;
+      gap: 6px;
+      background: #1E293B;
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .switcher-btn {
+      border: none;
+      background: transparent;
+      color: #94A3B8;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .switcher-btn.active {
+      background: var(--hutan-tenang);
+      color: #FFFFFF;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .role-badge {
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-admin { background: #3B82F6; color: white; }
+    .badge-mentor { background: #10B981; color: white; }
+    .badge-staff { background: #F59E0B; color: white; }
+
+    /* Admin Chrome / Header */
+    header.admin-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 45px;
+      z-index: 90;
+    }
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      background: var(--hutan-malam);
+      color: var(--hijau-segar);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+    }
+    .brand-name {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--hutan-malam);
+      letter-spacing: -0.3px;
+    }
+    .brand-env {
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--embun);
+      color: var(--hutan-tenang);
+      padding: 2px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    /* Navigation Tabs */
+    nav.admin-nav {
+      display: flex;
+      gap: 4px;
+      height: 100%;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px;
+      height: 100%;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .nav-item:hover {
+      color: var(--text);
+      background: #F8FAFC;
+    }
+    .nav-item.active {
+      color: var(--hutan-malam);
+      border-bottom-color: var(--hutan-malam);
+      font-weight: 700;
+    }
+
+    .user-profile-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .user-info {
+      text-align: right;
+    }
+    .user-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .user-role-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--langit-pagi);
+      color: var(--hutan-malam);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    /* Main Container */
+    main.admin-main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 28px 24px 80px;
+    }
+
+    /* Views */
+    .view-panel {
+      display: none;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+    .view-panel.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Breadcrumbs & Page Header */
+    .page-head {
+      margin-bottom: 24px;
+    }
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .title-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .page-title {
+      font-family: var(--font-serif);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--hutan-malam);
+      letter-spacing: -0.5px;
+    }
+    .page-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Context Scope Header (Season Tahunan) */
+    .season-scope-bar {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .season-scope-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .season-scope-title {
+      font-family: var(--font-serif);
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--hutan-malam);
+    }
+
+    /* Metrics Cards */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .metric-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .metric-val {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--hutan-malam);
+      line-height: 1.1;
+    }
+    .metric-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* Phase Banner */
+    .phase-banner {
+      background: linear-gradient(135deg, var(--kebiruan-halus) 0%, var(--embun) 100%);
+      border: 1px solid var(--hijau-lembut);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      gap: 16px;
+    }
+    .phase-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .phase-badge-pill {
+      background: var(--hutan-tenang);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .phase-badge-pill::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      background: #86EFAC;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    /* Card Box */
+    .card-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      overflow: hidden;
+    }
+    .card-box-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #FAFAFA;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .card-box-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      background: #EDF2F7;
+      padding: 3px;
+      border-radius: 8px;
+    }
+    .filter-tab {
+      border: none;
+      background: transparent;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .filter-tab.active {
+      background: #FFFFFF;
+      color: var(--hutan-malam);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+    table.data-table th {
+      background: #F8FAFC;
+      color: var(--text-muted);
+      font-weight: 700;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    table.data-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid #F1F5F9;
+      color: var(--text);
+      vertical-align: middle;
+    }
+    table.data-table tr:hover td {
+      background: #F8FAFC;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+    }
+    .btn-primary {
+      background: var(--hutan-malam);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-secondary {
+      background: white;
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-secondary:hover {
+      background: #F8FAFC;
+    }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+    .btn-accent {
+      background: var(--accent-bg);
+      color: var(--hutan-tenang);
+      border-color: var(--hijau-lembut);
+    }
+    .btn-accent:hover {
+      background: var(--tunas-muda);
+    }
+
+    /* Status Pills */
+    .status-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .status-menunggu { background: var(--warning-bg); color: var(--warning-text); }
+    .status-dinilai { background: var(--success-bg); color: var(--success-text); }
+    .status-susulan { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+
+    /* Program Tree Cards */
+    .kloter-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 18px;
+    }
+    .kloter-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      position: relative;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .kloter-card.active-kloter {
+      border-color: var(--hijau-alami);
+      background: #FFFFFF;
+      box-shadow: 0 0 0 2px var(--hijau-alami);
+    }
+    .kloter-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--hutan-tenang);
+      margin-bottom: 4px;
+    }
+    .kloter-title {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--hutan-malam);
+    }
+
+    /* Livestream Box Kloter */
+    .livestream-box {
+      background: #FDF2F8;
+      border: 1px solid #FBCFE8;
+      border-radius: 10px;
+      padding: 12px;
+      margin: 14px 0;
+    }
+    .livestream-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .livestream-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: #9D174D;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .livestream-url-text {
+      font-size: 12px;
+      color: #701A75;
+      font-family: monospace;
+      word-break: break-all;
+    }
+
+    .kloter-meta-list {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin: 12px 0 16px;
+    }
+    .kloter-meta-item {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Modal / Drawer Overlay for Grading */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .grading-modal {
+      background: white;
+      width: 100%;
+      max-width: 1200px;
+      height: 94vh;
+      border-radius: 20px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .grading-modal-header {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #FAFAFA;
+    }
+    .grading-body {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* NATIVE PDF VIEWER SIMULATOR PANE */
+    .pdf-viewer-pane {
+      background: #334155;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+    .pdf-toolbar {
+      background: #1E293B;
+      color: #E2E8F0;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      border-bottom: 1px solid #475569;
+    }
+    .pdf-toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .pdf-viewport {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      justify-content: center;
+    }
+    .pdf-page-canvas {
+      background: white;
+      width: 100%;
+      max-width: 580px;
+      min-height: 800px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+      border-radius: 2px;
+      padding: 48px 44px;
+      font-size: 13.5px;
+      line-height: 1.75;
+      color: #1E293B;
+    }
+    .pdf-doc-title {
+      font-family: var(--font-serif);
+      font-size: 21px;
+      font-weight: 700;
+      color: #0F172A;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .rubric-pane {
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      background: #FFFFFF;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .form-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .form-input, .form-textarea, .form-select {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .form-textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    @media (max-width: 860px) {
+      .grading-body {
+        grid-template-columns: 1fr;
+      }
+      .pdf-viewer-pane {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- FLOATING ROLE SWITCHER TOOLBAR -->
+  <aside class="role-switcher-bar" aria-label="Demo Simulator Switcher">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span style="font-weight:700; color:#E2E8F0;">🔍 Mode Simulasi:</span>
+      <div class="switcher-btn-group">
+        <button class="switcher-btn active" onclick="switchRole('admin')">
+          <span class="role-badge badge-admin">Admin</span>
+          <span>Siklus Kloter & Livestream</span>
+        </button>
+        <button class="switcher-btn" onclick="switchRole('mentor')">
+          <span class="role-badge badge-mentor">Mentor</span>
+          <span>Ruang Penilaian PDF</span>
+        </button>
+        <button class="switcher-btn" onclick="switchRole('staff')">
+          <span class="role-badge badge-staff">Staff</span>
+          <span>Scanner QR Venue</span>
+        </button>
+      </div>
+    </div>
+    <div style="font-size:12px; color:#94A3B8;">
+      TaburBarengUB • Siklus Tahunan & Kloter Berjalan
+    </div>
+  </aside>
+
+  <!-- ADMIN CHROME / HEADER -->
+  <header class="admin-header">
+    <div class="brand-area">
+      <div class="brand-logo">🌿</div>
+      <div>
+        <div class="brand-name">TaburBarengUB</div>
+      </div>
+      <span class="brand-env" id="headerRoleBadge">Admin Workspace</span>
+    </div>
+
+    <!-- Navigation Menu (Dynamic per Role) -->
+    <nav class="admin-nav" id="adminNav">
+      <!-- Admin Nav Items -->
+      <a class="nav-item active" data-role="admin" onclick="showView('admin-program', this)">
+        <span>🏛️ Kloter & Livestream</span>
+      </a>
+      <a class="nav-item" data-role="admin" onclick="showView('admin-sesi', this)">
+        <span>🕌 Kajian Offline</span>
+      </a>
+      <a class="nav-item" data-role="admin" onclick="showView('mentor-dashboard', this)">
+        <span>✍️ Naskah & Nilai</span>
+      </a>
+      <a class="nav-item" data-role="admin" onclick="showView('admin-pembayaran', this)">
+        <span>💳 Pembayaran</span>
+      </a>
+
+      <!-- Mentor Nav Items -->
+      <a class="nav-item" data-role="mentor" style="display:none;" onclick="showView('mentor-dashboard', this)">
+        <span>📝 Antrean Penilaian (PDF)</span>
+      </a>
+      <a class="nav-item" data-role="mentor" style="display:none;" onclick="showView('mentor-riwayat', this)">
+        <span>📚 Riwayat Naskah Dinilai</span>
+      </a>
+
+      <!-- Staff Nav Items -->
+      <a class="nav-item" data-role="staff" style="display:none;" onclick="showView('staff-scanner', this)">
+        <span>📷 Scanner QR Venue</span>
+      </a>
+      <a class="nav-item" data-role="staff" style="display:none;" onclick="showView('admin-sesi', this)">
+        <span>📋 Daftar Hadir</span>
+      </a>
+    </nav>
+
+    <!-- User Profile Area -->
+    <div class="user-profile-area">
+      <div class="user-info">
+        <div class="user-name" id="userNameText">Ustadz Budi (Admin)</div>
+        <div class="user-role-label" id="userRoleText">Akses Penuh Platform</div>
+      </div>
+      <div class="avatar" id="userAvatar">UB</div>
+    </div>
+  </header>
+
+  <!-- MAIN VIEW CONTAINER -->
+  <main class="admin-main">
+
+    <!-- ============================================================= -->
+    <!-- VIEW 1: ADMIN KLOTER OPERASIONAL & LIVESTREAM                 -->
+    <!-- ============================================================= -->
+    <div id="view-admin-program" class="view-panel active">
+      
+      <!-- Season Context Bar (Karena Season Tahunan/Jarang) -->
+      <div class="season-scope-bar">
+        <div>
+          <div class="season-scope-label">Payung Season Tahunan (Tahun Ajaran 2026):</div>
+          <div class="season-scope-title">
+            Season 1: Kaidah Berpikir Qur'ani dalam Memandang Kehidupan
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="status-pill status-dinilai">● Season Sedang Berjalan</span>
+          <button class="btn btn-secondary btn-sm" onclick="alert('Buka dialog ganti/arsip season')">
+            Ganti Season ▾
+          </button>
+        </div>
+      </div>
+
+      <div class="page-head">
+        <div class="title-row">
+          <div>
+            <h1 class="page-title">Detak Kloter Belajar</h1>
+            <p class="page-desc">
+              Siklus belajar 2 bulanan: jadwal fase, pembagian anggota, dan livestream kloter penutup menyimak.
+            </p>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-primary btn-sm" onclick="alert('Form Buka Kloter Baru dalam Season Ini')">
+              + Buka Kloter Baru
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Global Phase Banner -->
+      <div class="phase-banner">
+        <div class="phase-info">
+          <div class="phase-badge-pill">Kloter 1 • Fase Menulis & Setor</div>
+          <div>
+            <div style="font-weight:700; font-size:14px; color:var(--hutan-malam);">
+              Jendela setor naskah dibuka otomatis untuk seluruh anggota Kloter 1 & susulan
+            </div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+              Tenggat setor: <strong>5 Sep 2026, 23:59 WIB</strong> • Naskah masuk terstandarisasi otomatis ke PDF
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-accent btn-sm" onclick="showView('mentor-dashboard', document.querySelectorAll('.nav-item')[2])">
+          Tinjau 12 Naskah Masuk ➔
+        </button>
+      </div>
+
+      <!-- Kloter Grid -->
+      <div class="kloter-container">
+        
+        <!-- Kloter 1 Card (Aktif) -->
+        <div class="kloter-card active-kloter">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div class="kloter-tag">KLOTER AKTIF SAAT INI</div>
+            <span class="status-pill status-dinilai" style="font-size:10px; padding:2px 8px;">1 GLOBAL CLOCK</span>
+          </div>
+          <h2 class="kloter-title">Kloter 1 (Kaidah 1)</h2>
+          <div style="font-size:12px; color:var(--text-muted);">
+            Periode: 1 Agustus – 25 September 2026
+          </div>
+
+          <!-- Livestream Kloter-Specific Widget -->
+          <div class="livestream-box">
+            <div class="livestream-header">
+              <span class="livestream-label">
+                <span>🔴</span> Livestream Penutup Menyimak
+              </span>
+              <button class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:11px;" onclick="promptLivestreamLink()">
+                ✏️ Edit Link
+              </button>
+            </div>
+            <div class="livestream-url-text" id="liveStreamDisplay">
+              https://youtube.com/live/tabur-k1-tutup-menyimak
+            </div>
+            <div style="font-size:11px; color:#831843; margin-top:4px;">
+              Jadwal Siar: <strong>Sabtu, 29 Agt 2026 (20:00 WIB)</strong> • Tampil otomatis di /app member kloter 1
+            </div>
+          </div>
+
+          <div class="kloter-meta-list">
+            <div class="kloter-meta-item">
+              <span>Anggota Terdaftar:</span>
+              <strong>98 Peserta</strong>
+            </div>
+            <div class="kloter-meta-item">
+              <span>Naskah Tugas Terkumpul:</span>
+              <strong>43 PDF (12 perlu dinilai)</strong>
+            </div>
+            <div class="kloter-meta-item">
+              <span>Mentor Penilai:</span>
+              <strong>Ustadz Salman, Ustadzah Aisyah</strong>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px; margin-top:14px;">
+            <button class="btn btn-primary btn-sm" style="flex:1;" onclick="alert('Daftar 98 Anggota Kloter 1 (/admin/kloter/[id])')">
+              👥 98 Anggota
+            </button>
+            <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="showView('mentor-dashboard', null)">
+              ✍️ 12 Naskah
+            </button>
+          </div>
+        </div>
+
+        <!-- Kloter 2 Card (Upcoming) -->
+        <div class="kloter-card">
+          <div class="kloter-tag">SIKLUS BERIKUTNYA</div>
+          <h2 class="kloter-title">Kloter 2 (Kaidah 1)</h2>
+          <div style="font-size:12px; color:var(--text-muted);">
+            Periode: 1 Oktober – 25 November 2026
+          </div>
+
+          <!-- Livestream Placeholder -->
+          <div class="livestream-box" style="background:#F8FAFC; border-color:#E2E8F0;">
+            <div class="livestream-header">
+              <span class="livestream-label" style="color:#64748B;">
+                <span>⚪</span> Livestream Penutup Menyimak
+              </span>
+              <button class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:11px;" onclick="promptLivestreamLink()">
+                + Set Link
+              </button>
+            </div>
+            <div style="font-size:11px; color:#94A3B8; font-style:italic;">
+              Belum ada tautan siaran (biasanya diisi H-3 sebelum fase menyimak ditutup).
+            </div>
+          </div>
+
+          <div class="kloter-meta-list">
+            <div class="kloter-meta-item">
+              <span>Pendaftaran Dibuka:</span>
+              <strong>20 September 2026</strong>
+            </div>
+            <div class="kloter-meta-item">
+              <span>Target Kapasitas:</span>
+              <strong>100 Peserta</strong>
+            </div>
+            <div class="kloter-meta-item">
+              <span>Status:</span>
+              <span style="color:#64748B;">Menunggu Jadwal</span>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px; margin-top:14px;">
+            <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="alert('Atur Jadwal 7 Fase Kloter 2')">
+              ⚙️ Konfigurasi 7 Fase
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ============================================================= -->
+    <!-- VIEW 2: DEDICATED MENTOR VIEW (PDF STANDARDIZED)             -->
+    <!-- ============================================================= -->
+    <div id="view-mentor-dashboard" class="view-panel">
+      <div class="page-head">
+        <div class="breadcrumbs">
+          <span>Admin</span> <span>/</span> <span>Ruang Mentor</span> <span>/</span> <span>Penilaian Karya PDF</span>
+        </div>
+        <div class="title-row">
+          <div>
+            <h1 class="page-title">Ruang Penilaian & Bimbingan Naskah</h1>
+            <p class="page-desc">
+              Seluruh naskah tugas terstandarisasi dalam format PDF untuk kenyamanan evaluasi tanpa unduh berkas manual.
+            </p>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:13px; color:var(--text-muted);">Kloter Aktif:</span>
+            <select class="form-select" style="font-weight:600; font-size:13px;">
+              <option>Kloter 1 (Kaidah 1) — Aktif</option>
+              <option>Semua Naskah yang Ditugaskan</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mentor Workload Stats -->
+      <div class="metrics-grid">
+        <div class="metric-card" style="border-left: 4px solid #F59E0B;">
+          <div class="metric-label">
+            <span>Perlu Dinilai</span>
+            <span>⏳</span>
+          </div>
+          <div class="metric-val" style="color:#B45309;">12</div>
+          <div class="metric-sub">8 Naskah Baru, 4 Revisi v2</div>
+        </div>
+
+        <div class="metric-card" style="border-left: 4px solid #10B981;">
+          <div class="metric-label">
+            <span>Selesai Dinilai</span>
+            <span>✅</span>
+          </div>
+          <div class="metric-val" style="color:#15803D;">31</div>
+          <div class="metric-sub">Rata-rata Skor: 87.4</div>
+        </div>
+
+        <div class="metric-card" style="border-left: 4px solid #3B82F6;">
+          <div class="metric-label">
+            <span>Kloter Susulan (G10)</span>
+            <span>📑</span>
+          </div>
+          <div class="metric-val" style="color:#1D4ED8;">3</div>
+          <div class="metric-sub">Peserta susulan kloter lalu</div>
+        </div>
+
+        <div class="metric-card" style="border-left: 4px solid #6366F1;">
+          <div class="metric-label">
+            <span>Tenggat Evaluasi</span>
+            <span>⏰</span>
+          </div>
+          <div class="metric-val" style="font-size:20px; font-weight:700; color:#4338CA; padding-top:6px;">
+            5 Sep 2026
+          </div>
+          <div class="metric-sub">Sebelum penerbitan sertifikat</div>
+        </div>
+      </div>
+
+      <!-- Submissions Table Card -->
+      <div class="card-box">
+        <div class="card-box-header">
+          <div class="card-box-title">Antrean Dokumen Naskah Tugas (Format Standar PDF)</div>
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="setFilter(this)">Semua Antrean (12)</button>
+            <button class="filter-tab" onclick="setFilter(this)">Perlu Dinilai (12)</button>
+            <button class="filter-tab" onclick="setFilter(this)">Naskah Revisi (v2+) (4)</button>
+            <button class="filter-tab" onclick="setFilter(this)">Kloter Susulan (3)</button>
+            <button class="filter-tab" onclick="setFilter(this)">Sudah Dinilai (31)</button>
+          </div>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Peserta</th>
+              <th>Kloter Asal</th>
+              <th>Versi</th>
+              <th>Disetor Pada</th>
+              <th>Dokumen Resmi</th>
+              <th>Status Nilai</th>
+              <th style="text-align:right;">Aksi Kerja</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Row 1: Menunggu Nilai (Revisi v2 hasil konversi docx->pdf) -->
+            <tr>
+              <td>
+                <div style="font-weight:700;">Ahmad Fauzi Ridwan</div>
+                <div style="font-size:11px; color:var(--text-muted);">afauzi@gmail.com • 08123456789</div>
+              </td>
+              <td>
+                <div>Kloter 1 (Kaidah 1)</div>
+                <div style="font-size:11px; color:var(--text-muted);">Peserta Reguler</div>
+              </td>
+              <td>
+                <span style="font-weight:800; background:#F1F5F9; padding:2px 6px; border-radius:4px;">v2</span>
+                <span style="font-size:10px; color:#B45309; font-weight:700;">Revisi</span>
+              </td>
+              <td>
+                <div>Hari ini, 10:45 WIB</div>
+                <div style="font-size:11px; color:var(--text-muted);">Disetor via Portal Tugas</div>
+              </td>
+              <td>
+                <span style="font-size:12px; font-weight:700; color:#DC2626;">📕 PDF Terstandarisasi</span>
+                <div style="font-size:10px; color:var(--text-muted);">(Konversi dari .docx)</div>
+              </td>
+              <td>
+                <span class="status-pill status-menunggu">Menunggu Nilai</span>
+              </td>
+              <td style="text-align:right;">
+                <button class="btn btn-primary btn-sm" onclick="openGradingModal('Ahmad Fauzi Ridwan', 'v2', 'tugas_tadabbur_kaidah1_rev2.pdf', 'Tadabbur Surah Al-Kahf: Menemukan Hikmah di Balik Tabir Ujian Kehidupan')">
+                  🔍 Nilai PDF
+                </button>
+              </td>
+            </tr>
+
+            <!-- Row 2: Kloter Susulan G10 -->
+            <tr>
+              <td>
+                <div style="font-weight:700;">Siti Maryam Al-Banjari</div>
+                <div style="font-size:11px; color:var(--text-muted);">maryam.siti@yahoo.com</div>
+              </td>
+              <td>
+                <div>Kloter 1 (Kaidah 1)</div>
+                <span class="status-pill status-susulan" style="font-size:10px; padding:2px 6px;">Susulan G10</span>
+              </td>
+              <td>
+                <span style="font-weight:800; background:#F1F5F9; padding:2px 6px; border-radius:4px;">v1</span>
+              </td>
+              <td>
+                <div>Kemarin, 21:15 WIB</div>
+              </td>
+              <td>
+                <span style="font-size:12px; font-weight:700; color:#DC2626;">📕 PDF Asli</span>
+              </td>
+              <td>
+                <span class="status-pill status-menunggu">Menunggu Nilai</span>
+              </td>
+              <td style="text-align:right;">
+                <button class="btn btn-primary btn-sm" onclick="openGradingModal('Siti Maryam Al-Banjari', 'v1', 'karya_kaidah1_maryam.pdf', 'Refleksi Pribadi atas Kaidah Pertama: Membangun Cara Pandang Rabbaniy')">
+                  🔍 Nilai PDF
+                </button>
+              </td>
+            </tr>
+
+            <!-- Row 3: Sudah Dinilai -->
+            <tr style="opacity:0.85;">
+              <td>
+                <div style="font-weight:700;">Budi Santoso</div>
+                <div style="font-size:11px; color:var(--text-muted);">budi.san@gmail.com</div>
+              </td>
+              <td>
+                <div>Kloter 1 (Kaidah 1)</div>
+              </td>
+              <td>
+                <span style="font-weight:800; background:#F1F5F9; padding:2px 6px; border-radius:4px;">v1</span>
+              </td>
+              <td>
+                <div>28 Agt 2026</div>
+              </td>
+              <td>
+                <span style="font-size:12px; font-weight:700; color:#DC2626;">📕 PDF</span>
+              </td>
+              <td>
+                <span class="status-pill status-dinilai">Dinilai: 92 (Lolos)</span>
+              </td>
+              <td style="text-align:right;">
+                <button class="btn btn-secondary btn-sm" onclick="alert('Melihat lembar nilai Budi Santoso (Skor 92)')">
+                  👁️ Lihat Nilai
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <!-- ============================================================= -->
+    <!-- VIEW 3: KAJIAN OFFLINE                                        -->
+    <!-- ============================================================= -->
+    <div id="view-admin-sesi" class="view-panel">
+      <div class="page-head">
+        <h1 class="page-title">Manajemen Kajian Offline</h1>
+        <p class="page-desc">Jadwal kajian tatap muka 2 bulan sekali, kuota dewasa, dan alokasi Kids Corner.</p>
+      </div>
+      <div class="card-box" style="padding:24px;">
+        <p style="font-size:14px; color:var(--text-muted);">
+          Modul kajian offline terhubung otomatis sebagai pembuka kloter (Event Session ID ➔ Kloter ID).
+        </p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================= -->
+    <!-- VIEW 4: STAFF SCANNER                                         -->
+    <!-- ============================================================= -->
+    <div id="view-staff-scanner" class="view-panel">
+      <div class="page-head">
+        <h1 class="page-title">Tool Scanner QR Lapangan</h1>
+        <p class="page-desc">Petugas venue scan QR check-in peserta kajian tatap muka.</p>
+      </div>
+      <div class="card-box" style="max-width:440px; margin: 0 auto; padding:24px; text-align:center;">
+        <span style="font-size:48px;">📷</span>
+        <p style="margin-top:12px; font-weight:700;">Scanner Venue Siap Digunakan</p>
+      </div>
+    </div>
+
+
+    <!-- ============================================================= -->
+    <!-- VIEW 5: PEMBAYARAN                                            -->
+    <!-- ============================================================= -->
+    <div id="view-admin-pembayaran" class="view-panel">
+      <div class="page-head">
+        <h1 class="page-title">Rekap Transaksi & Pembayaran</h1>
+        <p class="page-desc">Monitoring pemasukan dan aktivasi manual pendaftaran season.</p>
+      </div>
+      <div class="card-box" style="padding:32px; text-align:center; color:var(--text-muted);">
+        <span style="font-size:36px; display:block; margin-bottom:10px;">💳</span>
+        Data pendaftaran season & mutasi pembayaran manual/otomatis.
+      </div>
+    </div>
+
+  </main>
+
+
+  <!-- ============================================================= -->
+  <!-- MODAL BACA & NILAI KARYA (DENGAN NATIVE PDF VIEWER PANE)     -->
+  <!-- ============================================================= -->
+  <div class="modal-overlay" id="gradingModal">
+    <div class="grading-modal">
+      <div class="grading-modal-header">
+        <div>
+          <div style="font-size:12px; color:var(--text-muted);">Evaluasi Naskah Peserta:</div>
+          <h2 style="font-size:17px; font-weight:700; color:var(--hutan-malam);" id="modalPesertaName">
+            Ahmad Fauzi Ridwan
+          </h2>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span class="status-pill status-susulan" id="modalVersionBadge">Versi 2 (Revisi)</span>
+          <button class="btn btn-secondary btn-sm" onclick="closeGradingModal()">Tutup (Esc)</button>
+        </div>
+      </div>
+
+      <div class="grading-body">
+        
+        <!-- KIRI: SIMULASI NATIVE EMBEDDED PDF VIEWER -->
+        <div class="pdf-viewer-pane">
+          <div class="pdf-toolbar">
+            <div class="pdf-toolbar-group">
+              <span style="font-weight:700; color:#F8FAFC;">📕 PDF Viewer</span>
+              <span style="color:#94A3B8;">|</span>
+              <span id="modalFileName" style="color:#CBD5E1; font-family:monospace;">naskah.pdf</span>
+            </div>
+            <div class="pdf-toolbar-group">
+              <span>Halaman 1 / 3</span>
+              <button class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:11px; background:#475569; color:white; border:none;" onclick="alert('Zoom In / Fit Page')">
+                🔍 100%
+              </button>
+              <button class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:11px; background:#475569; color:white; border:none;" onclick="alert('Download signed URL berkas PDF')">
+                📥 Unduh
+              </button>
+            </div>
+          </div>
+
+          <!-- Lembar PDF Canvas Render -->
+          <div class="pdf-viewport">
+            <div class="pdf-page-canvas">
+              <div class="pdf-doc-title" id="modalDocTitle">
+                Tadabbur Surah Al-Kahf: Menemukan Hikmah di Balik Tabir Ujian Kehidupan
+              </div>
+              <div style="font-size:12px; color:#64748B; margin-bottom:20px; border-bottom:1px solid #E2E8F0; padding-bottom:8px;">
+                Penulis: Ahmad Fauzi Ridwan • Format Terstandarisasi PDF (A4)
+              </div>
+              
+              <p style="margin-bottom:16px;">
+                <strong>1. Pendahuluan & Latar Belakang</strong><br>
+                Kaidah berpikir pertama yang dipelajari pada Season ini menekankan pentingnya memisahkan antara realitas lahiriah dengan kehendak hakiki yang sedang dirajut oleh Allah SWT. Kerap kali manusia terjebak pada penilaian sesaat atas apa yang menimpanya...
+              </p>
+
+              <p style="margin-bottom:16px;">
+                <strong>2. Analisis Ayat & Refleksi Kaidah</strong><br>
+                Sebagaimana kisah pertemuan Nabi Musa AS dan Khidhir AS dalam Surah Al-Kahf ayat 65–82, setiap peristiwa yang nampak merugikan di permukaan (merusak perahu, membunuh anak muda, menegakkan dinding) sesungguhnya menyimpan perlindungan masa depan yang tak kasat mata...
+              </p>
+
+              <div style="background:var(--kebiruan-halus); border-left:3px solid var(--hutan-tenang); padding:12px; font-style:italic; margin-bottom:16px; font-size:13px;">
+                "Perbaikan Versi 2: Saya telah memperdalam hubungan antara konsep takdir pada ayat-ayat tersebut dengan penerapan praktis saat menghadapi kegagalan proyek di tempat kerja, sesuai masukan dari Ustadz pada evaluasi sebelumnya."
+              </div>
+
+              <p>
+                <strong>3. Kesimpulan & Resolusi Diri</strong><br>
+                Dengan memahami kaidah ini, hati menjadi lebih kokoh dalam berikhtiar tanpa mudah patah arang ketika hasil belum sesuai ekspektasi...
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- KANAN: FORM RUBRIK PENILAIAN MENTOR (RPC: nilai_karya) -->
+        <div class="rubric-pane">
+          <div>
+            <h3 style="font-size:16px; font-weight:700; color:var(--hutan-malam); margin-bottom:4px;">
+              Lembar Evaluasi Mentor
+            </h3>
+            <p class="form-desc">
+              Menilai langsung dari pembacaan PDF di samping. Disimpan via RPC <code>nilai_karya</code>.
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">1. Kedalaman Tadabbur Ayat (Bobot 40%)</label>
+            <span class="form-desc">Kesesuaian dengan kaidah & rujukan ayat.</span>
+            <input type="number" class="form-input" min="0" max="100" value="88" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">2. Sistematika Tulisan (Bobot 30%)</label>
+            <span class="form-desc">Alur logis dan kerapian paragraf.</span>
+            <input type="number" class="form-input" min="0" max="100" value="85" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">3. Resolusi Amalan Keseharian (Bobot 30%)</label>
+            <span class="form-desc">Aplikasi nyata dalam hidup peserta.</span>
+            <input type="number" class="form-input" min="0" max="100" value="90" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Catatan Evaluasi / Feedback Mentor</label>
+            <textarea class="form-textarea" placeholder="Tuliskan masukan untuk peserta...">Alhamdulillah, naskah PDF versi 2 ini sangat rapi. Relevansi kisah Khidhir dengan dinamika pekerjaan diuraikan secara kontekstual. Barakallahu fiik.</textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Rekomendasi Kelulusan Tugas</label>
+            <select class="form-select" style="font-weight:700;">
+              <option value="lolos" selected>✅ Lolos (Terbitkan Sertifikat)</option>
+              <option value="revisi">🔄 Perlu Revisi Tambahan (Minta Versi 3)</option>
+              <option value="tidak_lolos">❌ Belum Memenuhi Syarat</option>
+            </select>
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn btn-secondary" style="flex:1;" onclick="closeGradingModal()">
+              Batal
+            </button>
+            <button class="btn btn-primary" style="flex:2;" onclick="saveGrading()">
+              💾 Simpan Nilai (RPC)
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- JAVASCRIPT LOGIC INTERAKTIF -->
+  <script>
+    let currentRole = 'admin';
+
+    function switchRole(role) {
+      currentRole = role;
+      
+      document.querySelectorAll('.switcher-btn').forEach(b => b.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+
+      const badge = document.getElementById('headerRoleBadge');
+      const userName = document.getElementById('userNameText');
+      const userRole = document.getElementById('userRoleText');
+      const userAvatar = document.getElementById('userAvatar');
+
+      document.querySelectorAll('.nav-item').forEach(item => {
+        if (role === 'admin') {
+          item.style.display = item.dataset.role === 'admin' ? 'flex' : 'none';
+        } else if (role === 'mentor') {
+          item.style.display = item.dataset.role === 'mentor' ? 'flex' : 'none';
+        } else if (role === 'staff') {
+          item.style.display = item.dataset.role === 'staff' ? 'flex' : 'none';
+        }
+      });
+
+      if (role === 'admin') {
+        badge.textContent = 'Admin Workspace';
+        userName.textContent = 'Ustadz Budi (Admin)';
+        userRole.textContent = 'Akses Penuh Platform';
+        userAvatar.textContent = 'UB';
+        showView('admin-program', document.querySelector('.nav-item[data-role="admin"]'));
+      } else if (role === 'mentor') {
+        badge.textContent = 'Ruang Mentor';
+        userName.textContent = 'Ustadz Salman (Mentor)';
+        userRole.textContent = 'Asesor Naskah Kloter 1';
+        userAvatar.textContent = 'US';
+        showView('mentor-dashboard', document.querySelector('.nav-item[data-role="mentor"]'));
+      } else if (role === 'staff') {
+        badge.textContent = 'Staff Lapangan';
+        userName.textContent = 'Ahmad Staff (Venue)';
+        userRole.textContent = 'Petugas Scanner Check-In';
+        userAvatar.textContent = 'AS';
+        showView('staff-scanner', document.querySelector('.nav-item[data-role="staff"]'));
+      }
+    }
+
+    function showView(viewId, navElem) {
+      document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+      const target = document.getElementById('view-' + viewId);
+      if (target) target.classList.add('active');
+
+      if (navElem) {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        navElem.classList.add('active');
+      }
+    }
+
+    function setFilter(btn) {
+      const parent = btn.parentElement;
+      parent.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function promptLivestreamLink() {
+      const current = document.getElementById('liveStreamDisplay').textContent.trim();
+      const newUrl = prompt('Masukkan Link Livestream YouTube Penutup Kloter 1:', current);
+      if (newUrl) {
+        document.getElementById('liveStreamDisplay').textContent = newUrl;
+        alert('Tautan Livestream Kloter 1 berhasil diperbarui!');
+      }
+    }
+
+    function openGradingModal(nama, versi, berkas, judul) {
+      document.getElementById('modalPesertaName').textContent = nama;
+      document.getElementById('modalVersionBadge').textContent = 'Versi ' + versi;
+      document.getElementById('modalFileName').textContent = berkas;
+      document.getElementById('modalDocTitle').textContent = judul;
+      document.getElementById('gradingModal').classList.add('active');
+    }
+
+    function closeGradingModal() {
+      document.getElementById('gradingModal').classList.remove('active');
+    }
+
+    function saveGrading() {
+      alert('Berhasil! RPC "nilai_karya" dieksekusi. Skor disimpan & status tugas diperbarui.');
+      closeGradingModal();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeGradingModal();
+    });
+  </script>
+</body>
+</html>

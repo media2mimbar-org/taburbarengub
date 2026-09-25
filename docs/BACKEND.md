@@ -1011,12 +1011,11 @@ Selama bank ≥ jumlah yang ditampilkan, mekanismenya jalan; bank yang pas-pasan
 | Item | Keadaan |
 |---|---|
 | **Payment gateway** | Desain checkout dengan tenggat sudah ada di §3.8. Pilihan gateway, tabel `pembayaran`, dan webhook ditunda sebagai bagian tersendiri |
-| **Layout admin: topbar vs sidebar** | Dua mockup ada di `public/admin-mockup.html`, belum dipilih. `AdminLayout` sekarang hanya gerbang peran |
+| **Layout admin: topbar vs sidebar** | Dua mockup ada di `docs/admin-mockup.html`, belum dipilih. `AdminLayout` sekarang hanya gerbang peran |
 | **`.docx` → PDF** | Tiga jalan disodorkan (konversi di klien / di backend / edukasi + fallback), belum dipilih. Bucket menerima PDF/DOC/DOCX; mockup mentor mengasumsikan semuanya PDF |
 | **Keputusan Notion yang terbalik** | "Kloter melekat di karyanya" (26 Agt), D15 *"penilaian mengikuti kloter karyanya"*, dan "kuis = ambang" (6 Sep). Pindahkan ke tabel *Keputusan yang pernah dibalik*, jangan dihapus |
-| **File menggantung** (S10) | `public/admin-mockup.html` dipindah ke `docs/`. `graphify-out/` masuk `.gitignore`. `supabase/production_dump.sql` dan `production_data.sql` berisi email dan nomor HP tester — dihapus, jangan di-commit |
 
-Yang **keluar** dari daftar ini karena sudah terjawab: sinkronisasi dua level status (D1 + A3b), gerbang tautan livestream (§3.4), nama tabel kuis (`kuis_peserta`), ambang "tenggat mendekat" (§3.2), override fase (§3.2), `kloter_daftar_id` untuk arsip (§3.7), jalur pendaftaran H8 (§3.8), `bookings.qr_token` UNIQUE (ada), dan kebijakan bucket S4 (§3.9).
+Yang **keluar** dari daftar ini karena sudah terjawab: sinkronisasi dua level status (D1 + A3b), gerbang tautan livestream (§3.4), nama tabel kuis (`kuis_peserta`), ambang "tenggat mendekat" (§3.2), override fase (§3.2), `kloter_daftar_id` untuk arsip (§3.7), jalur pendaftaran H8 (§3.8), `bookings.qr_token` UNIQUE (ada), kebijakan bucket S4 (§3.9), dan file menggantung S10 (mockup dipindah ke `docs/`, `graphify-out/` diabaikan Git, dump cloud dihapus).
 
 ### 4.5 Cloud dan jalan deploy
 
@@ -1159,7 +1158,7 @@ Di Notion:
 | 2 | **Preflight cloud** | — | ✅ akun tester, §4.5 |
 | 3 | **Satu baseline migrasi** — gabungan 18 migrasi lama + seluruh §3: kolom `kloters` dan `seasons.terbit`, `user_seasons.jenis`, `kloter_dalam_fase`, `naskah_mengikat`, `soal` + `kuis_peserta`, peristiwa, bucket + plug-in naskah, kaidah jalur tulis + hak kolom, 13 RPC, perbaikan §5.1–§5.3 | — | ⬜ |
 | 4 | **Kode aplikasi**: types, `classroom-service.ts`, service season, halaman admin; test §8 | 3 | ⬜ |
-| 5 | **Beres-beres**: mockup ke `docs/`, `graphify-out/` ke `.gitignore`, hapus dump cloud | — | ⬜ |
+| 5 | **Beres-beres**: mockup ke `docs/`, `graphify-out/` ke `.gitignore`, hapus dump cloud | — | ✅ |
 | 6 | **Deploy cloud** (§4.5) | 3, 4 | ⬜ |
 | 7 | **D4** → isi plug-in → 5W2H `/admin/karya` | D4 dari tim | ⬜ di-hold |
 | 8 | **§4.1** desain raport → paket sertifikat H3 → generator PDF | tim media | ⬜ |

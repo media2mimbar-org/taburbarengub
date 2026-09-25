@@ -60,8 +60,7 @@ supabase/.temp/
 
 # TypeScript incremental
 *.tsbuildinfo
-graphify-out/cache/
-graphify-out/.graphify_*
+graphify-out/
 
 # AI tooling artifacts
 .agents/
