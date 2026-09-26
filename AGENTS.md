@@ -30,10 +30,11 @@ Mulai dari halaman Notion **TaburBarengUB** (https://app.notion.com/p/3c0ab95161
 - **Invariant vs policy**: invariants → constraints. Business policies used in >1 place → one plug-in function in `app_internal` (`boleh_menilai_naskah`, `status_jendela_kuis`, `hitung_nilai_kuis`). Change the body, not the callers.
 - **RPC zones**:
   - Zone A (participant): `create_booking`, `update_profile`, `setor_karya`, `get_video_url`, `get_soal_kelas`, `jawab_kuis`, `get_status_kuis`, `get_season_peristiwa`.
-  - Zone B (admin/mentor/staff, role checked inside): `nilai_karya`, `check_in_booking`, `ubah_status_season`, `ubah_status_kloter`, `daftarkan_peserta`, `koreksi_kunci`.
+  - Zone B (admin/mentor/staff, role checked inside): `nilai_karya`, `check_in_booking`, `ubah_status_season`, `ubah_status_kloter`, `daftarkan_peserta`, `koreksi_kunci`, `get_penulis_naskah`, `tandai_dibaca`.
   - Zone C (`app_internal`, hidden from PostgREST): role helpers, plug-ins, triggers.
 - **Kloter timeline**: five boundaries b1–b5 on `kloters` → four derived phases (`pendaftaran`, `orientasi`, `menyimak`, `menulis_setor`). Status `draft | berjalan | wrapped`. View `kloter_dalam_fase`; GiST anti-overlap on `[b1, b5)` excluding drafts. Season lifecycle derived via computed field `status_siklus`.
 - **Gate shapes**: video = threshold (from b3 of the user's origin kloter; archive owners immediately). Submission = window `[b4, b5)`. Quiz = window of the origin kloter (currently `[b3, b4)`), one attempt, scored in DB.
+- **Grading (§3.12)**: grades live in `penilaian_naskah` (graders only; `dinilai_oleh` from the session), never in `writing_submissions`. Authors see results only via the raport. WhatsApp carries revision talk; the web holds everything that counts (files, versions, deadlines, grades).
 - **Ownership**: `user_seasons.jenis` `bimbingan | arsip`; archive = no kloter, video + recordings only.
 - **Binding scripts**: latest version in the origin kloter, defined once in view `naskah_mengikat`.
 - **Secret columns**: `kelas.video_url`, `kloters.livestream_url`, `event_sessions.rekaman_url`, whole `soal` table — not selectable by clients; served via gated RPCs. Never `select('*')` on these tables; use explicit column lists (e.g. `SESSION_COLUMNS`).

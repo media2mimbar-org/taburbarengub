@@ -766,6 +766,15 @@ Dampak ke item lain:
 
 - PR-08 sebagian terpenuhi: replay migrasi (`db reset` di CI), tes RLS anon/user/admin, dan penolakan update langsung kolom status/soal kini ada di pgTAP. Sisanya (penolakan update counter kuota, tes konkurensi booking/check-in, CSV, Playwright) belum.
 - PR-10 sebagian: `graphify-out/` tidak lagi ditrack Git.
+
+## PR-18 — Panel penilaian: nilai terpisah, penulis naskah, log baca
+
+Status: `DONE`  
+Target PR: `feat(db): move grades to penilaian_naskah, expose author to graders, add read log`  
+Priority: `P0 Security` (nilai bocor sebelum raport) + `P1 Feature` (panel mentor)  
+Evidence/commit: `20260926000000_penilaian_penulis_dibaca.sql`  
+Verification: `supabase test db` 71 assertion lulus (11 baru); uji mutasi policy `penilaian_naskah` merah sesuai harapan; `db advisors` 0 temuan; typecheck, lint, 24 tes unit lulus; smoke PostgREST dengan akun mentor + peserta sementara (dihapus): kolom `writing_submissions.nilai` tidak ada lagi, peserta 0 baris `penilaian_naskah`, peserta ditolak `BUKAN_PENILAI` di `get_penulis_naskah` dan `tandai_dibaca`. Rincian `docs/BACKEND.md` §3.12.  
+Belum: UI panel `/admin/karya` yang memakai kedua RPC (Milestone F.4).
 ---
 
 # Current recommended execution order

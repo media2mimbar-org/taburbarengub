@@ -58,7 +58,7 @@
 - [x] Bank soal, undian tersimpan, kuis sekali jawab dengan skor dihitung DB, `koreksi_kunci`.
 - [x] Gerbang video diperbaiki (pemilik arsip dan anggota kloter lama tidak lagi terkunci); "selesaikan kloter" tidak macet oleh naskah latihan; skor kuis tidak lagi dikirim klien.
 - [x] Bucket privat `karya-tulis` dengan policy per folder; akses mentor lewat plug-in `boleh_menilai_naskah`.
-- [x] 56 tes pgTAP (`supabase test db`) jalan di CI.
+- [x] 71 assertion pgTAP di 2 file (`supabase test db`) jalan di CI, termasuk tes balapan pendaftaran dan tambalan panel penilaian 26 Sep (`docs/BACKEND.md` §3.12).
 
 ### 2.3 Sisa Pekerjaan Pilar 1 (Database & Deployment)
 - [ ] **Deploy ke Supabase Cloud — ditunda.** Cloud masih berskema Fase 1 dengan akun tester. Rencana: ekspor akun → reset → baseline → impor ulang (`docs/BACKEND.md` §4.5). Sampai itu, jangan jalankan `db:push`.

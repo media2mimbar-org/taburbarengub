@@ -5,7 +5,7 @@
 > Direvisi **2026-09-25**: hasil preflight cloud, pembeli arsip dan jenis kepemilikan, pendaftaran peserta, akses naskah, kaidah jalur tulis admin, kuis jadi jendela, dan penggabungan migrasi jadi satu baseline.
 > **Diterapkan 2026-09-25** di commit `750ae31` (baseline), `63aeeed` (kode aplikasi), `32b3c33` (tes pgTAP). CI hijau.
 >
-> **Penanda kebasian:** §3.11 diverifikasi lewat katalog PostgreSQL lokal pada `9f8b650` (13 tabel, RLS 13/13, 2 view, 14 RPC publik, 11 fungsi `app_internal`). Kalau ada migrasi baru, §3.11 harus diverifikasi ulang. §1 sengaja dibiarkan sebagai potret **sebelum** baseline.
+> **Penanda kebasian:** §3.11 diverifikasi lewat katalog PostgreSQL lokal pada `9f8b650` (13 tabel, RLS 13/13, 2 view, 14 RPC publik, 11 fungsi `app_internal`). Migrasi `20260926000000` (§3.12) menambah 2 tabel dan 2 RPC: katalog lokal 26 Sep = 15 tabel, RLS 15/15, 2 view, 16 RPC publik, 11 fungsi `app_internal`. Kalau ada migrasi baru lagi, §3.11–§3.12 harus diverifikasi ulang. §1 sengaja dibiarkan sebagai potret **sebelum** baseline.
 >
 > **Kode:** awalan `RB-` = temuan review backend (`docs/arsip/REVIEW_BACKEND_TEMUAN.md`), misalnya RB-H5 (counter kuota). Kode tanpa awalan (A3b, D10, D16, H5 Notion, R1) = Pertanyaan Terbuka di Notion. Keduanya sempat memakai huruf yang sama; awalan ditambahkan 26 Sep.
 
@@ -713,7 +713,7 @@ Isi awal `hitung_nilai_kuis` mengikuti kalimat tim (*"akumulasi seluruh soal sat
 
 Alternatifnya rata-rata per kelas (tiap kelas 0–100, yang tidak dikerjakan 0). Hasilnya sama persis kalau semua kelas jumlah soalnya sama; beda hanya kalau tidak, karena rumus tim memberi bobot lebih ke kelas yang soalnya lebih banyak. Pindah rumus = ganti isi satu fungsi. Raport yang sudah terbit tidak ikut berubah, karena nilainya sudah disalin (G9).
 
-Pembagian bentuk: `writing_submissions.nilai` tetap **jsonb** (ruang kerja mentor, internal, bentuk masih bisa berubah); `certificates` pakai **kolom eksplisit** (beku, dicetak, dikueri). Alasannya bukan nullability, tapi typo: akses kolom terkena type-check dari `database.types.ts`, key jsonb bertipe `any` — salah nama key menghasilkan bagian kosong di sertifikat tanpa satu pun error.
+Pembagian bentuk: nilai naskah tetap **jsonb** (ruang kerja mentor, internal, bentuk masih bisa berubah), sejak 26 Sep di `penilaian_naskah.nilai`, bukan lagi `writing_submissions.nilai` (§3.12); `certificates` pakai **kolom eksplisit** (beku, dicetak, dikueri). Alasannya bukan nullability, tapi typo: akses kolom terkena type-check dari `database.types.ts`, key jsonb bertipe `any` — salah nama key menghasilkan bagian kosong di sertifikat tanpa satu pun error.
 
 **RB-H3 — paket ini diblokir dua hal, bukan satu.** Raport membekukan nilai kuis, dan §5.3 menutup jalan angka dari klien. Jadi kerja kuis server-side adalah **prasyarat**, bukan item yang bisa diparkir terpisah:
 
@@ -956,6 +956,24 @@ Dari 7 jadi 14. Yang berubah kontraknya bukan yang paling banyak, tapi yang pali
 `is_admin()`, `is_staff()`, `guard_tanggal_sesi()`, `handle_new_user()`, `rls_auto_enable()` tidak berubah. **Baru:** plug-in `boleh_menilai_naskah(p_path)`, `status_jendela_kuis(p_kloter_id)`, `hitung_nilai_kuis(p_user_season_id)`; pembantu `hitung_skor_kuis(...)`, `gerbang_kuis(p_kelas_id)`, `is_penilai()`. **Dihapus:** `is_mentor_for_kloter()`.
 
 Jalur pendaftaran season (RB-H8) sekarang punya pintu: `daftarkan_peserta` (§3.8).
+
+### 3.12 Panel penilaian: nilai, penulis, log baca (26 Sep)
+
+Migrasi `20260926000000_penilaian_penulis_dibaca.sql`, di atas baseline. Lahir dari pembahasan pembagian tugas WhatsApp vs web:
+
+> **WA = percakapan** (arahan revisi, diskusi kerangka, pengingat). **Web = catatan** (berkas, versi, tenggat, nilai, raport). Yang dihitung tinggal di web; yang membantu tinggal di WA. Pesan WA yang menyebut sesuatu yang dihitung mengutip dan menautkan ke web, tidak menyimpan versinya sendiri.
+
+Di lapangan, mentor membaca naskah **dari web** selama jendela setor dan memberi arahan revisi **lewat WA**, lalu peserta menyetor versi baru sebelum b5. Tiga lubang yang muncul dari alur itu:
+
+| Lubang | Tambalan |
+|---|---|
+| `writing_submissions.nilai` terbaca penulisnya lewat policy baris sendiri → nilai bocor sebelum raport, dan bisa berubah kalau mentor mengoreksi. Grant kolom tidak bisa menutupnya: peserta, mentor, admin sama-sama berperan `authenticated` | Tabel **`penilaian_naskah`** (`submission_id` PK, `nilai jsonb`, `dinilai_oleh`, `dinilai_at`). RLS: hanya penilai naskah itu. Kolom `writing_submissions.nilai` dibuang; `nilai_karya` meng-upsert ke tabel ini (menilai ulang menimpa, selama kloter belum ditutup). Sekaligus menutup catatan RB-H4: atribusi per mentor kini tercatat DB dari sesi login, bukan dari payload klien |
+| Mentor bisa membuka berkas naskah tapi tidak bisa tahu penulisnya: policy `users` hanya baris sendiri atau admin | RPC **`get_penulis_naskah(p_kloter_id)`** → `user_id`, `nama`, `no_hp`, hanya untuk penulis naskah yang boleh dinilai pemanggil (plug-in `boleh_menilai_naskah`). Kolom profil lain tetap tertutup |
+| Panel tidak tahu naskah mana sudah dibaca mentor mana, jadi "versi baru sejak terakhir dibuka" tidak bisa ditampilkan | Tabel **`naskah_dibaca`** (`submission_id`, `mentor_id`, `dibaca_at`; PK keduanya) + RPC **`tandai_dibaca(p_submission_id)`** yang dipanggil panel saat berkas dibuka. Penilai saling melihat log baca. Berkas dibuka lewat Storage, jadi DB tidak bisa mencatat bacaan tanpa panggilan ini |
+
+`writing_submissions.status` (`menunggu`/`dinilai`) **tetap terbaca peserta**. Boleh tidaknya status per naskah tampil sebelum raport adalah keputusan UI (antrean audit 26 Sep di Notion Keputusan Internal); menutupnya nanti tidak butuh ubah skema.
+
+Tes: 11 assertion baru di `supabase/tests/baseline.test.sql` (penulis, log baca, penilai tercatat, menilai ulang, penulis tidak membaca nilai). Diuji-mutasi: policy `penilaian_naskah` yang dilonggarkan untuk penulis membuat tes "penulis tidak bisa membaca nilai sebelum raport" merah.
 
 ---
 
