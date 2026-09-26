@@ -1038,7 +1038,7 @@ Selama bank ≥ jumlah yang ditampilkan, mekanismenya jalan; bank yang pas-pasan
 
 | Item | Keadaan |
 |---|---|
-| **Payment gateway** | Desain checkout dengan tenggat sudah ada di §3.8. Pilihan gateway, tabel `pembayaran`, dan webhook ditunda sebagai bagian tersendiri |
+| **Payment gateway** | Desain checkout dengan tenggat sudah ada di §3.8. Pilihan gateway, tabel `pembayaran`, dan webhook ditunda sebagai bagian tersendiri, tapi **jadi prasyarat rilis kloter pertama** (26 Sep): kloter pertama baru buka setelah gateway siap, dan tombol beli di `/program` nonaktif sampai itu. Tester, panitia, dan undangan didaftarkan admin lewat `daftarkan_peserta` |
 | **Layout admin: topbar vs sidebar** | Dua mockup ada di `docs/admin-mockup.html`, belum dipilih. `AdminLayout` sekarang hanya gerbang peran |
 | **`.docx` → PDF** | Tiga jalan disodorkan (konversi di klien / di backend / edukasi + fallback), belum dipilih. Bucket menerima PDF/DOC/DOCX; mockup mentor mengasumsikan semuanya PDF |
 
