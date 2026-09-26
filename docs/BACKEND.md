@@ -1170,7 +1170,7 @@ Penulisan isi soal (~90 butir per season, §4.3) berjalan paralel dengan semuany
 
 ## 8. Test yang mengikat keputusan
 
-Sepuluh skenario, ditulis sebagai tes pgTAP di `supabase/tests/baseline.test.sql` (56 assertion; `supabase test db`, jalan di CI). Satu transaksi dengan `now()` tetap, jadi fase kloter digeser dengan mengubah tanggal b1–b5. Tiga pertama mengikat cacat yang **terbaca di kode** — statusnya regresi.
+Sepuluh skenario, ditulis sebagai tes pgTAP (`supabase test db`, jalan di CI). `supabase/tests/baseline.test.sql` (56 assertion) berjalan dalam satu transaksi dengan `now()` tetap, jadi fase kloter digeser dengan mengubah tanggal b1–b5. Balapan test 5 ada di `supabase/tests/pendaftaran_balapan.test.sql` (4 assertion): butuh dua koneksi sungguhan, jadi pakai `dblink`; datanya di-commit lalu dibersihkan, dan kalau tes itu mati di tengah, `supabase db reset`. Tiga pertama mengikat cacat yang **terbaca di kode** — statusnya regresi.
 
 | # | Test | Mengikat | Kenapa ini yang dipilih |
 |---|---|---|---|
@@ -1185,7 +1185,8 @@ Sepuluh skenario, ditulis sebagai tes pgTAP di `supabase/tests/baseline.test.sql
 | 9 | Peserta setor v1, v2, v3; mentor menilai v3 saja; kloter bisa diselesaikan | §3.5 | Definisi "versi terakhir" di `naskah_mengikat` — tanpanya kloter macet persis seperti §5.2 |
 | 10 | `jawab_kuis` di b4 tepat — ditolak; sedetik sebelumnya — diterima | §3.2 | Batas jendela plug-in; salah satu arah berarti kuis terbuka terlalu lama atau tertutup terlalu cepat |
 
-Dua celah cakupan yang disadari:
+Celah cakupan yang disadari:
 
-- **Test 5** menguji penolakan saat kapasitas penuh, bukan balapan dua pendaftaran bersamaan — itu tidak bisa dibuat dalam satu transaksi. Perlindungannya `FOR UPDATE` pada baris kloter, terbukti hanya lewat pembacaan kode.
 - **Test 8** belum menguji bagian "raport yang sudah terbit tidak berubah", karena kolom nilai di `certificates` masih tertahan §4.1.
+
+Test 5 ditutup 26 Sep. A memegang kunci kloter tanpa commit, B harus tertahan menunggu, lalu ditolak `KLOTER_PENUH` setelah A commit. Diuji-mutasi: tanpa `FOR UPDATE`, keempat assertion merah dan kloter berkapasitas 1 berisi 2.
