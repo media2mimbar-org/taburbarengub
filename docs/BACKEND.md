@@ -72,7 +72,7 @@ Terverifikasi lewat `information_schema.tables`.
 | `users` | `email`, `nama`, `nama_panggilan`, `no_hp`, `jenis_kelamin`, `tanggal_lahir date`, `profesi`, `domisili`, `role ('user'\|'admin'\|'mentor'\|'staff')` |
 | `event_sessions` | `nama_sesi`, `tanggal_waktu`, `lokasi_atau_link`, `kapasitas`, `kuota_terisi`, `kapasitas_kids NOT NULL DEFAULT 0`, `kuota_kids_terisi NOT NULL DEFAULT 0`, `status`, `kloter_id` |
 | `bookings` | `user_id`, `session_id`, `qr_token`, `jumlah_anak CHECK 0..5`, `status ('booked'\|'checked_in'\|'cancelled')`, `checked_in_at` |
-| `hero_content` | singleton `CHECK (id = 1)`. Tidak dibahas lagi di dokumen ini — S6 |
+| `hero_content` | singleton `CHECK (id = 1)`. Pemiliknya dibahas di §3.11 (S6) |
 
 **View `kloter_aktif`**
 
@@ -885,7 +885,7 @@ Jumlah tabelnya kebetulan sama: **13 tabel** (`kloter_phases` keluar, `soal` mas
 | `users` | tidak berubah dari §1.2 | `usia` dan `profile_completed` hanya ada di cloud; tidak dibawa saat deploy (§4.5) |
 | `event_sessions` | + **`rekaman_url text NULL`** | +1. Rekaman melekat di acaranya, bukan di kloter (opsi A) |
 | `bookings` | tidak berubah | `qr_token UNIQUE` sudah ada (S3 tertutup) |
-| `hero_content` | tidak berubah | — |
+| `hero_content` | tidak berubah | Singleton isi landing. Pemilik: admin, lewat `/admin/hero` (`hero-service` upsert; RLS insert/update hanya admin, semua orang boleh baca). `updated_at` diisi saat simpan, jadi "kapan terakhir diubah" terbaca dari kolom itu (S6 tertutup) |
 
 #### View — 1 → 2
 
@@ -1022,7 +1022,7 @@ Selama bank ≥ jumlah yang ditampilkan, mekanismenya jalan; bank yang pas-pasan
 | **Layout admin: topbar vs sidebar** | Dua mockup ada di `docs/admin-mockup.html`, belum dipilih. `AdminLayout` sekarang hanya gerbang peran |
 | **`.docx` → PDF** | Tiga jalan disodorkan (konversi di klien / di backend / edukasi + fallback), belum dipilih. Bucket menerima PDF/DOC/DOCX; mockup mentor mengasumsikan semuanya PDF |
 
-Yang **keluar** dari daftar ini karena sudah terjawab: sinkronisasi dua level status (D1 + A3b), gerbang tautan livestream (§3.4), nama tabel kuis (`kuis_peserta`), ambang "tenggat mendekat" (§3.2), override fase (§3.2), `kloter_daftar_id` untuk arsip (§3.7), jalur pendaftaran H8 (§3.8), `bookings.qr_token` UNIQUE (ada), kebijakan bucket S4 (§3.9), dan file menggantung S10 (mockup dipindah ke `docs/`, `graphify-out/` diabaikan Git, dump cloud dihapus).
+Yang **keluar** dari daftar ini karena sudah terjawab: sinkronisasi dua level status (D1 + A3b), gerbang tautan livestream (§3.4), nama tabel kuis (`kuis_peserta`), ambang "tenggat mendekat" (§3.2), override fase (§3.2), `kloter_daftar_id` untuk arsip (§3.7), jalur pendaftaran H8 (§3.8), `bookings.qr_token` UNIQUE (ada), kebijakan bucket S4 (§3.9), dan file menggantung S10 (mockup dipindah ke `docs/`, `graphify-out/` diabaikan Git, dump cloud dihapus). Temuan saran lainnya juga tertutup: S1 (§3.2, kosakata ganda hilang bersama enum status season), S2 (GiST parsial `WHERE status <> 'draft'`), S3 (§3.11), S5 (`target_selesai` dan `rekomendasi` sama-sama dihapus; alasannya di tabel konsekuensi §3.1), S6 (§3.11), S7 (catatan di bawah diagram §3.2), S8 (penanda kebasian di kepala dokumen). S9 ikut §4.1.
 
 ### 4.5 Cloud dan jalan deploy
 
