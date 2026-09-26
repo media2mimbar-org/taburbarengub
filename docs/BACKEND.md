@@ -1145,7 +1145,9 @@ Notion disinkronkan 25 Sep:
 | Schema Season/Kloter (26 Agt) | ditandai historis, dirujuk ke baseline |
 | Log Sesi AI | entri sesi 25 Sep, *Perlu tindak lanjut* = ya |
 
-Halaman beli season belum ada di Content Inventory; keputusan dua produk (bimbingan/arsip) sementara tercatat di log keputusan Progress Proyek.
+Halaman beli season belum ada di Content Inventory; keputusan dua produk (bimbingan/arsip) sementara tercatat di halaman ⚖️ Keputusan.
+
+Notion ditata ulang 26 Sep untuk kolaborasi antar-AI: halaman induk memuat Protokol AI (urutan baca, sumber kebenaran, cara menutup sesi). Progress Proyek jadi **Status Sekarang** (satu-satunya status). Log keputusan dan tabel dibalik pindah ke halaman **Keputusan**. Keadaan Repo, Status Alur Kerja, Pelacak Tugas, dan Schema 26 Agt masuk **Arsip**. Nama halaman di tabel di atas adalah nama per 25 Sep.
 
 ---
 
