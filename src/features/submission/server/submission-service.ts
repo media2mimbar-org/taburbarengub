@@ -100,7 +100,6 @@ export async function submitWriting(
       versi: row.versi,
       file_url: row.file_url,
       status: row.status as SubmissionStatus,
-      nilai: (row.nilai as unknown as GradePayload) ?? null,
       created_at: row.created_at,
     }
 
@@ -148,7 +147,6 @@ export async function getUserSubmissions(
       versi: item.versi,
       file_url: item.file_url,
       status: item.status as SubmissionStatus,
-      nilai: (item.nilai as unknown as GradePayload) ?? null,
       created_at: item.created_at,
     }))
   } catch {
@@ -158,13 +156,12 @@ export async function getUserSubmissions(
 
 /**
  * Menyimpan penilaian naskah karya peserta oleh mentor/admin.
- * Memanggil RPC nilai_karya: gerbang penilai, naskah mengikat, dan b5 dijaga DB.
+ * Memanggil RPC nilai_karya: gerbang penilai, naskah mengikat, dan b5 dijaga DB;
+ * penilai dan waktunya dicatat DB di penilaian_naskah.
  */
 export async function gradeSubmission(
   supabase: SupabaseClient<Database>,
-  mentorUserId: string,
-  input: GradeSubmissionInput,
-  gradedAt?: string
+  input: GradeSubmissionInput
 ): Promise<GradeSubmissionResult> {
   try {
     const validation = gradeSubmissionSchema.safeParse(input)
@@ -177,8 +174,6 @@ export async function gradeSubmission(
     const { submission_id, rubrik, feedback } = validation.data
 
     const gradePayload: GradePayload = {
-      graded_by: mentorUserId,
-      graded_at: gradedAt ?? new Date().toISOString(),
       rubrik,
       ...(feedback ? { feedback } : {}),
     }
@@ -204,7 +199,6 @@ export async function gradeSubmission(
       versi: row.versi,
       file_url: row.file_url,
       status: row.status as SubmissionStatus,
-      nilai: (row.nilai as unknown as GradePayload) ?? null,
       created_at: row.created_at,
     }
 

@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database, Json } from '../../../lib/types/database.types.ts'
+import type { Database } from '../../../lib/types/database.types.ts'
 import {
   submitWriting,
   getUserSubmissions,
@@ -295,7 +295,6 @@ describe('submitWriting', () => {
       versi: 1,
       file_url: 'u1/k1/naskah.docx',
       status: 'menunggu',
-      nilai: null,
       created_at: '2026-08-29T10:00:00.000Z',
     }
 
@@ -324,7 +323,6 @@ describe('submitWriting', () => {
       assert.strictEqual(result.submission.kloter_id, 'kloter-789')
       assert.strictEqual(result.submission.versi, 1)
       assert.strictEqual(result.submission.status, 'menunggu')
-      assert.strictEqual(result.submission.nilai, null)
       assert.strictEqual(result.submission.created_at, '2026-08-29T10:00:00.000Z')
     }
   })
@@ -340,7 +338,6 @@ describe('getUserSubmissions', () => {
         versi: 2,
         file_url: 'u1/v2.pdf',
         status: 'menunggu',
-        nilai: null,
         created_at: '2026-08-29T12:00:00.000Z',
       },
       {
@@ -350,12 +347,6 @@ describe('getUserSubmissions', () => {
         versi: 1,
         file_url: 'u1/v1.pdf',
         status: 'dinilai',
-        nilai: {
-          graded_by: 'mentor-1',
-          graded_at: '2026-08-29T11:00:00.000Z',
-          rubrik: { konten: 'B', bahasa: 'A' },
-          feedback: 'Perbaiki bab 2',
-        } as unknown as Json,
         created_at: '2026-08-29T10:00:00.000Z',
       },
     ]
@@ -382,12 +373,10 @@ describe('getUserSubmissions', () => {
     assert.strictEqual(submissions[0]?.id, 'sub-2')
     assert.strictEqual(submissions[0]?.versi, 2)
     assert.strictEqual(submissions[0]?.status, 'menunggu')
-    assert.strictEqual(submissions[0]?.nilai, null)
 
     assert.strictEqual(submissions[1]?.id, 'sub-1')
     assert.strictEqual(submissions[1]?.versi, 1)
     assert.strictEqual(submissions[1]?.status, 'dinilai')
-    assert.strictEqual(submissions[1]?.nilai?.rubrik.konten, 'B')
   })
 
   it('returns empty array when error occurs or data is empty', async () => {
@@ -404,12 +393,11 @@ describe('getUserSubmissions', () => {
 })
 
 describe('gradeSubmission', () => {
-  const mentorId = 'mentor-999'
   const submissionId = '123e4567-e89b-12d3-a456-426614174000'
 
   it('returns error when validation fails', async () => {
     const supabase = createMockSupabaseClient({})
-    const result = await gradeSubmission(supabase, mentorId, {
+    const result = await gradeSubmission(supabase, {
       submission_id: 'not-a-uuid',
       rubrik: { konten: 'A', bahasa: 'A' },
     })
@@ -420,9 +408,7 @@ describe('gradeSubmission', () => {
     }
   })
 
-  it('calls nilai_karya RPC with correct payload', async () => {
-    const fixedTime = '2026-08-29T14:30:00.000Z'
-
+  it('sends only rubric and feedback; grader identity comes from the DB session', async () => {
     const updatedRow = {
       id: submissionId,
       user_id: 'user-123',
@@ -430,12 +416,6 @@ describe('gradeSubmission', () => {
       versi: 1,
       file_url: 'u1/karya.pdf',
       status: 'dinilai',
-      nilai: {
-        graded_by: mentorId,
-        graded_at: fixedTime,
-        rubrik: { konten: 'A', bahasa: 'A' },
-        feedback: 'Karya luar biasa!',
-      },
       created_at: '2026-08-29T10:00:00.000Z',
     }
 
@@ -450,31 +430,22 @@ describe('gradeSubmission', () => {
       },
     })
 
-    const result = await gradeSubmission(
-      supabase,
-      mentorId,
-      {
-        submission_id: submissionId,
-        rubrik: { konten: 'A', bahasa: 'A' },
-        feedback: 'Karya luar biasa!',
-      },
-      fixedTime
-    )
+    const result = await gradeSubmission(supabase, {
+      submission_id: submissionId,
+      rubrik: { konten: 'A', bahasa: 'A' },
+      feedback: 'Karya luar biasa!',
+    })
 
     assert.strictEqual(capturedFn, 'nilai_karya')
     assert.strictEqual(capturedArgs['p_submission_id'], submissionId)
-
-    const payload = capturedArgs['p_nilai'] as GradePayload
-    assert.strictEqual(payload.graded_by, mentorId)
-    assert.strictEqual(payload.graded_at, fixedTime)
-    assert.strictEqual(payload.rubrik.konten, 'A')
-    assert.strictEqual(payload.feedback, 'Karya luar biasa!')
+    assert.deepStrictEqual(capturedArgs['p_nilai'] as GradePayload, {
+      rubrik: { konten: 'A', bahasa: 'A' },
+      feedback: 'Karya luar biasa!',
+    })
 
     assert.strictEqual(result.ok, true)
     if (result.ok) {
-      assert.strictEqual(result.submission.id, submissionId)
       assert.strictEqual(result.submission.status, 'dinilai')
-      assert.strictEqual(result.submission.nilai?.rubrik.konten, 'A')
     }
   })
 
@@ -486,7 +457,7 @@ describe('gradeSubmission', () => {
       }),
     })
 
-    const result = await gradeSubmission(supabase, mentorId, {
+    const result = await gradeSubmission(supabase, {
       submission_id: submissionId,
       rubrik: { konten: 'B', bahasa: 'B' },
     })

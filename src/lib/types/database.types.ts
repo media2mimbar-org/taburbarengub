@@ -402,6 +402,89 @@ export type Database = {
           },
         ]
       }
+      naskah_dibaca: {
+        Row: {
+          dibaca_at: string
+          mentor_id: string
+          submission_id: string
+        }
+        Insert: {
+          dibaca_at?: string
+          mentor_id: string
+          submission_id: string
+        }
+        Update: {
+          dibaca_at?: string
+          mentor_id?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "naskah_dibaca_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "naskah_dibaca_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "naskah_mengikat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "naskah_dibaca_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "writing_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      penilaian_naskah: {
+        Row: {
+          dinilai_at: string
+          dinilai_oleh: string
+          nilai: Json
+          submission_id: string
+        }
+        Insert: {
+          dinilai_at?: string
+          dinilai_oleh: string
+          nilai: Json
+          submission_id: string
+        }
+        Update: {
+          dinilai_at?: string
+          dinilai_oleh?: string
+          nilai?: Json
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "penilaian_naskah_dinilai_oleh_fkey"
+            columns: ["dinilai_oleh"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "penilaian_naskah_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: true
+            referencedRelation: "naskah_mengikat"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "penilaian_naskah_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: true
+            referencedRelation: "writing_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seasons: {
         Row: {
           id: string
@@ -574,7 +657,6 @@ export type Database = {
           file_url: string
           id: string
           kloter_id: string
-          nilai: Json | null
           status: string
           user_id: string
           versi: number
@@ -584,7 +666,6 @@ export type Database = {
           file_url: string
           id?: string
           kloter_id: string
-          nilai?: Json | null
           status?: string
           user_id: string
           versi?: number
@@ -594,7 +675,6 @@ export type Database = {
           file_url?: string
           id?: string
           kloter_id?: string
-          nilai?: Json | null
           status?: string
           user_id?: string
           versi?: number
@@ -657,7 +737,6 @@ export type Database = {
           file_url: string | null
           id: string | null
           kloter_id: string | null
-          nilai: Json | null
           status: string | null
           user_id: string | null
           versi: number | null
@@ -738,6 +817,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      get_penulis_naskah: {
+        Args: { p_kloter_id: string }
+        Returns: {
+          nama: string
+          no_hp: string
+          user_id: string
+        }[]
+      }
       get_season_peristiwa: {
         Args: { p_season_id: string }
         Returns: {
@@ -792,7 +879,6 @@ export type Database = {
           file_url: string
           id: string
           kloter_id: string
-          nilai: Json | null
           status: string
           user_id: string
           versi: number
@@ -811,7 +897,6 @@ export type Database = {
           file_url: string
           id: string
           kloter_id: string
-          nilai: Json | null
           status: string
           user_id: string
           versi: number
@@ -826,6 +911,20 @@ export type Database = {
       status_siklus: {
         Args: { s: Database["public"]["Tables"]["seasons"]["Row"] }
         Returns: string
+      }
+      tandai_dibaca: {
+        Args: { p_submission_id: string }
+        Returns: {
+          dibaca_at: string
+          mentor_id: string
+          submission_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "naskah_dibaca"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       ubah_status_kloter: {
         Args: { p_aksi: string; p_kloter_id: string }

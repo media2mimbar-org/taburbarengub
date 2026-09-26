@@ -7,9 +7,8 @@ import { gradeSubmission } from '@/features/submission/server/submission-service
 export async function POST(request: Request) {
   const supabase = await createClient()
 
-  let adminUser
   try {
-    adminUser = await requireMentorOrAdmin(supabase)
+    await requireMentorOrAdmin(supabase)
   } catch (err) {
     if (err instanceof AuthError) {
       return NextResponse.json({ error: err.message }, { status: err.status })
@@ -37,7 +36,7 @@ export async function POST(request: Request) {
     )
   }
 
-  const result = await gradeSubmission(supabase, adminUser.id, parsed.data)
+  const result = await gradeSubmission(supabase, parsed.data)
 
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: 400 })

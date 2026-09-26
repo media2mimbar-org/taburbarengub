@@ -1,13 +1,12 @@
-export type SubmissionStatus = 'menunggu' | 'sedang_dibaca' | 'dinilai'
+export type SubmissionStatus = 'menunggu' | 'dinilai'
 
 export interface GradeRubric {
   konten: 'A' | 'B' | 'C'
   bahasa: 'A' | 'B' | 'C'
 }
 
+/** Isi `penilaian_naskah.nilai`. Penilai dan waktunya dicatat DB dari sesi login. */
 export interface GradePayload {
-  graded_by: string
-  graded_at: string
   rubrik: GradeRubric
   feedback?: string
 }
@@ -19,7 +18,6 @@ export interface WritingSubmissionDTO {
   versi: number
   file_url: string
   status: SubmissionStatus
-  nilai: GradePayload | null
   created_at: string
 }
 

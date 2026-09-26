@@ -222,6 +222,7 @@ RESET ROLE;
 INSERT INTO ref
 SELECT CASE WHEN user_id = (SELECT id FROM u WHERE nama = 'a') THEN 'naskah_latihan' ELSE 'naskah_v' || versi END, id
 FROM public.writing_submissions WHERE kloter_id = (SELECT id FROM ref WHERE nama = 'k2');
+UPDATE public.users SET nama = 'Budi', no_hp = '6281234567890' WHERE id = (SELECT id FROM u WHERE nama = 'b');
 
 SELECT pg_temp.sebagai('mentor');
 SELECT pg_temp.catat('test 6: mentor melihat semua naskah', '4', 'SELECT count(*) FROM public.writing_submissions');
@@ -230,9 +231,23 @@ SELECT pg_temp.catat('test 9: naskah mengikat hanya versi terakhir', '3',
   format('SELECT string_agg(versi::text, '','') FROM public.naskah_mengikat WHERE kloter_id = %L', (SELECT id FROM ref WHERE nama = 'k2')));
 SELECT pg_temp.catat('nilai: sebelum b5 ditolak', 'PENILAIAN_BELUM_DIBUKA',
   format('SELECT status FROM public.nilai_karya(%L, ''{}'')', (SELECT id FROM ref WHERE nama = 'naskah_v3')));
+SELECT pg_temp.catat('penulis: mentor melihat nama dan WA penulis selama jendela', 'Budi|6281234567890',
+  format('SELECT nama || ''|'' || no_hp FROM public.get_penulis_naskah(%L) WHERE user_id = %L',
+    (SELECT id FROM ref WHERE nama = 'k2'), (SELECT id FROM u WHERE nama = 'b')));
+SELECT pg_temp.catat('dibaca: mentor menandai naskah yang dibuka', '1',
+  format('SELECT count(*) FROM public.tandai_dibaca(%L)', (SELECT id FROM ref WHERE nama = 'naskah_v2')));
+SELECT pg_temp.catat('dibaca: menandai ulang tidak gagal', '1',
+  format('SELECT count(*) FROM public.tandai_dibaca(%L)', (SELECT id FROM ref WHERE nama = 'naskah_v2')));
+SELECT pg_temp.catat('dibaca: tetap satu baris per mentor per naskah', '1',
+  format('SELECT count(*) FROM public.naskah_dibaca WHERE submission_id = %L', (SELECT id FROM ref WHERE nama = 'naskah_v2')));
 SELECT pg_temp.sebagai('x');
 SELECT pg_temp.catat('test 6: peserta lain tidak melihat naskah', '0', 'SELECT count(*) FROM public.writing_submissions');
 SELECT pg_temp.catat('test 6: peserta lain tidak membuka berkas', '0', 'SELECT count(*) FROM storage.objects WHERE bucket_id = ''karya-tulis''');
+SELECT pg_temp.catat('penulis: peserta tidak bisa melihat data penulis', 'BUKAN_PENILAI',
+  format('SELECT count(*) FROM public.get_penulis_naskah(%L)', (SELECT id FROM ref WHERE nama = 'k2')));
+SELECT pg_temp.catat('dibaca: peserta tidak bisa menandai', 'BUKAN_PENILAI',
+  format('SELECT count(*) FROM public.tandai_dibaca(%L)', (SELECT id FROM ref WHERE nama = 'naskah_v2')));
+SELECT pg_temp.catat('dibaca: peserta tidak melihat log baca', '0', 'SELECT count(*) FROM public.naskah_dibaca');
 RESET ROLE;
 
 -- ======================================================================
@@ -255,6 +270,16 @@ SELECT pg_temp.catat('test 3: naskah latihan tidak bisa dinilai', 'BUKAN_NASKAH_
   format('SELECT status FROM public.nilai_karya(%L, ''{}'')', (SELECT id FROM ref WHERE nama = 'naskah_latihan')));
 SELECT pg_temp.catat('nilai: versi terakhir setelah b5', 'dinilai',
   format('SELECT status FROM public.nilai_karya(%L, ''{"rubrik":{"konten":"A","bahasa":"B"}}'')', (SELECT id FROM ref WHERE nama = 'naskah_v3')));
+SELECT pg_temp.catat('nilai: penilai tercatat', 'true',
+  format('SELECT (dinilai_oleh = %L)::text FROM public.penilaian_naskah WHERE submission_id = %L',
+    (SELECT id FROM u WHERE nama = 'mentor'), (SELECT id FROM ref WHERE nama = 'naskah_v3')));
+SELECT pg_temp.catat('nilai: menilai ulang sebelum kloter ditutup', 'dinilai',
+  format('SELECT status FROM public.nilai_karya(%L, ''{"rubrik":{"konten":"B","bahasa":"B"}}'')', (SELECT id FROM ref WHERE nama = 'naskah_v3')));
+SELECT pg_temp.catat('nilai: menilai ulang menimpa, tidak menggandakan', '1:B',
+  format('SELECT count(*) || '':'' || max(nilai #>> ''{rubrik,konten}'') FROM public.penilaian_naskah WHERE submission_id = %L',
+    (SELECT id FROM ref WHERE nama = 'naskah_v3')));
+SELECT pg_temp.sebagai('b');
+SELECT pg_temp.catat('nilai: penulis tidak bisa membaca nilai sebelum raport', '0', 'SELECT count(*) FROM public.penilaian_naskah');
 SELECT pg_temp.sebagai('admin');
 SELECT pg_temp.catat('test 3+9: kloter selesai walau ada latihan dan versi lama', 'wrapped',
   format('SELECT status FROM public.ubah_status_kloter(%L, ''selesaikan'')', (SELECT id FROM ref WHERE nama = 'k2')));
