@@ -657,7 +657,6 @@ export type Database = {
           file_url: string
           id: string
           kloter_id: string
-          status: string
           user_id: string
           versi: number
         }
@@ -666,7 +665,6 @@ export type Database = {
           file_url: string
           id?: string
           kloter_id: string
-          status?: string
           user_id: string
           versi?: number
         }
@@ -675,7 +673,6 @@ export type Database = {
           file_url?: string
           id?: string
           kloter_id?: string
-          status?: string
           user_id?: string
           versi?: number
         }
@@ -737,7 +734,6 @@ export type Database = {
           file_url: string | null
           id: string | null
           kloter_id: string | null
-          status: string | null
           user_id: string | null
           versi: number | null
         }
@@ -875,17 +871,14 @@ export type Database = {
       nilai_karya: {
         Args: { p_nilai: Json; p_submission_id: string }
         Returns: {
-          created_at: string
-          file_url: string
-          id: string
-          kloter_id: string
-          status: string
-          user_id: string
-          versi: number
+          dinilai_at: string
+          dinilai_oleh: string
+          nilai: Json
+          submission_id: string
         }
         SetofOptions: {
           from: "*"
-          to: "writing_submissions"
+          to: "penilaian_naskah"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -897,7 +890,6 @@ export type Database = {
           file_url: string
           id: string
           kloter_id: string
-          status: string
           user_id: string
           versi: number
         }

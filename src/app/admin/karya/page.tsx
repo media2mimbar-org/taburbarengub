@@ -12,10 +12,10 @@ export default async function AdminKaryaPage() {
     redirect('/admin')
   }
 
-  // Ambil data naskah yang masuk
+  // Naskah masuk; "dinilai" = ada baris penilaian_naskah (hanya terbaca penilai).
   const { data: submissions } = await supabase
     .from('writing_submissions')
-    .select('id, user_id, kloter_id, versi, status, created_at, file_url')
+    .select('id, user_id, kloter_id, versi, created_at, file_url, penilaian_naskah(submission_id)')
     .order('created_at', { ascending: false })
 
   const list = submissions ?? []
@@ -49,41 +49,41 @@ export default async function AdminKaryaPage() {
           </div>
         ) : (
           <div style={{ display: 'grid', gap: 12 }}>
-            {list.map((sub) => (
-              <article
-                key={sub.id}
-                style={{
-                  background: '#ffffff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: 14,
-                  padding: 16,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <div>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
-                    Versi {sub.versi}
-                  </h3>
-                  <p style={{ fontSize: 13, color: '#6b7280' }}>
-                    Status: <strong>{sub.status}</strong>
-                  </p>
-                </div>
-                <span
+            {list.map((sub) => {
+              const dinilai = sub.penilaian_naskah !== null
+              return (
+                <article
+                  key={sub.id}
                   style={{
-                    padding: '6px 12px',
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontWeight: 700,
-                    background: sub.status === 'dinilai' ? '#ecfdf5' : '#fef3c7',
-                    color: sub.status === 'dinilai' ? '#047857' : '#b45309',
+                    background: '#ffffff',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: 14,
+                    padding: 16,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
                   }}
                 >
-                  {sub.status === 'dinilai' ? 'Selesai Dinilai' : 'Menunggu Penilaian'}
-                </span>
-              </article>
-            ))}
+                  <div>
+                    <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>
+                      Versi {sub.versi}
+                    </h3>
+                  </div>
+                  <span
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: 8,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      background: dinilai ? '#ecfdf5' : '#fef3c7',
+                      color: dinilai ? '#047857' : '#b45309',
+                    }}
+                  >
+                    {dinilai ? 'Selesai Dinilai' : 'Menunggu Penilaian'}
+                  </span>
+                </article>
+              )
+            })}
           </div>
         )}
       </div>

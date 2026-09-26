@@ -3,7 +3,6 @@ import type { Database, Json } from '@/lib/types/database.types'
 import type {
   GradePayload,
   GradeSubmissionResult,
-  SubmissionStatus,
   SubmitWritingResult,
   WritingSubmissionDTO,
 } from '@/features/submission/shared/submission.types'
@@ -99,7 +98,6 @@ export async function submitWriting(
       kloter_id: row.kloter_id,
       versi: row.versi,
       file_url: row.file_url,
-      status: row.status as SubmissionStatus,
       created_at: row.created_at,
     }
 
@@ -146,7 +144,6 @@ export async function getUserSubmissions(
       kloter_id: item.kloter_id,
       versi: item.versi,
       file_url: item.file_url,
-      status: item.status as SubmissionStatus,
       created_at: item.created_at,
     }))
   } catch {
@@ -190,19 +187,10 @@ export async function gradeSubmission(
       }
     }
 
-    const row = data as unknown as WritingSubmissionRow
-
-    const submission: WritingSubmissionDTO = {
-      id: row.id,
-      user_id: row.user_id,
-      kloter_id: row.kloter_id,
-      versi: row.versi,
-      file_url: row.file_url,
-      status: row.status as SubmissionStatus,
-      created_at: row.created_at,
+    return {
+      ok: true,
+      penilaian: { submission_id: data.submission_id, dinilai_at: data.dinilai_at },
     }
-
-    return { ok: true, submission }
   } catch (err) {
     return {
       ok: false,

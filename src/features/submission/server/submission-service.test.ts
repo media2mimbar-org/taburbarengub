@@ -294,7 +294,6 @@ describe('submitWriting', () => {
       kloter_id: 'kloter-789',
       versi: 1,
       file_url: 'u1/k1/naskah.docx',
-      status: 'menunggu',
       created_at: '2026-08-29T10:00:00.000Z',
     }
 
@@ -322,7 +321,6 @@ describe('submitWriting', () => {
       assert.strictEqual(result.submission.user_id, 'user-456')
       assert.strictEqual(result.submission.kloter_id, 'kloter-789')
       assert.strictEqual(result.submission.versi, 1)
-      assert.strictEqual(result.submission.status, 'menunggu')
       assert.strictEqual(result.submission.created_at, '2026-08-29T10:00:00.000Z')
     }
   })
@@ -337,7 +335,6 @@ describe('getUserSubmissions', () => {
         kloter_id: 'kloter-1',
         versi: 2,
         file_url: 'u1/v2.pdf',
-        status: 'menunggu',
         created_at: '2026-08-29T12:00:00.000Z',
       },
       {
@@ -346,7 +343,6 @@ describe('getUserSubmissions', () => {
         kloter_id: 'kloter-1',
         versi: 1,
         file_url: 'u1/v1.pdf',
-        status: 'dinilai',
         created_at: '2026-08-29T10:00:00.000Z',
       },
     ]
@@ -372,11 +368,9 @@ describe('getUserSubmissions', () => {
 
     assert.strictEqual(submissions[0]?.id, 'sub-2')
     assert.strictEqual(submissions[0]?.versi, 2)
-    assert.strictEqual(submissions[0]?.status, 'menunggu')
 
     assert.strictEqual(submissions[1]?.id, 'sub-1')
     assert.strictEqual(submissions[1]?.versi, 1)
-    assert.strictEqual(submissions[1]?.status, 'dinilai')
   })
 
   it('returns empty array when error occurs or data is empty', async () => {
@@ -409,14 +403,11 @@ describe('gradeSubmission', () => {
   })
 
   it('sends only rubric and feedback; grader identity comes from the DB session', async () => {
-    const updatedRow = {
-      id: submissionId,
-      user_id: 'user-123',
-      kloter_id: 'kloter-456',
-      versi: 1,
-      file_url: 'u1/karya.pdf',
-      status: 'dinilai',
-      created_at: '2026-08-29T10:00:00.000Z',
+    const penilaianRow = {
+      submission_id: submissionId,
+      nilai: { rubrik: { konten: 'A', bahasa: 'A' }, feedback: 'Karya luar biasa!' },
+      dinilai_oleh: 'mentor-1',
+      dinilai_at: '2026-10-01T10:00:00.000Z',
     }
 
     let capturedFn = ''
@@ -426,7 +417,7 @@ describe('gradeSubmission', () => {
       rpcHandler: (fnName, args) => {
         capturedFn = fnName
         capturedArgs = args
-        return { data: updatedRow, error: null }
+        return { data: penilaianRow, error: null }
       },
     })
 
@@ -443,10 +434,10 @@ describe('gradeSubmission', () => {
       feedback: 'Karya luar biasa!',
     })
 
-    assert.strictEqual(result.ok, true)
-    if (result.ok) {
-      assert.strictEqual(result.submission.status, 'dinilai')
-    }
+    assert.deepStrictEqual(result, {
+      ok: true,
+      penilaian: { submission_id: submissionId, dinilai_at: '2026-10-01T10:00:00.000Z' },
+    })
   })
 
   it('returns error when RPC fails', async () => {

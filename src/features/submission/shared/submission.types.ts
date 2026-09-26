@@ -1,5 +1,3 @@
-export type SubmissionStatus = 'menunggu' | 'dinilai'
-
 export interface GradeRubric {
   konten: 'A' | 'B' | 'C'
   bahasa: 'A' | 'B' | 'C'
@@ -17,7 +15,6 @@ export interface WritingSubmissionDTO {
   kloter_id: string
   versi: number
   file_url: string
-  status: SubmissionStatus
   created_at: string
 }
 
@@ -33,6 +30,11 @@ export type SubmitWritingResult =
   | { ok: true; submission: WritingSubmissionDTO }
   | { ok: false; code: SubmitWritingErrorCode; error: string }
 
+export interface PenilaianDTO {
+  submission_id: string
+  dinilai_at: string
+}
+
 export type GradeSubmissionResult =
-  | { ok: true; submission: WritingSubmissionDTO }
+  | { ok: true; penilaian: PenilaianDTO }
   | { ok: false; error: string }

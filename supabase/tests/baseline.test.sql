@@ -230,7 +230,7 @@ SELECT pg_temp.catat('test 6: mentor membuka berkas peserta', '1', 'SELECT count
 SELECT pg_temp.catat('test 9: naskah mengikat hanya versi terakhir', '3',
   format('SELECT string_agg(versi::text, '','') FROM public.naskah_mengikat WHERE kloter_id = %L', (SELECT id FROM ref WHERE nama = 'k2')));
 SELECT pg_temp.catat('nilai: sebelum b5 ditolak', 'PENILAIAN_BELUM_DIBUKA',
-  format('SELECT status FROM public.nilai_karya(%L, ''{}'')', (SELECT id FROM ref WHERE nama = 'naskah_v3')));
+  format('SELECT count(*) FROM public.nilai_karya(%L, ''{}'')', (SELECT id FROM ref WHERE nama = 'naskah_v3')));
 SELECT pg_temp.catat('penulis: mentor melihat nama dan WA penulis selama jendela', 'Budi|6281234567890',
   format('SELECT nama || ''|'' || no_hp FROM public.get_penulis_naskah(%L) WHERE user_id = %L',
     (SELECT id FROM ref WHERE nama = 'k2'), (SELECT id FROM u WHERE nama = 'b')));
@@ -262,19 +262,19 @@ SELECT pg_temp.catat('A3b: tutup season ditolak selama ada kloter berjalan', 'MA
   format('SELECT terbit FROM public.ubah_status_season(%L, ''tutup'')', (SELECT id FROM ref WHERE nama = 's1')));
 SELECT pg_temp.sebagai('b');
 SELECT pg_temp.catat('nilai: peserta tidak bisa menilai', 'BUKAN_PENILAI',
-  format('SELECT status FROM public.nilai_karya(%L, ''{}'')', (SELECT id FROM ref WHERE nama = 'naskah_v3')));
+  format('SELECT count(*) FROM public.nilai_karya(%L, ''{}'')', (SELECT id FROM ref WHERE nama = 'naskah_v3')));
 SELECT pg_temp.sebagai('mentor');
 SELECT pg_temp.catat('test 9: versi lama tidak bisa dinilai', 'BUKAN_NASKAH_MENGIKAT',
-  format('SELECT status FROM public.nilai_karya(%L, ''{}'')', (SELECT id FROM ref WHERE nama = 'naskah_v1')));
+  format('SELECT count(*) FROM public.nilai_karya(%L, ''{}'')', (SELECT id FROM ref WHERE nama = 'naskah_v1')));
 SELECT pg_temp.catat('test 3: naskah latihan tidak bisa dinilai', 'BUKAN_NASKAH_MENGIKAT',
-  format('SELECT status FROM public.nilai_karya(%L, ''{}'')', (SELECT id FROM ref WHERE nama = 'naskah_latihan')));
-SELECT pg_temp.catat('nilai: versi terakhir setelah b5', 'dinilai',
-  format('SELECT status FROM public.nilai_karya(%L, ''{"rubrik":{"konten":"A","bahasa":"B"}}'')', (SELECT id FROM ref WHERE nama = 'naskah_v3')));
+  format('SELECT count(*) FROM public.nilai_karya(%L, ''{}'')', (SELECT id FROM ref WHERE nama = 'naskah_latihan')));
+SELECT pg_temp.catat('nilai: versi terakhir setelah b5', '1',
+  format('SELECT count(*) FROM public.nilai_karya(%L, ''{"rubrik":{"konten":"A","bahasa":"B"}}'')', (SELECT id FROM ref WHERE nama = 'naskah_v3')));
 SELECT pg_temp.catat('nilai: penilai tercatat', 'true',
   format('SELECT (dinilai_oleh = %L)::text FROM public.penilaian_naskah WHERE submission_id = %L',
     (SELECT id FROM u WHERE nama = 'mentor'), (SELECT id FROM ref WHERE nama = 'naskah_v3')));
-SELECT pg_temp.catat('nilai: menilai ulang sebelum kloter ditutup', 'dinilai',
-  format('SELECT status FROM public.nilai_karya(%L, ''{"rubrik":{"konten":"B","bahasa":"B"}}'')', (SELECT id FROM ref WHERE nama = 'naskah_v3')));
+SELECT pg_temp.catat('nilai: menilai ulang sebelum kloter ditutup', '1',
+  format('SELECT count(*) FROM public.nilai_karya(%L, ''{"rubrik":{"konten":"B","bahasa":"B"}}'')', (SELECT id FROM ref WHERE nama = 'naskah_v3')));
 SELECT pg_temp.catat('nilai: menilai ulang menimpa, tidak menggandakan', '1:B',
   format('SELECT count(*) || '':'' || max(nilai #>> ''{rubrik,konten}'') FROM public.penilaian_naskah WHERE submission_id = %L',
     (SELECT id FROM ref WHERE nama = 'naskah_v3')));
@@ -287,7 +287,7 @@ SELECT pg_temp.catat('kloter wrapped tidak bisa diubah jadwalnya', '0',
   format('WITH x AS (UPDATE public.kloters SET kapasitas = 10 WHERE id = %L RETURNING 1) SELECT count(*) FROM x', (SELECT id FROM ref WHERE nama = 'k2')));
 SELECT pg_temp.sebagai('mentor');
 SELECT pg_temp.catat('nilai: setelah kloter ditutup ditolak', 'KLOTER_SUDAH_DITUTUP',
-  format('SELECT status FROM public.nilai_karya(%L, ''{}'')', (SELECT id FROM ref WHERE nama = 'naskah_v3')));
+  format('SELECT count(*) FROM public.nilai_karya(%L, ''{}'')', (SELECT id FROM ref WHERE nama = 'naskah_v3')));
 
 -- ======================================================================
 -- Peristiwa

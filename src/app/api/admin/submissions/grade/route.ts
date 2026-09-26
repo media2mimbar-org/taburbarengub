@@ -42,5 +42,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: result.error }, { status: 400 })
   }
 
-  return NextResponse.json({ data: result.submission }, { status: 200 })
+  return NextResponse.json({ data: result.penilaian }, { status: 200 })
 }
