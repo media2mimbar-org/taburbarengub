@@ -99,7 +99,7 @@
 ### Milestone F.4 — Antarmuka Admin & Mentor (`/admin/karya`)
 - **Tujuan:** Dashboard penilaian dan peninjauan naskah peserta per kloter.
 - **Fitur:**
-  - Halaman Baca & Nilai Karya (`/admin/karya`) berbasis view `naskah_mengikat` (naskah latihan tidak masuk antrean). Pembagian mentor menunggu D4; sementara semua mentor bisa menilai semua naskah.
+  - Halaman Baca & Nilai Karya (`/admin/karya`) berbasis view `naskah_mengikat` (naskah latihan tidak masuk antrean). Pembagian mentor menunggu RB-D4 (pembagian naskah, keputusan tim); sementara semua mentor bisa menilai semua naskah.
   - Panel previewer naskah terintegrasi menggunakan signed URL aman.
   - Form penilaian naskah via API `/api/admin/submissions/grade` (`nilai_karya` RPC, terbuka setelah tenggat setor).
 ### Milestone F.5 — Progressive Profiling Bottom-Sheet (Booking Kajian)

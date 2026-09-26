@@ -1,3 +1,5 @@
+> **Diarsipkan 26 Sep 2026.** Semua temuan di sini sudah tertutup atau dilacak di `docs/BACKEND.md` §4. Dari dokumen lain, kode di sini dirujuk dengan awalan `RB-` (RB-H5, RB-S1, RB-D4, …), karena huruf yang sama dipakai Pertanyaan Terbuka Notion untuk hal lain. Isi di bawah dibiarkan apa adanya.
+
 # Temuan gabungan review `BACKEND.md`
 
 Disusun 2026-09-05 atas `docs/BACKEND.md` di branch `rombak/backend`, HEAD `4135a14`.

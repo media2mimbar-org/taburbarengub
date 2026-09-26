@@ -148,7 +148,8 @@ GET /admin/peserta/export.csv?session_id=...
 - `docs/ROADMAP.md` — status fase dan milestone frontend.
 - `docs/SMOKE_TEST.md` — checklist smoke test manual.
 - `docs/REVIEW_ACTION_TRACKER.md` — tracker action item hasil review.
-- `AUDIT_HANDOFF.md` — konteks audit/handoff Juli–Agustus (historis).
+- `docs/arsip/` — dokumen historis: `AUDIT_HANDOFF.md` (audit Juli–Agustus) dan `REVIEW_BACKEND_TEMUAN.md` (temuan review backend, kode `RB-`).
+- Notion **TaburBarengUB** — keputusan, status, spesifikasi halaman, dan serah-terima antar-AI. Lihat `AGENTS.md`.
 
 ## Deployment notes
 

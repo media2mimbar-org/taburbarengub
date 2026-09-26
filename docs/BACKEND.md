@@ -1,11 +1,13 @@
 # Backend TaburBarengUB — Keadaan, Keputusan, dan Yang Belum Selesai
 
 > Disusun **2026-09-05**, diverifikasi terhadap branch `rombak/backend` commit `4135a14`.
-> Direvisi **2026-09-06** menutup B1–B5, H10, dan H11 dari `docs/REVIEW_BACKEND_TEMUAN.md`, plus keputusan D1–D6, A3b, penempatan dua peristiwa kloter, dan desain bank soal.
+> Direvisi **2026-09-06** menutup RB-B1–B5, RB-H10, dan RB-H11 dari `docs/arsip/REVIEW_BACKEND_TEMUAN.md`, plus keputusan RB-D1–D6, A3b, penempatan dua peristiwa kloter, dan desain bank soal.
 > Direvisi **2026-09-25**: hasil preflight cloud, pembeli arsip dan jenis kepemilikan, pendaftaran peserta, akses naskah, kaidah jalur tulis admin, kuis jadi jendela, dan penggabungan migrasi jadi satu baseline.
 > **Diterapkan 2026-09-25** di commit `750ae31` (baseline), `63aeeed` (kode aplikasi), `32b3c33` (tes pgTAP). CI hijau.
 >
 > **Penanda kebasian:** §3.11 diverifikasi lewat katalog PostgreSQL lokal pada `9f8b650` (13 tabel, RLS 13/13, 2 view, 14 RPC publik, 11 fungsi `app_internal`). Kalau ada migrasi baru, §3.11 harus diverifikasi ulang. §1 sengaja dibiarkan sebagai potret **sebelum** baseline.
+>
+> **Kode:** awalan `RB-` = temuan review backend (`docs/arsip/REVIEW_BACKEND_TEMUAN.md`), misalnya RB-H5 (counter kuota). Kode tanpa awalan (A3b, D10, D16, H5 Notion, R1) = Pertanyaan Terbuka di Notion. Keduanya sempat memakai huruf yang sama; awalan ditambahkan 26 Sep.
 
 ## 0. Cara membaca dokumen ini
 
@@ -25,7 +27,7 @@ Untuk melihat **before-after** skema, baca §1.2–§1.4 lalu §3.11 — keduany
 Klaim yang belum dibuktikan dengan eksekusi ditandai `[INFERENCE]`. Jangan diperlakukan sebagai fakta sebelum ada test yang membuktikan.
 
 Hubungan dengan dokumen lain:
-- `docs/REVIEW_BACKEND_TEMUAN.md` — temuan gabungan tiga review atas dokumen ini, plus verifikasi lima premis langsung ke migrasi. Sumber B1–B5, H1–H12, S1–S10.
+- `docs/arsip/REVIEW_BACKEND_TEMUAN.md` — temuan gabungan tiga review atas dokumen ini, plus verifikasi lima premis langsung ke migrasi. Sumber RB-B1–B5, RB-H1–H12, RB-S1–S10. Semua temuannya sudah tertutup atau dilacak di §4, jadi dokumennya diarsipkan.
 - `docs/ARCHITECTURE.md` — ringkasan pola & tempat logika. Disinkronkan dengan baseline 25 Sep; kalau berbeda, §3 dokumen ini yang berlaku.
 - `docs/REVIEW_ACTION_TRACKER.md` — sumber status aktual. Item yang mulai dikerjakan dipromosikan jadi entri `PR-17` dan seterusnya di sana.
 - Notion `Content Inventory` — spesifikasi 5W2H per halaman, sumber kebenaran untuk isi layar.
@@ -72,7 +74,7 @@ Terverifikasi lewat `information_schema.tables`.
 | `users` | `email`, `nama`, `nama_panggilan`, `no_hp`, `jenis_kelamin`, `tanggal_lahir date`, `profesi`, `domisili`, `role ('user'\|'admin'\|'mentor'\|'staff')` |
 | `event_sessions` | `nama_sesi`, `tanggal_waktu`, `lokasi_atau_link`, `kapasitas`, `kuota_terisi`, `kapasitas_kids NOT NULL DEFAULT 0`, `kuota_kids_terisi NOT NULL DEFAULT 0`, `status`, `kloter_id` |
 | `bookings` | `user_id`, `session_id`, `qr_token`, `jumlah_anak CHECK 0..5`, `status ('booked'\|'checked_in'\|'cancelled')`, `checked_in_at` |
-| `hero_content` | singleton `CHECK (id = 1)`. Pemiliknya dibahas di §3.11 (S6) |
+| `hero_content` | singleton `CHECK (id = 1)`. Pemiliknya dibahas di §3.11 (RB-S6) |
 
 **View `kloter_aktif`**
 
@@ -94,7 +96,7 @@ LIMIT 1;
 
 Tiga sifat yang penting dan sering disalahpahami:
 
-1. **`ORDER BY` ada.** Jadi saat dua kloter memenuhi filter, view **selalu** memilih yang paling baru mulai — bukan nondeterministik, tapi salah yang konsisten dan berulang tiap siklus. Ini akar B1.
+1. **`ORDER BY` ada.** Jadi saat dua kloter memenuhi filter, view **selalu** memilih yang paling baru mulai — bukan nondeterministik, tapi salah yang konsisten dan berulang tiap siklus. Ini akar RB-B1.
 2. **Definisi "aktif"-nya rentang tanggal kloter**, bukan rentang fase. Kloter tanpa baris `kloter_phases` yang cocok tetap lolos filter dan mengembalikan `fase = NULL`.
 3. **Menyaring `seasons.status`, tidak pernah membaca status kloter** (yang belum ada). Artinya presedensi "season menang" sudah berlaku di kode tanpa pernah jadi keputusan sadar — diselesaikan di §3.2.
 
@@ -115,7 +117,7 @@ EXCLUDE USING gist (
 )
 ```
 
-`fase_tidak_overlap` hanya melarang tumpang tindih — **celah antar fase legal** di data yang ada. Itu yang membuat backfill B5 butuh kebijakan eksplisit (§3.2).
+`fase_tidak_overlap` hanya melarang tumpang tindih — **celah antar fase legal** di data yang ada. Itu yang membuat backfill RB-B5 butuh kebijakan eksplisit (§3.2).
 
 Keduanya butuh extension `btree_gist` (dipasang di skema `extensions`).
 
@@ -148,7 +150,7 @@ Terverifikasi lewat `pg_proc`. Semua `SECURITY DEFINER`.
 
 Event trigger `ensure_rls` `ON ddl_command_end` memanggil `app_internal.rls_auto_enable()` — mengaktifkan RLS otomatis pada tabel `public` yang baru dibuat.
 
-**Yang tidak ada di peta ini** (H8): jalur pendaftaran season, yaitu write ke `user_seasons`. Tidak ada RPC untuknya. Selama jalurnya insert manual admin atau service-role, dua invarian tidak ditegakkan di DB mana pun: `kloters.kapasitas`, dan aturan `kloter_daftar_id = kloter aktif saat mendaftar` yang jadi pijakan seluruh §3.5. Diselesaikan di §3.8.
+**Yang tidak ada di peta ini** (RB-H8): jalur pendaftaran season, yaitu write ke `user_seasons`. Tidak ada RPC untuknya. Selama jalurnya insert manual admin atau service-role, dua invarian tidak ditegakkan di DB mana pun: `kloters.kapasitas`, dan aturan `kloter_daftar_id = kloter aktif saat mendaftar` yang jadi pijakan seluruh §3.5. Diselesaikan di §3.8.
 
 ### 1.5 Kepatuhan yang sudah tercapai
 
@@ -246,12 +248,12 @@ Fungsi plug-in yang dipanggil dari RLS dijalankan per baris: harus `STABLE`, rin
 | Nilai kuis ikut ditahan selama masa penilaian — raport satu dokumen utuh | Sesi 5 Sep |
 | `wrapped` bukan fase, melainkan keadaan akhir | Sesi 5 Sep |
 | Target masa penilaian = target internal admin, QoL, tidak pernah ke peserta | Sesi 5 Sep |
-| **D3:** kloter N+1 boleh dibuka sebelum kloter N di-`wrap`. GiST mengunci `[b1, b5)` | Sesi 5 Sep |
-| **D5:** fase berdurasi nol dilarang, kecuali `b2 = b3` (orientasi boleh nol) | Sesi 5 Sep |
-| **D6:** `writing_submissions.kloter_id` tetap mencatat **kloter jendela**, bukan kloter asal | Sesi 5 Sep |
-| **D1:** `seasons.status` dipecah — editorial (`terbit`) dipisah dari siklus hidup (turunan tanggal) | Sesi 5 Sep |
+| **RB-D3:** kloter N+1 boleh dibuka sebelum kloter N di-`wrap`. GiST mengunci `[b1, b5)` | Sesi 5 Sep |
+| **RB-D5:** fase berdurasi nol dilarang, kecuali `b2 = b3` (orientasi boleh nol) | Sesi 5 Sep |
+| **RB-D6:** `writing_submissions.kloter_id` tetap mencatat **kloter jendela**, bukan kloter asal | Sesi 5 Sep |
+| **RB-D1:** `seasons.status` dipecah — editorial (`terbit`) dipisah dari siklus hidup (turunan tanggal) | Sesi 5 Sep |
 | **A3b:** penutupan season mensyaratkan tidak ada kloter yang sedang berjalan | Sesi 5 Sep |
-| **D2:** perbaikan §5.1 + H1 dilipat ke paket migrasi §3.2, tidak dikerjakan terpisah | Sesi 5 Sep |
+| **RB-D2:** perbaikan §5.1 + RB-H1 dilipat ke paket migrasi §3.2, tidak dikerjakan terpisah | Sesi 5 Sep |
 | **Rekaman sesi offline** disimpan di `event_sessions.rekaman_url` (opsi A), bukan di `kloters` | Sesi 6 Sep |
 | **Gerbang peristiwa** (livestream & rekaman offline) = kepemilikan season, **tanpa komponen waktu** | Sesi 6 Sep, mengikuti Notion 26 Agt |
 | **Soal melekat di `kelas`** (level season), berbeda antar video. Bukan per kloter | Sesi 6 Sep |
@@ -267,7 +269,7 @@ Fungsi plug-in yang dipanggil dari RLS dijalankan per baris: harus `STABLE`, rin
 | Dua jalur pendaftaran: admin manual dan payment gateway. Gateway (checkout dengan tenggat) ditunda | Sesi 25 Sep |
 | Override fase = geser tanggal. Tanpa flag | Sesi 25 Sep |
 | Ambang "tenggat mendekat" diatur admin per kloter | Sesi 25 Sep |
-| Akses naskah lewat satu fungsi plug-in. Sementara D4 di-hold, semua mentor boleh membaca dan menilai semua naskah | Sesi 25 Sep |
+| Akses naskah lewat satu fungsi plug-in. Sementara RB-D4 di-hold, semua mentor boleh membaca dan menilai semua naskah | Sesi 25 Sep |
 | Gerbang bucket naskah di DB lewat Storage policy, bukan server perantara | Sesi 25 Sep |
 | Peserta tidak boleh menimpa atau menghapus naskah yang sudah diunggah; revisi = setor ulang | Sesi 25 Sep |
 | **Kaidah jalur tulis:** aturan per baris → admin tulis langsung (RLS + constraint); aturan lintas baris/tabel → RPC | Sesi 25 Sep |
@@ -285,8 +287,8 @@ Fungsi plug-in yang dipanggil dari RLS dijalankan per baris: harus `STABLE`, rin
 
 | Konsekuensi | Mengikuti dari |
 |---|---|
-| Filter naskah mengikat = `kloter_id == kloter_daftar_id` | Penilaian hanya di kloter asal + telat tak dinilai + D6 |
-| `target_selesai` dihapus | Ketiga perannya dicabut keputusan lain: GiST berhenti di b5 (D3), auto-wrap ditolak (B.2), janji tanggal ditolak pola Notion |
+| Filter naskah mengikat = `kloter_id == kloter_daftar_id` | Penilaian hanya di kloter asal + telat tak dinilai + RB-D6 |
+| `target_selesai` dihapus | Ketiga perannya dicabut keputusan lain: GiST berhenti di b5 (RB-D3), auto-wrap ditolak (B.2), janji tanggal ditolak pola Notion |
 | `rekomendasi` dihapus dari Zod | Ketiga nilainya mati: `lulus` (semua lulus), `revisi` (mustahil, mentor menilai setelah jendela tutup), `ikut_serta` (bukan keputusan mentor) |
 | `certificates.jenis` dihapus | Rubrik nullable → "ada nilai tulisan" jadi turunan |
 | Gerbang materi berbasis **ambang**, bukan jendela | "Video = ambang" sudah terkunci → `now() < closes_at` di `get_video_url` adalah cacat, bukan pilihan desain |
@@ -296,7 +298,7 @@ Fungsi plug-in yang dipanggil dari RLS dijalankan per baris: harus `STABLE`, rin
 | `p_watched_seconds` dan `p_quiz_score` hilang dari RPC classroom | Keduanya angka klien yang tak bisa diverifikasi; skor dihitung server dari `kunci`, tontonan diturunkan |
 | §5.3 tertutup | Tidak ada lagi argumen untuk mengirim skor karangan |
 | Tabel `video_progress` berganti nama | Setelah `ditonton` hilang, isinya murni undian + jawaban + skor kuis. Nama lama akan mengundang orang menambahkan progres tontonan kembali |
-| Backfill B5 dihapus | Tidak ada database yang punya data `kloter_phases` untuk dipindahkan: cloud belum menjalankan migrasinya, seed lokal jalan setelah migrasi (§4.5) |
+| Backfill RB-B5 dihapus | Tidak ada database yang punya data `kloter_phases` untuk dipindahkan: cloud belum menjalankan migrasinya, seed lokal jalan setelah migrasi (§4.5) |
 | `buat_season`, `buat_kloter`, `ubah_jadwal_kloter` tidak jadi RPC | Aturannya per baris → kaidah jalur tulis |
 | Kolom status (`kloters.status`, `kloters.tanggal_selesai`, `seasons.terbit`, `seasons.tanggal_selesai`) hanya bisa ditulis lewat RPC | Perpindahan status punya syarat lintas tabel |
 | Isi soal tidak bisa diubah; hanya `aktif` | Jawaban tercatat merujuk isi soal. Mengubahnya menempelkan jawaban ke pertanyaan lain |
@@ -313,7 +315,7 @@ b1 ─────── b2 ─────── b3 ─────── b4 �
   └────────── berjadwal, dikunci GiST ──────────┘
 ```
 
-Catatan baca: `offline` dan `antara_kloter` **tidak** ada di garis ini. Keduanya hidup di celah `[b5_N, b1_{N+1})` antar kloter — kloter tidak menempel terus tanpa jeda (S7).
+Catatan baca: `offline` dan `antara_kloter` **tidak** ada di garis ini. Keduanya hidup di celah `[b5_N, b1_{N+1})` antar kloter — kloter tidak menempel terus tanpa jeda (RB-S7).
 
 #### `kloters`
 
@@ -333,7 +335,7 @@ Catatan baca: `offline` dan `antara_kloter` **tidak** ada di garis ini. Keduanya
 | `ambang_pengingat` | `interval NOT NULL DEFAULT '3 days'` | berapa lama sebelum b5 banner "tenggat mendekat" tampil. Diatur admin |
 
 ```sql
--- D5: ketat semua kecuali b2 = b3
+-- RB-D5: ketat semua kecuali b2 = b3
 CONSTRAINT urutan_tanggal_valid CHECK (
   tanggal_mulai       <  tgl_mulai_orientasi AND
   tgl_mulai_orientasi <= tgl_mulai_menyimak  AND   -- orientasi boleh berdurasi nol
@@ -352,7 +354,7 @@ CONSTRAINT wrapped_menutup CHECK (
   (status = 'wrapped') = (tanggal_selesai IS NOT NULL)
 )
 
--- D3: yang dikunci hanya bagian berjadwal. Ekor masa penilaian bebas menjuntai.
+-- RB-D3: yang dikunci hanya bagian berjadwal. Ekor masa penilaian bebas menjuntai.
 -- Parsial: kloter draft dikecualikan supaya panitia bisa menyiapkan jadwal
 -- alternatif yang tumpang tindih. Penegakan pindah ke saat publikasi
 -- (UPDATE status draft -> berjalan tetap dievaluasi constraint ini).
@@ -363,9 +365,9 @@ CONSTRAINT kloter_tidak_overlap EXCLUDE USING gist (
 CONSTRAINT ambang_pengingat_positif CHECK (ambang_pengingat > interval '0')
 ```
 
-Pengecualian `draft` pada constraint itu keputusan kecil yang kuambil sendiri dengan alasan di komentar; kalau ternyata panitia tidak butuh jadwal tentatif, hapus `WHERE`-nya (S2).
+Pengecualian `draft` pada constraint itu keputusan kecil yang kuambil sendiri dengan alasan di komentar; kalau ternyata panitia tidak butuh jadwal tentatif, hapus `WHERE`-nya (RB-S2).
 
-#### `seasons` — D1 opsi 3
+#### `seasons` — RB-D1 opsi 3
 
 `status` dipecah karena isinya dua hal berbeda:
 
@@ -390,11 +392,11 @@ END
 
 **A3b ditegakkan sebagai prasyarat**, bukan cascade. Penutupan season ditolak kalau ada kloter miliknya berstatus `berjalan`. Tempatnya RPC `ubah_status_season` aksi `tutup` (§3.10), bukan trigger. `tanggal_selesai` tidak bisa ditulis langsung, jadi tidak ada jalan pintas yang melewati syarat ini.
 
-Karena `seasons` tidak lagi punya status siklus hidup, kosakata `'selesai'` vs `'wrapped'` untuk konsep paralel ikut hilang (S1 tertutup).
+Karena `seasons` tidak lagi punya status siklus hidup, kosakata `'selesai'` vs `'wrapped'` untuk konsep paralel ikut hilang (RB-S1 tertutup).
 
 #### Peruntuhan `kloter_phases` — tanpa backfill
 
-Revisi sebelumnya punya aturan backfill B5: b1–b4 dari `opens_at` tiap fase, b5 dari `closes_at` fase `menulis_setor`, dan migrasi gagal keras kalau ada fase yang hilang. Preflight 25 Sep menunjukkan aturan itu tidak punya data untuk dipindahkan. Cloud belum pernah menjalankan satu pun dari 18 migrasi, dan seed lokal baru jalan setelah migrasi. Karena itu seluruh migrasi digabung jadi **satu baseline** (§7) yang langsung membuat bentuk akhir; `kloter_phases` tidak pernah dibuat.
+Revisi sebelumnya punya aturan backfill RB-B5: b1–b4 dari `opens_at` tiap fase, b5 dari `closes_at` fase `menulis_setor`, dan migrasi gagal keras kalau ada fase yang hilang. Preflight 25 Sep menunjukkan aturan itu tidak punya data untuk dipindahkan. Cloud belum pernah menjalankan satu pun dari 18 migrasi, dan seed lokal baru jalan setelah migrasi. Karena itu seluruh migrasi digabung jadi **satu baseline** (§7) yang langsung membuat bentuk akhir; `kloter_phases` tidak pernah dibuat.
 
 **Override fase = geser tanggal.** `override_active/_by/_at` tidak diganti flag apa pun. Tombol di UI tetap boleh ada, tapi isinya menulis tanggal:
 
@@ -554,7 +556,7 @@ Pilihan lain yang tercatat: `[b3, b5)` (tutup di tenggat setor) atau terbuka sam
 
 ### 3.3 Dua turunan yang berbeda, dan mode layar
 
-**B1:** `kloter_aktif` seperti sekarang tidak cukup, karena dua kloter bisa berstatus `berjalan` bersamaan setelah D3:
+**RB-B1:** `kloter_aktif` seperti sekarang tidak cukup, karena dua kloter bisa berstatus `berjalan` bersamaan setelah RB-D3:
 
 ```text
 kloter N     |-- b1 -- b2 -- b3 -- b4 ------- b5 ==============| wrap
@@ -588,7 +590,7 @@ Uji yang memisahkannya dari yang lain: **apa yang mengakhiri nilai ini?** Empat 
 
 Masa penilaian **tidak disimpan** — turunan dari `now() >= tgl_tenggat_setor AND status = 'berjalan'` pada **kloter asal user**, bukan kloter dalam fase.
 
-#### Mode layar — enumerasi lengkap (H10)
+#### Mode layar — enumerasi lengkap (RB-H10)
 
 Bukan enum database. Hasil resolusi prioritas atas empat sumber, dievaluasi berurutan; yang pertama cocok menang. Nomor prioritas mengikuti daftar At-a-Glance di Notion `/app · Beranda Utama`.
 
@@ -609,7 +611,7 @@ Tiga catatan yang membuat daftar ini tidak sekadar turunan fase:
 
 - **Nomor 1 butuh tanggal mentah**, bukan enum — "mendekat" itu jarak, dan enum tidak bisa menyatakan jarak.
 - **Nomor 3 dan 4 tidak melewati fase sama sekali.** Kartu QR digerakkan `bookings`; raport digerakkan keberadaan baris `certificates`.
-- **Nomor 7 lahir dari kloter asal user**, sementara 1/2/5/6 lahir dari kloter dalam fase. Inilah yang mustahil dilayani satu view tunggal, dan alasan B1 memisahkan dua turunan.
+- **Nomor 7 lahir dari kloter asal user**, sementara 1/2/5/6 lahir dari kloter dalam fase. Inilah yang mustahil dilayani satu view tunggal, dan alasan RB-B1 memisahkan dua turunan.
 
 Ambang "mendekat" pada nomor 1 = `kloters.ambang_pengingat`, default 3 hari, diatur admin per kloter.
 
@@ -627,7 +629,7 @@ Ambang "mendekat" pada nomor 1 = `kloters.ambang_pengingat`, default 3 hari, dia
 
 Gerbang tidak boleh mengonsultasi nilai `fase`. Keduanya turun dari kolom yang sama, tapi jalurnya berbeda — supaya nilai presentasi yang bergeser tidak pernah membuka atau menutup gerbang.
 
-#### Definisi "kepemilikan season" (B3)
+#### Definisi "kepemilikan season" (RB-B3)
 
 Frasa ini punya dua bacaan yang memberi hasil berlawanan, dan §1.4 menunjukkan **keduanya sudah hidup di repo**. Yang berlaku ditetapkan **per bentuk gerbang**, bukan satu untuk semua:
 
@@ -674,7 +676,7 @@ Gerbangnya satu baris: `EXISTS (SELECT 1 FROM user_seasons WHERE user_id = auth.
 
 Versi sebelumnya di kloter asal (v1, v2 saat v3 ada) bukan mengikat dan bukan latihan: riwayat. Mereka tidak masuk antrean. Tanpa "versi terakhir" di definisi view, syarat "semua naskah mengikat sudah dinilai" akan menuntut mentor menilai v1 dan v2 juga, dan kloter tidak bisa diselesaikan.
 
-**D6:** `kloter_id` tetap mencatat **kloter yang jendelanya terbuka saat setor** (perilaku `setor_karya` sekarang). `REVIEW_BACKEND_TEMUAN.md` B3 menuntut sebaliknya — atribusi ke kloter asal penulis. Itu ditolak, dengan dua alasan:
+**RB-D6:** `kloter_id` tetap mencatat **kloter yang jendelanya terbuka saat setor** (perilaku `setor_karya` sekarang). `REVIEW_BACKEND_TEMUAN.md` RB-B3 menuntut sebaliknya — atribusi ke kloter asal penulis. Itu ditolak, dengan dua alasan:
 
 1. **Kolom itu merekam fakta yang tidak bisa direkonstruksi.** "Lewat jendela mana naskah ini masuk" hilang begitu diganti kloter asal, dan menggantinya dengan `created_at ∈ [asal.b4, asal.b5)` membuat klasifikasi bergantung tanggal yang **masih bisa digeser admin** setelah naskah masuk. Perbandingan dua id tidak bisa berubah retroaktif.
 2. **Kloter asal bisa diturunkan**, kloter jendela tidak. Menyimpan kloter asal di baris naskah adalah turunan tersimpan — jenis barang yang uji lakmus §2.3 menolak.
@@ -713,7 +715,7 @@ Alternatifnya rata-rata per kelas (tiap kelas 0–100, yang tidak dikerjakan 0).
 
 Pembagian bentuk: `writing_submissions.nilai` tetap **jsonb** (ruang kerja mentor, internal, bentuk masih bisa berubah); `certificates` pakai **kolom eksplisit** (beku, dicetak, dikueri). Alasannya bukan nullability, tapi typo: akses kolom terkena type-check dari `database.types.ts`, key jsonb bertipe `any` — salah nama key menghasilkan bagian kosong di sertifikat tanpa satu pun error.
 
-**H3 — paket ini diblokir dua hal, bukan satu.** Raport membekukan nilai kuis, dan §5.3 menutup jalan angka dari klien. Jadi kerja kuis server-side adalah **prasyarat**, bukan item yang bisa diparkir terpisah:
+**RB-H3 — paket ini diblokir dua hal, bukan satu.** Raport membekukan nilai kuis, dan §5.3 menutup jalan angka dari klien. Jadi kerja kuis server-side adalah **prasyarat**, bukan item yang bisa diparkir terpisah:
 
 > **paket sertifikat = §4.1 (desain raport) + kuis server-side (§3.2, masuk baseline)**
 
@@ -744,7 +746,7 @@ Arah logikanya penting. Revisi sebelumnya menebak jenis dari ketiadaan kloter: k
 
 `sumber` (`beli`/`gratis`) tetap terpisah: "dapat dari mana" dan "dapat apa" dua pertanyaan berbeda.
 
-### 3.8 Pendaftaran peserta (H8)
+### 3.8 Pendaftaran peserta (RB-H8)
 
 Satu RPC, dua pemanggil:
 
@@ -794,7 +796,7 @@ Kuncinya path file, karena ketiga pemanggilnya memegang path: nama objek di Stor
 | Policy SELECT `writing_submissions` | pemilik **atau** `boleh_menilai_naskah(file_url)` |
 | `nilai_karya` | `boleh_menilai_naskah(file_url)` |
 
-Ini plug-in-nya. Saat D4 turun, yang diganti hanya isi fungsi ini plus tabel penugasan; ketiga pemanggil tidak disentuh. Sengaja tanpa flag on/off — flag berarti dua jalur logika yang harus dirawat, padahal jalur kedua belum ada isinya. `kloter_mentors` tetap disimpan sebagai informasi, tapi tidak ikut menentukan akses.
+Ini plug-in-nya. Saat RB-D4 turun, yang diganti hanya isi fungsi ini plus tabel penugasan; ketiga pemanggil tidak disentuh. Sengaja tanpa flag on/off — flag berarti dua jalur logika yang harus dirawat, padahal jalur kedua belum ada isinya. `kloter_mentors` tetap disimpan sebagai informasi, tapi tidak ikut menentukan akses.
 
 Akibat yang diterima: tanpa pembagian, dua mentor bisa menilai naskah yang sama dan yang tersimpan yang terakhir. `FOR UPDATE` menjaga datanya tidak rusak; kerja dobel diatur koordinasi atau penanda di UI.
 
@@ -867,7 +869,7 @@ Jumlah tabelnya kebetulan sama: **13 tabel** (`kloter_phases` keluar, `soal` mas
 
 | Tabel | Sesudah | Δ |
 |---|---|---|
-| `seasons` | `nomor_kaidah`, `nama`, `tanggal_mulai`, `tanggal_selesai NULL`, **`terbit boolean NOT NULL DEFAULT false`** | ~~`status`~~ pecah: editorial disimpan, siklus hidup jadi turunan (D1) |
+| `seasons` | `nomor_kaidah`, `nama`, `tanggal_mulai`, `tanggal_selesai NULL`, **`terbit boolean NOT NULL DEFAULT false`** | ~~`status`~~ pecah: editorial disimpan, siklus hidup jadi turunan (RB-D1) |
 | `kloters` | `season_id`, `nomor`, `kapasitas`, **`status`**, `tanggal_mulai` (b1), **`tgl_mulai_orientasi`** (b2), **`tgl_mulai_menyimak`** (b3), **`tgl_mulai_setor`** (b4), **`tgl_tenggat_setor`** (b5), `tanggal_selesai NULL`, **`target_penilaian NULL`**, **`ambang_pengingat`**, **`livestream_url NULL`**, **`livestream_at NULL`** | +9 kolom. Menyerap seluruh isi `kloter_phases` sebagai batas, bukan rentang |
 | ~~`kloter_phases`~~ | **tidak pernah dibuat** di baseline | 5 batas di `kloters`; override = geser tanggal (§3.2) |
 | `kelas` | `season_id`, `nomor`, `judul`, `video_url`, **`jumlah_soal_tampil smallint NOT NULL DEFAULT 5`** | +1. `video_url` tetap dicabut dari SELECT publik |
@@ -875,7 +877,7 @@ Jumlah tabelnya kebetulan sama: **13 tabel** (`kloter_phases` keluar, `soal` mas
 | `kloter_mentors` | tidak berubah | Informasi saja; tidak ikut menentukan akses naskah (§3.9) |
 | `user_seasons` | `user_id`, `season_id`, `kloter_daftar_id` **NULL-able**, **`jenis`**, `sumber` | Kloter kosong = pembeli arsip, dikunci CHECK ke `jenis` (§3.7) |
 | `video_progress` → **`kuis_peserta`** | `user_id`, `kelas_id`, **`soal_terpilih uuid[] NOT NULL DEFAULT '{}'`**, `jawaban_soal jsonb NULL`, `skor` | ~~`ditonton`~~ dibuang (turunan dari `jawaban_soal IS NOT NULL`); +undian tersimpan. `skor` = jumlah benar, bukan persen |
-| `writing_submissions` | tidak berubah | `kloter_id` tetap **kloter jendela** (D6). Yang lahir bukan kolom, tapi view `naskah_mengikat` |
+| `writing_submissions` | tidak berubah | `kloter_id` tetap **kloter jendela** (RB-D6). Yang lahir bukan kolom, tapi view `naskah_mengikat` |
 | `certificates` | tidak berubah dari §1.2 | **Tertahan §4.1.** Rencana: ~~`jenis`~~ dibuang, +`nilai_kuis`, `rubrik_konten`, `rubrik_bahasa`, `catatan_mentor` (kolom eksplisit, bukan jsonb) |
 
 #### Domain Pengguna & Kajian Offline
@@ -884,14 +886,14 @@ Jumlah tabelnya kebetulan sama: **13 tabel** (`kloter_phases` keluar, `soal` mas
 |---|---|---|
 | `users` | tidak berubah dari §1.2 | `usia` dan `profile_completed` hanya ada di cloud; tidak dibawa saat deploy (§4.5) |
 | `event_sessions` | + **`rekaman_url text NULL`** | +1. Rekaman melekat di acaranya, bukan di kloter (opsi A) |
-| `bookings` | tidak berubah | `qr_token UNIQUE` sudah ada (S3 tertutup) |
-| `hero_content` | tidak berubah | Singleton isi landing. Pemilik: admin, lewat `/admin/hero` (`hero-service` upsert; RLS insert/update hanya admin, semua orang boleh baca). `updated_at` diisi saat simpan, jadi "kapan terakhir diubah" terbaca dari kolom itu (S6 tertutup) |
+| `bookings` | tidak berubah | `qr_token UNIQUE` sudah ada (RB-S3 tertutup) |
+| `hero_content` | tidak berubah | Singleton isi landing. Pemilik: admin, lewat `/admin/hero` (`hero-service` upsert; RLS insert/update hanya admin, semua orang boleh baca). `updated_at` diisi saat simpan, jadi "kapan terakhir diubah" terbaca dari kolom itu (RB-S6 tertutup) |
 
 #### View — 1 → 2
 
 | View | Ganti dari | Kenapa |
 |---|---|---|
-| ~~`kloter_aktif`~~ | — | `ORDER BY … LIMIT 1` menjatuhkan kloter N secara sistematis (B1) |
+| ~~`kloter_aktif`~~ | — | `ORDER BY … LIMIT 1` menjatuhkan kloter N secara sistematis (RB-B1) |
 | **`kloter_dalam_fase`** | `kloter_aktif` | `now() ∈ [b1, b5)` + `status='berjalan'` + season berjalan. Unik *by construction* lewat GiST parsial, jadi tak perlu `LIMIT` |
 | **`naskah_mengikat`** | — | Satu tempat untuk aturan §3.5. Wajib ada supaya "Selesaikan Kloter" tidak menghitung naskah latihan (§5.2) |
 
@@ -899,9 +901,9 @@ Jumlah tabelnya kebetulan sama: **13 tabel** (`kloter_phases` keluar, `soal` mas
 
 | Constraint | Keadaan |
 |---|---|
-| `kloter_tidak_overlap` | **diganti** — rentangnya jadi `[tanggal_mulai, tgl_tenggat_setor)` dan parsial `WHERE status <> 'draft'`. Ekor masa penilaian bebas menjuntai (D3) |
+| `kloter_tidak_overlap` | **diganti** — rentangnya jadi `[tanggal_mulai, tgl_tenggat_setor)` dan parsial `WHERE status <> 'draft'`. Ekor masa penilaian bebas menjuntai (RB-D3) |
 | ~~`fase_tidak_overlap`~~ | hilang bersama `kloter_phases` |
-| **`urutan_tanggal_valid`** | baru — ketat semua kecuali `b2 <= b3` (D5) |
+| **`urutan_tanggal_valid`** | baru — ketat semua kecuali `b2 <= b3` (RB-D5) |
 | **`status_valid`**, **`selesai_setelah_tenggat`**, **`wrapped_menutup`** | baru — mengunci `status` ke 3 nilai dan melarang `status`/`tanggal_selesai` berselisih |
 | **`jumlah_soal_tampil BETWEEN 1 AND 20`** | baru |
 | **`ambang_pengingat_positif`** | baru |
@@ -931,7 +933,7 @@ Dari 7 jadi 14. Yang berubah kontraknya bukan yang paling banyak, tapi yang pali
 | `create_booking` | tidak berubah |
 | `update_profile` | tidak berubah |
 | `setor_karya` | gerbangnya pindah sumber ke `kloter_dalam_fase`; `p_file_url` tetap |
-| `get_video_url` | **diperbaiki** — ambang dari `tgl_mulai_menyimak` **kloter asal user**, tanpa batas atas (§5.1 + H1); arsip langsung terbuka; admin selalu |
+| `get_video_url` | **diperbaiki** — ambang dari `tgl_mulai_menyimak` **kloter asal user**, tanpa batas atas (§5.1 + RB-H1); arsip langsung terbuka; admin selalu |
 | ~~`submit_classroom_progress`~~ | **dibelah** — kontraknya memikul dua pekerjaan bertentangan |
 | **`get_soal_kelas`** | baru — menyajikan soal tanpa `kunci`, mengunci undian saat pertama dipanggil |
 | **`jawab_kuis`** | baru — sekali saja, skor dihitung server; hanya `bimbingan`, selama `status_jendela_kuis` = `terbuka` |
@@ -953,7 +955,7 @@ Dari 7 jadi 14. Yang berubah kontraknya bukan yang paling banyak, tapi yang pali
 
 `is_admin()`, `is_staff()`, `guard_tanggal_sesi()`, `handle_new_user()`, `rls_auto_enable()` tidak berubah. **Baru:** plug-in `boleh_menilai_naskah(p_path)`, `status_jendela_kuis(p_kloter_id)`, `hitung_nilai_kuis(p_user_season_id)`; pembantu `hitung_skor_kuis(...)`, `gerbang_kuis(p_kelas_id)`, `is_penilai()`. **Dihapus:** `is_mentor_for_kloter()`.
 
-Jalur pendaftaran season (H8) sekarang punya pintu: `daftarkan_peserta` (§3.8).
+Jalur pendaftaran season (RB-H8) sekarang punya pintu: `daftarkan_peserta` (§3.8).
 
 ---
 
@@ -964,7 +966,7 @@ Jalur pendaftaran season (H8) sekarang punya pintu: `daftarkan_peserta` (§3.8).
 Bentuk `certificates` tidak bisa ditutup tanpa tahu apa yang tercetak di dokumennya. Yang perlu dipastikan:
 
 1. **Nama mentor penilai** — dicantumkan?
-2. **Judul karya tulis** — dicantumkan? ⚠️ Judul naskah **tidak tersimpan di sistem**; hanya `file_url`. Kalau dicetak, peserta harus mengisi kolom judul saat setor — mengubah form peserta dan `setor_karya`, bukan cuma sertifikatnya. Ini yang paling mendesak karena efeknya naik ke hulu. Kalau judul disimpan per versi, raport mengambil judul versi mengikat terakhir (S9).
+2. **Judul karya tulis** — dicantumkan? ⚠️ Judul naskah **tidak tersimpan di sistem**; hanya `file_url`. Kalau dicetak, peserta harus mengisi kolom judul saat setor — mengubah form peserta dan `setor_karya`, bukan cuma sertifikatnya. Ini yang paling mendesak karena efeknya naik ke hulu. Kalau judul disimpan per versi, raport mengambil judul versi mengikat terakhir (RB-S9).
 3. **Kaidah ke-N + nama season** — dicantumkan? (Nomor kloter sebaiknya tidak — istilah internal, tidak diekspos ke user.)
 4. **Periode belajar** — dicantumkan?
 5. **Nomor seri sertifikat** untuk verifikasi — perlu?
@@ -973,7 +975,7 @@ Pertimbangan tambahan: membekukan **artefaknya** (render PDF sekali saat terbit,
 
 ### 4.2 Tertahan ke pengelola mentor — G10 pembagian naskah
 
-**D4 di-hold, dibawa ke tim.** Jawabannya menentukan mekanisme, dan opsi partisi deterministik gugur kalau susunan mentor bisa berubah di tengah.
+**RB-D4 di-hold, dibawa ke tim.** Jawabannya menentukan mekanisme, dan opsi partisi deterministik gugur kalau susunan mentor bisa berubah di tengah.
 
 43 naskah, 3 mentor, satu daftar. Tanpa pembagian, ketiganya membuka naskah teratas. Notion: *"ketiganya bisa membaca karya yang sama atau ada yang terlewat."*
 
@@ -989,20 +991,20 @@ Yang perlu dijawab:
 | Ambil-sendiri (`FOR UPDATE SKIP LOCKED`) | nol kolom, menyeimbangkan diri | Admin kehilangan visibilitas per mentor; klaim terlantar butuh pelepasan |
 | **Hibrida** — deterministik sebagai default, kolom tersimpan sebagai override | satu kolom nullable | Dua jalur yang harus konsisten |
 
-**H4 — dua konsekuensi yang harus ikut dicatat apa pun pilihannya:**
+**RB-H4 — dua konsekuensi yang harus ikut dicatat apa pun pilihannya:**
 
 - Penugasan per naskah cukup mengganti isi `boleh_menilai_naskah` (§3.9); `nilai_karya` dan kedua policy ikut berganti tanpa disentuh. Selama isinya masih "semua mentor", atribusi per mentor belum bisa dipegang atau diaudit.
-- Penugasan tersimpan ditambah endpoint penugasan ulang menutup perubahan roster **tanpa migrasi skema** — jadi D4 tidak perlu dijawab sempurna sebelum implementasi, cukup dijawab sebelum gerbangnya dikunci.
+- Penugasan tersimpan ditambah endpoint penugasan ulang menutup perubahan roster **tanpa migrasi skema** — jadi RB-D4 tidak perlu dijawab sempurna sebelum implementasi, cukup dijawab sebelum gerbangnya dikunci.
 
 Sisa G10 sekarang **hanya** soal pembagian ini. Bagian "filter karya asli vs susulan" larut sendiri: susulan tidak masuk antrean mentor.
 
-**Sementara D4 di-hold:** semua mentor boleh membaca dan menilai semua naskah, lewat plug-in `boleh_menilai_naskah` (§3.9). Mekanisme mana pun yang dipilih nanti cukup mengganti isi fungsi itu, plus tabel penugasannya.
+**Sementara RB-D4 di-hold:** semua mentor boleh membaca dan menilai semua naskah, lewat plug-in `boleh_menilai_naskah` (§3.9). Mekanisme mana pun yang dipilih nanti cukup mengganti isi fungsi itu, plus tabel penugasannya.
 
 ### 4.3 Kuis — prasyarat paket sertifikat
 
-Statusnya berubah dua kali. H3 menjadikannya **prasyarat** paket sertifikat, bukan item yang bisa diparkir terpisah. Lalu keputusan 6 Sep membuat desainnya tertutup penuh — lihat §3.2 (bank soal, undian tersimpan, satu kesempatan).
+Statusnya berubah dua kali. RB-H3 menjadikannya **prasyarat** paket sertifikat, bukan item yang bisa diparkir terpisah. Lalu keputusan 6 Sep membuat desainnya tertutup penuh — lihat §3.2 (bank soal, undian tersimpan, satu kesempatan).
 
-**H11 tertutup.** Kebijakan retake terjawab: satu kesempatan, kiriman pertama mengikat. Tidak ada reset undian, tidak ada pertanyaan "skor mana yang naik". Notion D10 yang terbuka sejak 19 Agt ikut tertutup.
+**RB-H11 tertutup.** Kebijakan retake terjawab: satu kesempatan, kiriman pertama mengikat. Tidak ada reset undian, tidak ada pertanyaan "skor mana yang naik". Notion D10 yang terbuka sejak 19 Agt ikut tertutup.
 
 Alasannya bahkan menjawab dirinya sendiri: Notion sudah memutuskan skor tidak ditampilkan ke peserta (D3c) dan jawaban benar tidak ditampilkan (D10). Peserta yang mengulang tidak tahu skornya, tidak tahu mana yang salah, dan dengan undian tersimpan mendapat soal yang sama persis. Mengulang jadi menebak ulang tanpa informasi baru.
 
@@ -1012,7 +1014,7 @@ Alasannya bahkan menjawab dirinya sendiri: Notion sudah memutuskan skor tidak di
 
 Selama bank ≥ jumlah yang ditampilkan, mekanismenya jalan; bank yang pas-pasan hanya menipiskan manfaat anti-nyontek. Jadi angka ini tidak memblokir migrasi tabelnya. Angka realistisnya belum ditetapkan.
 
-**H9 — "hard deadline" tanpa penegak. Diputuskan 26 Sep: manual.** Notion menyebut tenggat penilaian sebagai *hard deadline yang mengunci penerbitan sertifikat*, tapi `target_penilaian` cuma timestamp internal. Penegaknya admin, konsisten dengan B.2 (tanpa auto-wrap): penilaian terbuka dari b5 sampai admin menutup kloter lewat `ubah_status_kloter`, dan `target_penilaian` + `ambang_pengingat` hanya jadi pengingat di UI admin. Konsekuensi yang diterima: kalau admin lupa menutup kloter, mentor masih bisa menilai dan sertifikat tertahan. DB tidak memaksa apa pun.
+**RB-H9 — "hard deadline" tanpa penegak. Diputuskan 26 Sep: manual.** Notion menyebut tenggat penilaian sebagai *hard deadline yang mengunci penerbitan sertifikat*, tapi `target_penilaian` cuma timestamp internal. Penegaknya admin, konsisten dengan B.2 (tanpa auto-wrap): penilaian terbuka dari b5 sampai admin menutup kloter lewat `ubah_status_kloter`, dan `target_penilaian` + `ambang_pengingat` hanya jadi pengingat di UI admin. Konsekuensi yang diterima: kalau admin lupa menutup kloter, mentor masih bisa menilai dan sertifikat tertahan. DB tidak memaksa apa pun.
 
 ### 4.4 Terangkat, belum ditutup
 
@@ -1022,7 +1024,7 @@ Selama bank ≥ jumlah yang ditampilkan, mekanismenya jalan; bank yang pas-pasan
 | **Layout admin: topbar vs sidebar** | Dua mockup ada di `docs/admin-mockup.html`, belum dipilih. `AdminLayout` sekarang hanya gerbang peran |
 | **`.docx` → PDF** | Tiga jalan disodorkan (konversi di klien / di backend / edukasi + fallback), belum dipilih. Bucket menerima PDF/DOC/DOCX; mockup mentor mengasumsikan semuanya PDF |
 
-Yang **keluar** dari daftar ini karena sudah terjawab: sinkronisasi dua level status (D1 + A3b), gerbang tautan livestream (§3.4), nama tabel kuis (`kuis_peserta`), ambang "tenggat mendekat" (§3.2), override fase (§3.2), `kloter_daftar_id` untuk arsip (§3.7), jalur pendaftaran H8 (§3.8), `bookings.qr_token` UNIQUE (ada), kebijakan bucket S4 (§3.9), dan file menggantung S10 (mockup dipindah ke `docs/`, `graphify-out/` diabaikan Git, dump cloud dihapus). Temuan saran lainnya juga tertutup: S1 (§3.2, kosakata ganda hilang bersama enum status season), S2 (GiST parsial `WHERE status <> 'draft'`), S3 (§3.11), S5 (`target_selesai` dan `rekomendasi` sama-sama dihapus; alasannya di tabel konsekuensi §3.1), S6 (§3.11), S7 (catatan di bawah diagram §3.2), S8 (penanda kebasian di kepala dokumen). S9 ikut §4.1.
+Yang **keluar** dari daftar ini karena sudah terjawab: sinkronisasi dua level status (RB-D1 + A3b), gerbang tautan livestream (§3.4), nama tabel kuis (`kuis_peserta`), ambang "tenggat mendekat" (§3.2), override fase (§3.2), `kloter_daftar_id` untuk arsip (§3.7), jalur pendaftaran RB-H8 (§3.8), `bookings.qr_token` UNIQUE (ada), kebijakan bucket RB-S4 (§3.9), dan file menggantung RB-S10 (mockup dipindah ke `docs/`, `graphify-out/` diabaikan Git, dump cloud dihapus). Temuan saran lainnya juga tertutup: RB-S1 (§3.2, kosakata ganda hilang bersama enum status season), RB-S2 (GiST parsial `WHERE status <> 'draft'`), RB-S3 (§3.11), RB-S5 (`target_selesai` dan `rekomendasi` sama-sama dihapus; alasannya di tabel konsekuensi §3.1), RB-S6 (§3.11), RB-S7 (catatan di bawah diagram §3.2), RB-S8 (penanda kebasian di kepala dokumen). RB-S9 ikut §4.1.
 
 ### 4.5 Cloud dan jalan deploy
 
@@ -1048,11 +1050,11 @@ Sampai deploy dijalankan, cloud masih berskema Fase 1. Jangan jalankan `npm run 
 
 | Item | Risiko |
 |---|---|
-| **5W2H `/admin/karya`** | Notion Log Sesi `CHAT-15` ditandai *Perlu tindak lanjut = YES*. Dua blocker yang disebut: pembagian beban mentor (= §4.2) dan filter asli-vs-susulan (larut sendiri). Sisanya menunggu D4 |
+| **5W2H `/admin/karya`** | Notion Log Sesi `CHAT-15` ditandai *Perlu tindak lanjut = YES*. Dua blocker yang disebut: pembagian beban mentor (= §4.2) dan filter asli-vs-susulan (larut sendiri). Sisanya menunggu RB-D4 |
 | **H4 sisa (Notion)** | Jendela setor dibuka berapa lama sebelum tenggat. Nilai tanggal, tidak memblokir bentuk skema |
-| **Layar "sedang dinilai"** | Notion menandainya sebagai *sisa ketergantungan H5*. Layar `wrapped` yang tergambar isinya sertifikat, bukan masa tunggu — kemungkinan satu layar belum punya gambar. Mode layar nomor 7 di §3.3 |
+| **Layar "sedang dinilai"** | Notion menandainya sebagai *sisa ketergantungan H5 (Notion: sertifikat bertahap)*. Layar `wrapped` yang tergambar isinya sertifikat, bukan masa tunggu — kemungkinan satu layar belum punya gambar. Mode layar nomor 7 di §3.3 |
 | **Wireframe rev 2.3 pakai istilah lama** | "bulan ini" / "berulang tiap bulan" — setor mengikuti jadwal kloter, 6× setahun bukan 12× |
-| **`kuota_terisi` / `kuota_kids_terisi`** (H5) | **Diputuskan 25 Sep: counter tetap disimpan (KISS).** Drift hanya muncul kalau ada pembatalan, dan jalur batal belum ada. Saat fitur batal dibuat (PR-04), RPC-nya menurunkan kedua counter di transaksi yang sama di bawah `FOR UPDATE` baris sesi, cermin `create_booking`. Hitung langsung ditolak: ongkos baca kecil (uji lokal 500 sesi × 100k booking = 91 ms), tapi butuh trigger kapasitas + cast tipe di 6 pembaca. Sampai fitur batal ada: **jangan ubah status booking lewat dashboard**. Dilacak di PR-04 |
+| **`kuota_terisi` / `kuota_kids_terisi`** (RB-H5) | **Diputuskan 25 Sep: counter tetap disimpan (KISS).** Drift hanya muncul kalau ada pembatalan, dan jalur batal belum ada. Saat fitur batal dibuat (PR-04), RPC-nya menurunkan kedua counter di transaksi yang sama di bawah `FOR UPDATE` baris sesi, cermin `create_booking`. Hitung langsung ditolak: ongkos baca kecil (uji lokal 500 sesi × 100k booking = 91 ms), tapi butuh trigger kapasitas + cast tipe di 6 pembaca. Percobaan lewat computed field PostgREST juga gagal: computed field butuh hak SELECT atas semua kolom `event_sessions`, padahal `rekaman_url` sengaja tidak di-grant, sehingga hasilnya `permission denied for table event_sessions`. Sampai fitur batal ada: **jangan ubah status booking lewat dashboard**. Dilacak di PR-04 |
 
 ---
 
@@ -1080,7 +1082,7 @@ Dari satu join lahir **dua penguncian yang berbeda**, dan membedakannya penting 
 | **Pemilik season arsip** | Batas atas `now() < kp.closes_at` — fase sudah lewat, jadi gagal | Batas atas, karena video = ambang bukan jendela |
 | **Semua anggota season, tiap awal siklus** | Join ke `kloter_aktif` — selama kloter terbaru masih di `pendaftaran` atau `orientasi`, tidak ada fase yang cocok | **Join ke kloter aktif**, diganti kloter asal user |
 
-Kelompok kedua (H1) lebih luas dan lebih sering: bukan sekali untuk pemilik arsip, tapi **berulang tiap awal siklus kloter** — dan Notion menyiratkan 6 siklus setahun. Memperbaiki batas atas saja tidak menutupnya.
+Kelompok kedua (RB-H1) lebih luas dan lebih sering: bukan sekali untuk pemilik arsip, tapi **berulang tiap awal siklus kloter** — dan Notion menyiratkan 6 siklus setahun. Memperbaiki batas atas saja tidak menutupnya.
 
 Notion memperingatkan pola ini secara eksplisit: *"kalau dicek terhadap fase aktif, pemilik arsip tidak akan bisa menonton apa pun."*
 
@@ -1161,10 +1163,10 @@ Notion ditata ulang 26 Sep untuk kolaborasi antar-AI: halaman induk memuat Proto
 | 4 | **Kode aplikasi**: types, service season/kelas/naskah, route kuis; test §8 | 3 | ✅ `63aeeed`, `32b3c33` |
 | 5 | **Beres-beres**: mockup ke `docs/`, `graphify-out/` ke `.gitignore`, hapus dump cloud | — | ✅ |
 | 6 | **Deploy cloud** (§4.5) | 3, 4 | ⏸ ditunda |
-| 7 | **D4** → isi plug-in → 5W2H `/admin/karya` | D4 dari tim | ⬜ di-hold |
-| 8 | **§4.1** desain raport → paket sertifikat H3 → generator PDF | tim media | ⬜ |
+| 7 | **RB-D4** → isi plug-in → 5W2H `/admin/karya` | RB-D4 dari tim | ⬜ di-hold |
+| 8 | **§4.1** desain raport → paket sertifikat RB-H3 → generator PDF | tim media | ⬜ |
 | 9 | **Payment gateway** (§3.8) | — | ⬜ ditunda |
-| 10 | ~~H5~~ (counter tetap, penurun ikut RPC batal di PR-04) → ~~H9~~ (manual) → S1–S10 sisa | — | ⬜ |
+| 10 | ~~RB-H5~~ (counter tetap, penurun ikut RPC batal di PR-04) → ~~RB-H9~~ (manual) → ~~RB-S1–S10~~ (tertutup, RB-S9 ikut §4.1) | — | ✅ 26 Sep |
 
 Penulisan isi soal (~90 butir per season, §4.3) berjalan paralel dengan semuanya.
 
@@ -1177,7 +1179,7 @@ Sepuluh skenario, ditulis sebagai tes pgTAP (`supabase test db`, jalan di CI). `
 | # | Test | Mengikat | Kenapa ini yang dipilih |
 |---|---|---|---|
 | 1 | Pemilik season arsip berhasil `get_video_url` | §5.1 penguncian pertama | Uji lakmus nomor 5 dalam bentuk eksekusi |
-| 2 | Anggota kloter 2 menonton materi saat kloter 4 masih fase `pendaftaran` | §5.1 penguncian kedua (H1) | Tanpa ini, perbaikan §5.1 bisa lolos sambil menyisakan separuh masalah — dan separuh itu yang kena semua orang |
+| 2 | Anggota kloter 2 menonton materi saat kloter 4 masih fase `pendaftaran` | §5.1 penguncian kedua (RB-H1) | Tanpa ini, perbaikan §5.1 bisa lolos sambil menyisakan separuh masalah — dan separuh itu yang kena semua orang |
 | 3 | Kloter 2 ditutup sementara ada naskah latihan dari anggota kloter 1 | §5.2 | Pola "lolos di kloter 1, meledak di kloter 2" adalah spesifikasi test gratis |
 | 4 | Pembeli arsip: `get_video_url` berhasil, `jawab_kuis` dan `setor_karya` ditolak | §3.7 | Kloter kosong tidak boleh bocor ke gerbang lain |
 | 5 | Dua `daftarkan_peserta` bersamaan untuk kursi terakhir — hanya satu yang lolos | §3.8 | Kapasitas baru pertama kali ditegakkan; balapan adalah cara ia gagal |
