@@ -772,8 +772,8 @@ Dampak ke item lain:
 Status: `DONE`  
 Target PR: `feat(db): move grades to penilaian_naskah, expose author to graders, add read log`  
 Priority: `P0 Security` (nilai bocor sebelum raport) + `P1 Feature` (panel mentor)  
-Evidence/commit: `20260926000000_penilaian_penulis_dibaca.sql`  
-Verification: `supabase test db` 71 assertion lulus (11 baru); uji mutasi policy `penilaian_naskah` merah sesuai harapan; `db advisors` 0 temuan; typecheck, lint, 24 tes unit lulus; smoke PostgREST dengan akun mentor + peserta sementara (dihapus): kolom `writing_submissions.nilai` tidak ada lagi, peserta 0 baris `penilaian_naskah`, peserta ditolak `BUKAN_PENILAI` di `get_penulis_naskah` dan `tandai_dibaca`. Rincian `docs/BACKEND.md` §3.12.  
+Evidence/commit: `20260926000000_penilaian_penulis_dibaca.sql` (`c61cdef`), `20260926010000_status_naskah_turunan.sql`  
+Verification: `supabase test db` 71 assertion lulus (11 baru); uji mutasi policy `penilaian_naskah` dan penjaga "selesaikan" merah sesuai harapan; `db advisors` 0 temuan; typecheck, lint, 24 tes unit lulus; smoke PostgREST dengan akun sementara (dihapus): kolom `writing_submissions.nilai` dan `.status` tidak ada lagi, peserta 0 baris `penilaian_naskah`, peserta ditolak `BUKAN_PENILAI` di `get_penulis_naskah` dan `tandai_dibaca`, embed `penilaian_naskah` untuk admin valid. Rincian `docs/BACKEND.md` §3.12.  
 Belum: UI panel `/admin/karya` yang memakai kedua RPC (Milestone F.4).
 ---
 
